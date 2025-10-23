@@ -29,7 +29,6 @@ const SignUpPage = () => {
   };
 
   const agregarDocente = async (userId: string) => {
-    // Ajusta nombres de columnas a tu esquema real
     const { error } = await supabase
       .from("docente")
       .upsert(

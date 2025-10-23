@@ -42,8 +42,6 @@ const SignUpPage = () => {
         { onConflict: "idusuario" }
       );
 
-    console.log(error);
-
     if (error) throw error;
   };
 

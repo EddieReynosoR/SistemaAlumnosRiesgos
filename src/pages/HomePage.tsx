@@ -15,6 +15,7 @@ const HomePage = () => {
           <Link to="/auth/sign-in">Iniciar sesión</Link>
         )}
         <Link to="/protected">Pagina protegida</Link>
+        <Link to="/estudiantes">Estudiantes</Link>
         <div id="divider"></div>       
       </section>
     </main>

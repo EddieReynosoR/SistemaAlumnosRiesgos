@@ -29,17 +29,15 @@ const SignUpPage = () => {
   };
 
   const agregarDocente = async (userId: string) => {
-    const { error } = await supabase
-      .from("docente")
-      .upsert(
-        {
-          idusuario: userId,
-          nombre: formValues.nombre,
-          apellidopaterno: formValues.apellidoPaterno || null,
-          apellidomaterno: formValues.apellidoMaterno || null,
-        },
-        { onConflict: "idusuario" }
-      );
+    const { error } = await supabase.from("docente").upsert(
+      {
+        idusuario: userId,
+        nombre: formValues.nombre,
+        apellidopaterno: formValues.apellidoPaterno || null,
+        apellidomaterno: formValues.apellidoMaterno || null,
+      },
+      { onConflict: "idusuario" }
+    );
 
     if (error) throw error;
   };
@@ -50,7 +48,7 @@ const SignUpPage = () => {
 
     const { data, error } = await supabase.auth.signUp({
       email: formValues.email,
-      password: formValues.password
+      password: formValues.password,
     });
 
     if (error) {
@@ -69,49 +67,106 @@ const SignUpPage = () => {
         setStatus("⚠️ Ocurrió un error al crear la cuenta.");
       }
     } else {
-      setStatus("✅ Cuenta creada. Revisa tu correo para confirmar. El perfil se registrará automáticamente.");
+      setStatus(
+        "✅ Cuenta creada. Revisa tu correo para confirmar. El perfil se registrará automáticamente."
+      );
     }
   };
 
   return (
     <main>
-      <Link className="home-link" to="/">
-        ◄ Home
-      </Link>
-      <form className="main-container" onSubmit={handleSubmit}>
+      <nav className="bg-Primary text-Neutral p-5">
+        <Link className="home-link " to="/">
+          ◄ Home
+        </Link>
+      </nav>
+
+      <form
+        className="main-container flex text-Primary flex-col  h-full justify-center items-center"
+        onSubmit={handleSubmit}
+      >
         <h1 className="header-text">Registrarse</h1>
-        <input
-          name="email"
-          onChange={handleInputChange}
-          type="email"
-          placeholder="Email"
-        />
-        <input
-          name="password"
-          onChange={handleInputChange}
-          type="password"
-          placeholder="Contraseña"
-        />
-        <input
-          name="nombre"
-          onChange={handleInputChange}
-          type="text"
-          placeholder="Nombre"
-        />
-        <input
-          name="apellidoPaterno"
-          onChange={handleInputChange}
-          type="text"
-          placeholder="Apellido paterno"
-        />
-        <input
-          name="apellidoMaterno"
-          onChange={handleInputChange}
-          type="text"
-          placeholder="Apellido materno"
-        />
-        <button type="submit">Crear cuenta</button>
-        <Link className="auth-link" to="/auth/sign-in">
+        <div className="relative m-5 w-64 group">
+          <legend className="text-xs">Email</legend>
+          <input
+            className="w-full p-2 border-none border-b-2 border-gray-400 bg-transparent outline-none"
+            name="email"
+            onChange={handleInputChange}
+            type="email"
+            placeholder="Email"
+          />
+          <span
+            className="absolute left-0 bottom-0 h-0.5 bg-Primary w-0 
+               transition-all duration-300 ease-in-out group-focus-within:w-full"
+          ></span>
+        </div>
+        <div className="relative m-5 w-64 group">
+          <legend className="text-xs">Contraseña</legend>
+          <input
+            className="w-full p-2 border-none border-b-2 border-gray-400 bg-transparent outline-none"
+            name="password"
+            onChange={handleInputChange}
+            type="password"
+            placeholder="Contraseña"
+          />
+          <span
+            className="absolute left-0 bottom-0 h-0.5 bg-Primary w-0 
+               transition-all duration-300 ease-in-out group-focus-within:w-full"
+          ></span>
+        </div>
+        <div className="relative m-5 w-64 group">
+          <legend className="text-xs">Nombre</legend>
+          <input
+            className="w-full p-2 border-none border-b-2 border-gray-400 bg-transparent outline-none"
+            name="nombre"
+            onChange={handleInputChange}
+            type="text"
+            placeholder="Nombre"
+          />
+          <span
+            className="absolute left-0 bottom-0 h-0.5 bg-Primary w-0 
+               transition-all duration-300 ease-in-out group-focus-within:w-full"
+          ></span>
+        </div>
+        <div className="relative m-5 w-64 group">
+          <legend className="text-xs">Apellido Paterno</legend>
+          <input
+            className="w-full p-2 border-none border-b-2 border-gray-400 bg-transparent outline-none"
+            name="apellidoPaterno"
+            onChange={handleInputChange}
+            type="text"
+            placeholder="Apellido paterno"
+          />
+          <span
+            className="absolute left-0 bottom-0 h-0.5 bg-Primary w-0 
+               transition-all duration-300 ease-in-out group-focus-within:w-full"
+          ></span>
+        </div>
+        <div className="relative m-5 w-64 group">
+          <legend className="text-xs">Apellido Materno</legend>
+          <input
+                      className="w-full p-2 border-none border-b-2 border-gray-900 bg-transparent outline-none"
+
+            name="apellidoMaterno"
+            onChange={handleInputChange}
+            type="text"
+            placeholder="Apellido materno"
+          />
+          <span
+            className="absolute left-0 bottom-0 h-0.5 bg-Primary w-0 
+               transition-all duration-300 ease-in-out group-focus-within:w-full"
+          ></span>
+        </div>
+
+        
+
+        <button
+          type="submit"
+          className="cursor-pointer bg-Primary text-Neutral  rounded-2xl w-50 h-10 m-5"
+        >
+          Crear cuenta
+        </button>
+        <Link className="auth-link  hover:text-Tertiary" to="/auth/sign-in">
           ¿Ya tienes una cuenta? Inicia sesión
         </Link>
         {status && <p>{status}</p>}

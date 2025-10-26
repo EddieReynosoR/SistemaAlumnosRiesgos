@@ -74,7 +74,7 @@ export function AgregarEstudianteDialog({ onSuccess }: Props) {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button variant="outline" onClick={() => setOpen(true)}>Agregar Estudiante</Button>
+        <Button variant="default" onClick={() => setOpen(true)}>Agregar Estudiante</Button>
       </DialogTrigger>
 
       <DialogContent className="sm:max-w-[425px]">

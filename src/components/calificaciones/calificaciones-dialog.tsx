@@ -218,7 +218,7 @@ export function CalificacionesDialog({ open, setOpen, estudiante }: Props) {
         </DialogHeader>
 
         <div className="grid gap-6 py-2">
-            <MateriaSelect materiaId={materiaId} setMateriaId={setMateriaId} />
+            <MateriaSelect materiaId={materiaId} setMateriaId={setMateriaId} carreraId={estudiante?.idcarrera} />
 
             <Separator />
 

@@ -5,6 +5,7 @@ export type Estudiante = {
   apellidopaterno: string
   apellidomaterno: string
   semestre: number
+  idcarrera: string
 }
 
 export type Carrera = {
@@ -28,3 +29,11 @@ export const FactorTipo = {
 } as const;
 
 export type FactorTipo = typeof FactorTipo[keyof typeof FactorTipo];
+
+export type Materia = {
+  idmateria: string;
+  nombre: string;
+  iddocente: string | null;
+  idcarrera: string | null;
+  semestre: number | null;
+};

@@ -35,7 +35,6 @@ import { AgregarEstudianteDialog } from "../agregar-estudiante-dialog"
 interface DataTableProps<TData, TValue> {
     columns: ColumnDef<TData, TValue>[]
     data: TData[]
-    /** Nombre de columna a la que aplicar el filtro global (por defecto, todas) */
     globalFilterColumns?: (keyof TData)[]
     onRefresh?: () => void
 }
@@ -99,8 +98,7 @@ export function DataTable<TData extends Record<string, any>, TValue>({
 
   return (
     <div className="space-y-3">
-      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-        <div className="flex gap-2">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
           <Input
             placeholder="Buscar por nombre o número de control…"
             value={globalQuery}
@@ -122,7 +120,6 @@ export function DataTable<TData extends Record<string, any>, TValue>({
                 <SelectValue placeholder="Filtrar semestre" />
                 </SelectTrigger>
                 <SelectContent>
-                {/* 🔧 valor no vacío */}
                 <SelectItem value="all">Todos</SelectItem>
                 {uniqueSemestres.map((s) => (
                     <SelectItem key={s} value={String(s)}>
@@ -132,33 +129,9 @@ export function DataTable<TData extends Record<string, any>, TValue>({
                 </SelectContent>
             </Select>
             )}
-        </div>
 
         <div>
           <AgregarEstudianteDialog  onSuccess={onRefresh} />
-        </div>
-
-        <div className="hidden items-center gap-2 sm:flex">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => table.previousPage()}
-            disabled={!table.getCanPreviousPage()}
-          >
-            <ChevronLeft className="h-4 w-4" />
-          </Button>
-          <span className="text-sm">
-            Página {table.getState().pagination.pageIndex + 1} de{" "}
-            {table.getPageCount()}
-          </span>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => table.nextPage()}
-            disabled={!table.getCanNextPage()}
-          >
-            <ChevronRight className="h-4 w-4" />
-          </Button>
         </div>
       </div>
 

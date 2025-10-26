@@ -16,7 +16,8 @@ const HomePage = () => {
         )}
         <Link to="/protected">Pagina protegida</Link>
         <Link to="/estudiantes">Estudiantes</Link>
-        <div id="divider"></div>       
+        <Link to="/materias">Materias</Link>
+        <Link to="/factores">Factores</Link>  
       </section>
     </main>
   );

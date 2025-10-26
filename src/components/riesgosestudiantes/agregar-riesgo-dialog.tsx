@@ -11,9 +11,6 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import supabase from "@/utils/supabaseClient";
 
 import { FactorTipo, type Factor, type Estudiante } from "@/utils/types";
-// Nota: en utils/types define:
-// export const FACTOR_TIPO = {...} as const
-// export type FactorTipo = typeof FACTOR_TIPO[keyof typeof FACTOR_TIPO];
 
 type Props = {
   open: boolean;

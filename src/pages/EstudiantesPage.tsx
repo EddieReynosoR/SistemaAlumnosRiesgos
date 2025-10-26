@@ -35,7 +35,7 @@ export default function EstudiantesPage() {
     setLoading(true);
     const { data: rows, error } = await supabase
       .from("estudiante")
-      .select("idestudiante, numerocontrol, nombre, apellidopaterno, apellidomaterno, semestre")
+      .select("idestudiante, numerocontrol, nombre, apellidopaterno, apellidomaterno, semestre, idcarrera")
       .order("idestudiante", { ascending: false });
 
     if (error) setError(error.message);
@@ -105,7 +105,6 @@ export default function EstudiantesPage() {
         return;
       }
 
-      // Actualiza en memoria sin refetch
       setData((rows) =>
         rows.map((r) =>
           r.idestudiante === editing.idestudiante ? { ...r, ...payload } : r
@@ -133,7 +132,19 @@ export default function EstudiantesPage() {
   if (error) return <main className="p-6 text-red-600">Error: {error}</main>
 
   return (
-    <main className="container mx-auto py-10">
+    <main className="p-6 space-y-4">
+      <div className="flex items-center justify-between">
+        <h1 className="text-xl font-semibold">Estudiantes</h1>
+        <div className="flex gap-2">
+          <Button variant="outline" onClick={fetchEstudiantes} disabled={loading}>
+            {loading ? "Cargando..." : "Refrescar"}
+          </Button>
+        </div>
+      </div>
+
+      {error ? (
+        <div className="text-sm text-red-600">Error: {error}</div>
+      ) : null}
       <DataTable columns={columns} data={data} globalFilterColumns={["numerocontrol", "nombre"]} onRefresh={fetchEstudiantes} />
 
       <Dialog open={!!editing} onOpenChange={(open) => !open && setEditing(null)}>

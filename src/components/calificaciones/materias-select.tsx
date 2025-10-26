@@ -16,9 +16,11 @@ type Materia = { idmateria: string; nombre: string };
 export default function MateriaSelect({
   materiaId,
   setMateriaId,
+  carreraId,
 }: {
   materiaId: string | undefined;
   setMateriaId: (v: string) => void;
+  carreraId: string | undefined;
 }) {
   const { docente } = useSession();
   const [materias, setMaterias] = useState<Materia[]>([]);
@@ -39,6 +41,7 @@ export default function MateriaSelect({
         .from("materia")
         .select("idmateria, nombre")
         .eq("iddocente", docente.iddocente)
+        .eq("idcarrera", carreraId)
         .order("nombre", { ascending: true });
 
       if (!mounted) return;

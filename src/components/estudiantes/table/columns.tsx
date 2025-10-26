@@ -13,12 +13,13 @@ import {
 } from "@/components/ui/dropdown-menu";
 
 type ColumnHandlers = {
+  onCalificacion: (est: Estudiante) => void;
   onEdit: (est: Estudiante) => void;
   onDelete: (est: Estudiante) => void;
 };
 
 
-export const getColumns = ({ onEdit, onDelete }: ColumnHandlers): ColumnDef<Estudiante>[] => [
+export const getColumns = ({ onCalificacion, onEdit, onDelete }: ColumnHandlers): ColumnDef<Estudiante>[] => [
   {
     accessorKey: "numerocontrol",
     header: "Número de Control",
@@ -59,7 +60,7 @@ export const getColumns = ({ onEdit, onDelete }: ColumnHandlers): ColumnDef<Estu
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
             <DropdownMenuLabel>Opciones</DropdownMenuLabel>
-            <DropdownMenuItem>
+            <DropdownMenuItem onClick={() => onCalificacion(estudiante)}>
               Calificaciones
             </DropdownMenuItem>
             <DropdownMenuItem>

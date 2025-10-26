@@ -16,6 +16,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { CalificacionesDialog } from "@/components/calificaciones/calificaciones-dialog";
+import { SeleccionarFactoresDialog } from "@/components/riesgosestudiantes/agregar-riesgo-dialog";
 
 export default function EstudiantesPage() {
   const [data, setData] = useState<Estudiante[]>([]);
@@ -25,6 +26,7 @@ export default function EstudiantesPage() {
   const [editing, setEditing] = useState<Estudiante | null>(null);
   const [deleting, setDeleting] = useState<Estudiante | null>(null);
   const [calificacion, setCalificacion] = useState<Estudiante | null>(null);
+  const [factor, setFactor] = useState<Estudiante | null>(null);
   const [deleteDialog, setDeleteDialog] = useState<boolean>(false);
   const [saving, setSaving] = useState(false);
   const [deletingLoading, setDeletingLoading] = useState(false);
@@ -118,8 +120,12 @@ export default function EstudiantesPage() {
     setCalificacion(est);
   }, []);
 
+  const handleFactor = useCallback((est: Estudiante) => {
+    setFactor(est);
+  }, []);
+
   const columns = useMemo(
-    () => getColumns({ onCalificacion: handleCalificacion, onEdit: handleEdit, onDelete: handleDelete }),
+    () => getColumns({ onFactor: handleFactor, onCalificacion: handleCalificacion, onEdit: handleEdit, onDelete: handleDelete }),
     [handleCalificacion, handleEdit, handleDelete]
   );
 
@@ -228,6 +234,8 @@ export default function EstudiantesPage() {
       </Dialog>
 
       <CalificacionesDialog open={!!calificacion} setOpen={(open) => !open && setCalificacion(null)} estudiante={calificacion} />
+
+      <SeleccionarFactoresDialog open={!!factor} setOpen={(open) => !open && setFactor(null)} estudiante={factor} />
     </main>
   )
 }

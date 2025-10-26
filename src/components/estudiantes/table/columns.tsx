@@ -13,13 +13,14 @@ import {
 } from "@/components/ui/dropdown-menu";
 
 type ColumnHandlers = {
+  onFactor: (est: Estudiante) => void;
   onCalificacion: (est: Estudiante) => void;
   onEdit: (est: Estudiante) => void;
   onDelete: (est: Estudiante) => void;
 };
 
 
-export const getColumns = ({ onCalificacion, onEdit, onDelete }: ColumnHandlers): ColumnDef<Estudiante>[] => [
+export const getColumns = ({ onFactor, onCalificacion, onEdit, onDelete }: ColumnHandlers): ColumnDef<Estudiante>[] => [
   {
     accessorKey: "numerocontrol",
     header: "Número de Control",
@@ -63,7 +64,7 @@ export const getColumns = ({ onCalificacion, onEdit, onDelete }: ColumnHandlers)
             <DropdownMenuItem onClick={() => onCalificacion(estudiante)}>
               Calificaciones
             </DropdownMenuItem>
-            <DropdownMenuItem>
+            <DropdownMenuItem onClick={() => onFactor(estudiante)}>
               Factores
             </DropdownMenuItem>
             <DropdownMenuSeparator />

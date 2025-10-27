@@ -27,23 +27,19 @@ function Pareto() {
         return;
       }
 
-      //Agrupar por categoría y contar frecuencia
       const conteo = data.reduce((acc, item) => {
         const cat = item.categoria || "Sin categoria";
         acc[cat] = (acc[cat] || 0) + 1;
         return acc;
       }, {});
 
-      //Convertir a arreglo para Recharts
       const datosArray = Object.entries(conteo).map(([categoria, frecuencia]) => ({
         categoria,
         frecuencia,
       }));
 
-      //Ordenar de mayor a menor frecuencia
       datosArray.sort((a, b) => b.frecuencia - a.frecuencia);
 
-      //Calcular porcentaje acumulado
       const total = datosArray.reduce((sum, d) => sum + d.frecuencia, 0);
       let acumulado = 0;
       const datosPareto = datosArray.map((d) => {

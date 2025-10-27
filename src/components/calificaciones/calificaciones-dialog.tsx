@@ -29,7 +29,7 @@ type Props = {
 export function CalificacionesDialog({ open, setOpen, estudiante }: Props) {
   const [materiaId, setMateriaId] = useState<string | undefined>(undefined);
   const [unidad, setUnidad] = useState<number | "">("");
-  const [asistencias, setAsistencias] = useState<number | "">("");
+  const [asistencias, setAsistencias] = useState<number>(0);
   const [calificacion, setCalificacion] = useState<number>(0);
 
   const [calificaciones, setCalificaciones] = useState<CalificacionAsistencia[]>([]);
@@ -70,8 +70,24 @@ export function CalificacionesDialog({ open, setOpen, estudiante }: Props) {
       setAsistencias(0);
       setCalificacion(0);
       setUnidad("");
+      fetchCalificacionesMateria(materiaId);
     }
   }
+
+  const fetchCalificacionesMateria = async (materiaId: string) => {
+    if (!materiaId || !estudiante?.idestudiante) return;
+
+      const { data, error } = await supabase
+        .from("calificacionasistencia")
+        .select("id, idestudiante, unidad, asistencia, calificacion")
+        .eq("idmateria", materiaId)
+        .eq("idestudiante", estudiante.idestudiante)
+        .order("unidad", { ascending: true });
+
+      if (!error) {
+        setCalificaciones(data);
+      }
+    };
   
   useEffect(() => {
   if (!materiaId || !estudiante?.idestudiante) return;
@@ -94,21 +110,6 @@ export function CalificacionesDialog({ open, setOpen, estudiante }: Props) {
   useEffect(() => {
     if (!materiaId || !estudiante?.idestudiante) return;
 
-    console.log(estudiante.idestudiante)
-
-    const fetchCalificacionesMateria = async (materiaId: string) => {
-      const { data, error } = await supabase
-        .from("calificacionasistencia")
-        .select("id, idestudiante, unidad, asistencia, calificacion")
-        .eq("idmateria", materiaId)
-        .eq("idestudiante", estudiante.idestudiante)
-        .order("unidad", { ascending: true });
-
-      if (!error) {
-        setCalificaciones(data);
-      }
-    };
-
     fetchCalificacionesMateria(materiaId);
   }, [materiaId]);
 
@@ -123,7 +124,7 @@ export function CalificacionesDialog({ open, setOpen, estudiante }: Props) {
     setCalificaciones([]);
     setMateriaId(undefined);
     setUnidad("");
-    setAsistencias("");
+    setAsistencias(0);
     setCalificacion(0);
   }, [estudiante?.idestudiante])
 
@@ -218,7 +219,7 @@ export function CalificacionesDialog({ open, setOpen, estudiante }: Props) {
         </DialogHeader>
 
         <div className="grid gap-6 py-2">
-            <MateriaSelect materiaId={materiaId} setMateriaId={setMateriaId} carreraId={estudiante?.idcarrera} />
+            <MateriaSelect semestre={estudiante?.semestre} materiaId={materiaId} setMateriaId={setMateriaId} carreraId={estudiante?.idcarrera} />
 
             <Separator />
 

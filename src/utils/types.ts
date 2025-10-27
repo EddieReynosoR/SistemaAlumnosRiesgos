@@ -8,6 +8,15 @@ export type Estudiante = {
   idcarrera: string
 }
 
+export type EstudianteConCarrera = Estudiante & {
+  carrera:
+    | { idcarrera: string; nombre: string }
+    | { idcarrera: string; nombre: string }[]
+    | null;
+};
+
+
+
 export type Carrera = {
     idcarrera: string
     nombre: string
@@ -36,4 +45,11 @@ export type Materia = {
   iddocente: string | null;
   idcarrera: string | null;
   semestre: number | null;
+};
+
+export type MateriaConCarrera = Materia & {
+  carrera:
+    | { idcarrera: string; nombre: string }
+    | { idcarrera: string; nombre: string }[]
+    | null;
 };

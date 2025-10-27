@@ -17,10 +17,12 @@ export default function MateriaSelect({
   materiaId,
   setMateriaId,
   carreraId,
+  semestre
 }: {
   materiaId: string | undefined;
   setMateriaId: (v: string) => void;
   carreraId: string | undefined;
+  semestre: number | undefined;
 }) {
   const { docente } = useSession();
   const [materias, setMaterias] = useState<Materia[]>([]);
@@ -37,11 +39,13 @@ export default function MateriaSelect({
       }
 
       setLoading(true);
+
       const { data, error } = await supabase
         .from("materia")
         .select("idmateria, nombre")
         .eq("iddocente", docente.iddocente)
         .eq("idcarrera", carreraId)
+        .gte("semestre", semestre)
         .order("nombre", { ascending: true });
 
       if (!mounted) return;
@@ -74,7 +78,6 @@ export default function MateriaSelect({
           />
         </SelectTrigger>
 
-        {/* ajusta el ancho al de tu DialogContent (por ejemplo 700 u 800) */}
         <SelectContent className="w-[800px]">
           {materias.map((m) => (
             <SelectItem key={m.idmateria} value={m.idmateria}>

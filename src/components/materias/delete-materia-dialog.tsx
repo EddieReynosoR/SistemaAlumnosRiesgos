@@ -9,14 +9,14 @@ import {
 import { Button } from "@/components/ui/button";
 import { useState, useCallback } from "react";
 import supabase from "@/utils/supabaseClient";
-import type { Materia } from "@/utils/types";
+import type { MateriaConCarrera } from "@/utils/types";
 
 type Props = {
   open: boolean;
   setOpen: (v: boolean) => void;
-  deleting: Materia | null;
-  setDeleting: (m: Materia | null) => void;
-  setData: React.Dispatch<React.SetStateAction<Materia[]>>;
+  deleting: MateriaConCarrera | null;
+  setDeleting: (m: MateriaConCarrera | null) => void;
+  setData: React.Dispatch<React.SetStateAction<MateriaConCarrera[]>>;
 };
 
 export function DeleteMateriaDialog({
@@ -39,7 +39,7 @@ export function DeleteMateriaDialog({
 
     setLoading(true);
 
-    const prevDataCapture: Materia[] = [];
+    const prevDataCapture: MateriaConCarrera[] = [];
     setData((curr) => {
       prevDataCapture.push(...curr);
       return curr.filter((m) => m.idmateria !== deleting.idmateria);

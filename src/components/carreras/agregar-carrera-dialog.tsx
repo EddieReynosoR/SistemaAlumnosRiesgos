@@ -70,10 +70,12 @@ export default function AgregarCarreraDialog({
 
       if (dbError) {
         setError(dbError.message);
+        alert("❌ No se pudo guardar la carrera");
         return;
       }
 
       onSuccess?.();
+      alert("✅ Carrera agregada correctamente");
       setOpen(false);
       resetForm();
     } catch (err: any) {

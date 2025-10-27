@@ -56,6 +56,7 @@ export default function AgregarFactorDialog({
 
   const validate = () => {
     if (!tipo) return "Selecciona un tipo.";
+    if (!descripcion) return "Indica una descripción."
     return null;
   };
 
@@ -81,10 +82,12 @@ export default function AgregarFactorDialog({
 
       if (dbError) {
         setError(dbError.message);
+        alert("❌ No se pudo guardar el factor.");
         return;
       }
 
       onSuccess?.();
+      alert("✅ Factor agregado correctamente");
       setOpen(false);
       resetForm();
     } catch (err: any) {
@@ -131,7 +134,7 @@ export default function AgregarFactorDialog({
 
             {/* Descripción */}
             <div className="grid gap-2">
-              <Label htmlFor="descripcion">Descripción (opcional)</Label>
+              <Label htmlFor="descripcion">Descripción</Label>
               <Textarea
                 id="descripcion"
                 placeholder="Detalles adicionales del factor…"

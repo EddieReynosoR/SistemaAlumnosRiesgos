@@ -12,17 +12,17 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
-import { type Materia } from "@/utils/types";
+import { type MateriaConCarrera } from "@/utils/types";
 
 type ColumnHandlers = {
-  onEdit: (registro: Materia) => void;
-  onDelete: (registro: Materia) => void;
+  onEdit: (registro: MateriaConCarrera) => void;
+  onDelete: (registro: MateriaConCarrera) => void;
 };
 
 export const getColumns = ({
   onEdit,
   onDelete
-}: ColumnHandlers): ColumnDef<Materia>[] => [
+}: ColumnHandlers): ColumnDef<MateriaConCarrera>[] => [
   {
     accessorKey: "nombre",
     header: "Nombre",
@@ -49,6 +49,10 @@ export const getColumns = ({
       );
     },
     size: 80,
+  },
+  {
+    accessorKey: "carrera.nombre",
+    header: "Carrera"
   },
   {
     id: "actions",

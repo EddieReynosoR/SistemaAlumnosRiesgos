@@ -116,14 +116,16 @@ export default function AgregarMateriaDialog({
 
       if (dbError) {
         setError(dbError.message);
+        alert("❌ No se pudo guardar la materia");
         return;
       }
 
       onSuccess?.();
+      alert("✅ Materia agregada correctamente");
       setOpen(false);
       resetForm();
     } catch (err: any) {
-      setError(err?.message ?? "Error desconocido al guardar.");
+      setError(err?.message ?? "Error desconocido al guardar");
     } finally {
       setSaving(false);
     }

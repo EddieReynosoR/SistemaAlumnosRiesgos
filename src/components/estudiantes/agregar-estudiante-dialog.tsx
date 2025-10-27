@@ -45,6 +45,12 @@ export function AgregarEstudianteDialog({ onSuccess }: Props) {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (!selectedCarrera || selectedCarrera === "") {
+      alert("❌ El alumno debe de pertenecer a una carrera.");
+      return;
+    }
+
     setSaving(true);
 
     const form = new FormData(e.currentTarget as HTMLFormElement);
@@ -52,6 +58,7 @@ export function AgregarEstudianteDialog({ onSuccess }: Props) {
       numerocontrol: form.get("ncontrol"),
       nombre: form.get("nombre"),
       apellidopaterno: form.get("apellidoPaterno"),
+      apellidomaterno: form.get("apellidoMaterno"),
       semestre: Number(form.get("semestre")),
       idcarrera: selectedCarrera ?? null
     };
@@ -99,6 +106,11 @@ export function AgregarEstudianteDialog({ onSuccess }: Props) {
           <div className="grid gap-3">
             <Label htmlFor="apellidoPaterno">Apellido paterno</Label>
             <Input id="apellidoPaterno" name="apellidoPaterno" placeholder="Reynoso" required />
+          </div>
+
+          <div className="grid gap-3">
+            <Label htmlFor="apellidoMaterno">Apellido materno (opcional)</Label>
+            <Input id="apellidoMaterno" name="apellidoMaterno" placeholder="Reynoso" />
           </div>
 
           <div className="grid gap-3">

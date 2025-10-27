@@ -12,14 +12,14 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectTrigger, SelectContent, SelectValue, SelectItem } from "@/components/ui/select";
 import { useState, useCallback, useEffect } from "react";
 import supabase from "@/utils/supabaseClient";
-import type { Materia } from "@/utils/types";
+import type { MateriaConCarrera } from "@/utils/types";
 
 type Carrera = { idcarrera: string; nombre: string };
 
 type EditMateriaDialogProps = {
-  editing: Materia | null;
-  setEditing: (m: Materia | null) => void;
-  setData: React.Dispatch<React.SetStateAction<Materia[]>>;
+  editing: MateriaConCarrera | null;
+  setEditing: (m: MateriaConCarrera | null) => void;
+  setData: React.Dispatch<React.SetStateAction<MateriaConCarrera[]>>;
 };
 
 export function EditMateriaDialog({ editing, setEditing, setData }: EditMateriaDialogProps) {
@@ -28,8 +28,12 @@ export function EditMateriaDialog({ editing, setEditing, setData }: EditMateriaD
 
   const [carreras, setCarreras] = useState<Carrera[]>([]);
   const [carrerasLoading, setCarrerasLoading] = useState(false);
+
   const [carreraId, setCarreraId] = useState<string>("");
   const [semestre, setSemestre] = useState<number>(1);
+
+  const [lockCarrera, setLockCarrera] = useState<boolean>(false);
+  const [lockCheckLoading, setLockCheckLoading] = useState<boolean>(false);
 
   useEffect(() => {
     let mounted = true;
@@ -51,7 +55,38 @@ export function EditMateriaDialog({ editing, setEditing, setData }: EditMateriaD
   useEffect(() => {
     if (editing?.idcarrera) setCarreraId(String(editing.idcarrera));
     else setCarreraId("");
+
+    if (editing?.semestre) setSemestre(Number(editing.semestre));
   }, [editing]);
+
+  useEffect(() => {
+    let mounted = true;
+
+    (async () => {
+      if (!editing?.idmateria) { 
+        if (mounted) setLockCarrera(false);
+        return;
+      }
+
+      setLockCheckLoading(true);
+      const { count, error } = await supabase
+        .from("calificacionasistencia")
+        .select("*", { count: "exact", head: true })
+        .eq("idmateria", editing.idmateria);
+
+      if (!mounted) return;
+
+      if (error) {
+        setLockCarrera(true);
+        setError(prev => prev ?? "No se pudo verificar calificaciones de la materia.");
+      } else {
+        setLockCarrera((count ?? 0) > 0);
+      }
+      setLockCheckLoading(false);
+    })();
+
+    return () => { mounted = false; };
+  }, [editing?.idmateria]);
 
   const handleSaveEdit = useCallback(
     async (e: React.FormEvent<HTMLFormElement>) => {
@@ -63,6 +98,11 @@ export function EditMateriaDialog({ editing, setEditing, setData }: EditMateriaD
       const idcarrera = String(form.get("idcarrera") ?? "").trim();
 
       if (!nombre || !semestre || !idcarrera) return;
+
+      if (lockCarrera && idcarrera !== String(editing.idcarrera)) {
+        setError("No puedes cambiar la carrera o el semestre porque esta materia ya tiene calificaciones registradas.");
+        return;
+      }
 
       setSaving(true);
       const { error } = await supabase
@@ -79,13 +119,15 @@ export function EditMateriaDialog({ editing, setEditing, setData }: EditMateriaD
 
       setData((prev) =>
         prev.map((m) =>
-          m.idmateria === editing.idmateria ? { ...m, nombre, semestre: semestre, idcarrera } : m
+          m.idmateria === editing.idmateria
+            ? { ...m, nombre, semestre: semestre, idcarrera }
+            : m
         )
       );
 
       setEditing(null);
     },
-    [editing, setEditing, setData, semestre]
+    [editing, setEditing, setData, semestre, lockCarrera]
   );
 
   return (
@@ -114,7 +156,8 @@ export function EditMateriaDialog({ editing, setEditing, setData }: EditMateriaD
               <Label htmlFor="semestre">Semestre</Label>
               <Select
                 defaultValue={editing ? String(editing.semestre) : ""}
-                onValueChange={(value) => setSemestre(Number(value)) }
+                onValueChange={(value) => setSemestre(Number(value))}
+                disabled={lockCarrera || lockCheckLoading}
               >
                 <SelectTrigger id="semestre">
                   <SelectValue placeholder="Selecciona un semestre" />
@@ -134,10 +177,18 @@ export function EditMateriaDialog({ editing, setEditing, setData }: EditMateriaD
               <Select
                 value={carreraId}
                 onValueChange={setCarreraId}
-                disabled={carrerasLoading}
+                disabled={carrerasLoading || lockCarrera || lockCheckLoading}
               >
                 <SelectTrigger id="idcarrera">
-                  <SelectValue placeholder={carrerasLoading ? "Cargando carreras..." : "Selecciona una carrera"} />
+                  <SelectValue
+                    placeholder={
+                      carrerasLoading
+                        ? "Cargando carreras..."
+                        : lockCheckLoading
+                        ? "Verificando calificaciones…"
+                        : "Selecciona una carrera"
+                    }
+                  />
                 </SelectTrigger>
                 <SelectContent>
                   {carreras.map((c) => (
@@ -147,8 +198,12 @@ export function EditMateriaDialog({ editing, setEditing, setData }: EditMateriaD
                   ))}
                 </SelectContent>
               </Select>
-              {/* Hidden para FormData */}
               <input type="hidden" name="idcarrera" value={carreraId} />
+              {lockCarrera && (
+                <p className="text-xs text-muted-foreground">
+                  Esta materia ya tiene calificaciones registradas; no es posible cambiar la carrera o semestre.
+                </p>
+              )}
             </div>
           </div>
 

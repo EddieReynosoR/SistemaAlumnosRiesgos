@@ -1,5 +1,4 @@
 import { type ColumnDef } from "@tanstack/react-table";
-import { type Estudiante } from "@/utils/types";
 import { MoreHorizontal } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -12,15 +11,17 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
+import { type EstudianteConCarrera } from "@/utils/types";
+
 type ColumnHandlers = {
-  onFactor: (est: Estudiante) => void;
-  onCalificacion: (est: Estudiante) => void;
-  onEdit: (est: Estudiante) => void;
-  onDelete: (est: Estudiante) => void;
+  onFactor: (est: EstudianteConCarrera) => void;
+  onCalificacion: (est: EstudianteConCarrera) => void;
+  onEdit: (est: EstudianteConCarrera) => void;
+  onDelete: (est: EstudianteConCarrera) => void;
 };
 
 
-export const getColumns = ({ onFactor, onCalificacion, onEdit, onDelete }: ColumnHandlers): ColumnDef<Estudiante>[] => [
+export const getColumns = ({ onFactor, onCalificacion, onEdit, onDelete }: ColumnHandlers): ColumnDef<EstudianteConCarrera>[] => [
   {
     accessorKey: "numerocontrol",
     header: "Número de Control",
@@ -36,6 +37,10 @@ export const getColumns = ({ onFactor, onCalificacion, onEdit, onDelete }: Colum
   {
     accessorKey: "apellidomaterno",
     header: "Apellido Materno",
+  },
+  {
+    accessorKey: "carrera.nombre",
+    header: "Carrera",
   },
   {
     accessorKey: "semestre",

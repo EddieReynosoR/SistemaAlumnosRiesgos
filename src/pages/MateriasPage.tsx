@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import type { Materia } from "@/utils/types";
+import type { MateriaConCarrera } from "@/utils/types";
 import { useState, useCallback, useMemo, useEffect } from "react";
 import supabase from "@/utils/supabaseClient";
 import { getColumns } from "@/components/materias/table/columns";
@@ -9,12 +9,12 @@ import { EditMateriaDialog } from "@/components/materias/editar-materia-dialog";
 import { DeleteMateriaDialog } from "@/components/materias/delete-materia-dialog";
 
 export default function MateriasPage() {
-    const [data, setData] = useState<Materia[]>([]);
+    const [data, setData] = useState<MateriaConCarrera[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
-    const [editing, setEditing] = useState<Materia | null>(null);
-      const [deleting, setDeleting] = useState<Materia | null>(null);
+    const [editing, setEditing] = useState<MateriaConCarrera | null>(null);
+      const [deleting, setDeleting] = useState<MateriaConCarrera | null>(null);
       const [deleteDialog, setDeleteDialog] = useState<boolean>(false);
 
       const { docente } = useSession();
@@ -27,15 +27,23 @@ export default function MateriasPage() {
 
         const { data: rows, error } = await supabase
             .from("materia")
-            .select("idmateria, nombre, iddocente, idcarrera, semestre")
+            .select(`idmateria,
+                nombre,
+                iddocente,
+                idcarrera,
+                semestre,
+                carrera (
+                    idcarrera,
+                    nombre
+                )`)
             .eq("iddocente", docente.iddocente)
             .order("nombre", { ascending: true });
 
         if (error) setError(error.message);
-        else setData((rows ?? []) as Materia[]);
+        else setData((rows ?? []) as MateriaConCarrera[]);
 
         if (error) setError(error.message);
-        else setData((rows ?? []) as Materia[]);
+        else setData((rows ?? []) as MateriaConCarrera[]);
         
         setLoading(false);
   }, [docente]);
@@ -44,12 +52,12 @@ export default function MateriasPage() {
         fetchMaterias();
     }, [fetchMaterias]);
 
-  const handleDelete = useCallback((est: Materia) => {
+  const handleDelete = useCallback((est: MateriaConCarrera) => {
       setDeleting(est);
       setDeleteDialog(true);
     }, []);
 
-    const handleEdit = useCallback((est: Materia) => {
+    const handleEdit = useCallback((est: MateriaConCarrera) => {
         setEditing(est);
       }, []);
 

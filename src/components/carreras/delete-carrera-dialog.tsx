@@ -9,17 +9,17 @@ import {
 import { Button } from "@/components/ui/button";
 import { useState, useCallback } from "react";
 import supabase from "@/utils/supabaseClient";
-import type { Materia } from "@/utils/types";
+import type { Carrera } from "@/utils/types";
 
 type Props = {
   open: boolean;
   setOpen: (v: boolean) => void;
-  deleting: Materia | null;
-  setDeleting: (m: Materia | null) => void;
-  setData: React.Dispatch<React.SetStateAction<Materia[]>>;
+  deleting: Carrera | null;
+  setDeleting: (m: Carrera | null) => void;
+  setData: React.Dispatch<React.SetStateAction<Carrera[]>>;
 };
 
-export function DeleteMateriaDialog({
+export function DeleteCarreraDialog({
   open,
   setOpen,
   deleting,
@@ -29,7 +29,7 @@ export function DeleteMateriaDialog({
   const [loading, setLoading] = useState(false);
 
   const onClose = useCallback(() => {
-    if (loading) return; // evitar cerrar mientras borra
+    if (loading) return;
     setDeleting(null);
     setOpen(false);
   }, [loading, setDeleting, setOpen]);
@@ -39,23 +39,22 @@ export function DeleteMateriaDialog({
 
     setLoading(true);
 
-    const prevDataCapture: Materia[] = [];
+    const prevDataCapture: Carrera[] = [];
     setData((curr) => {
       prevDataCapture.push(...curr);
-      return curr.filter((m) => m.idmateria !== deleting.idmateria);
+      return curr.filter((c) => c.idcarrera !== deleting.idcarrera);
     });
 
     const { error } = await supabase
-      .from("materia")
+      .from("carrera")
       .delete()
-      .eq("idmateria", deleting.idmateria);
+      .eq("idcarrera", deleting.idcarrera);
 
     setLoading(false);
     setDeleting(null);
     setOpen(false);
 
     if (error) {
-      // rollback
       setData(prevDataCapture);
       alert("No se pudo eliminar la materia: " + error.message);
     }
@@ -65,11 +64,11 @@ export function DeleteMateriaDialog({
     <Dialog open={open} onOpenChange={(o) => !o && onClose()}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Eliminar materia</DialogTitle>
+          <DialogTitle>Eliminar carrera</DialogTitle>
           <DialogDescription>
             Esta acción eliminará{" "}
             <span className="font-medium">
-              {deleting?.nombre ?? "esta materia"}
+              {deleting?.nombre ?? "esta carrera"}
             </span>
             . No podrás deshacerlo.
           </DialogDescription>

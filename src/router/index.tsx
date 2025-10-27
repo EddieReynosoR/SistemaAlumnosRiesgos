@@ -9,6 +9,7 @@ import App from "../App.tsx";
 import EstudiantesPage from "@/pages/EstudiantesPage.tsx";
 import MateriasPage from "@/pages/MateriasPage.tsx";
 import FactoresPage from "@/pages/FactoresPage.tsx";
+import CarrerasPage from "@/pages/CarrerasPage.tsx";
 
 const router = createBrowserRouter([
   {
@@ -46,6 +47,10 @@ const router = createBrowserRouter([
           {
             path: "/factores",
             element: <FactoresPage />
+          },
+          {
+            path: "/carreras",
+            element: <CarrerasPage />
           }
         ],
       },

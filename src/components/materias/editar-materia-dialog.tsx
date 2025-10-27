@@ -26,13 +26,12 @@ export function EditMateriaDialog({ editing, setEditing, setData }: EditMateriaD
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Carreras
   const [carreras, setCarreras] = useState<Carrera[]>([]);
   const [carrerasLoading, setCarrerasLoading] = useState(false);
   const [carreraId, setCarreraId] = useState<string>("");
+  const [semestre, setSemestre] = useState<number>(1);
 
   useEffect(() => {
-    // cargar carreras
     let mounted = true;
     (async () => {
       setCarrerasLoading(true);
@@ -49,7 +48,6 @@ export function EditMateriaDialog({ editing, setEditing, setData }: EditMateriaD
     return () => { mounted = false; };
   }, []);
 
-  // cuando se abre con una materia, setear carrera inicial
   useEffect(() => {
     if (editing?.idcarrera) setCarreraId(String(editing.idcarrera));
     else setCarreraId("");
@@ -62,7 +60,6 @@ export function EditMateriaDialog({ editing, setEditing, setData }: EditMateriaD
 
       const form = new FormData(e.currentTarget);
       const nombre = String(form.get("nombre") ?? "").trim();
-      const semestre = Number(form.get("semestre") ?? 0);
       const idcarrera = String(form.get("idcarrera") ?? "").trim();
 
       if (!nombre || !semestre || !idcarrera) return;
@@ -70,7 +67,7 @@ export function EditMateriaDialog({ editing, setEditing, setData }: EditMateriaD
       setSaving(true);
       const { error } = await supabase
         .from("materia")
-        .update({ nombre, semestre, idcarrera })
+        .update({ nombre, semestre: semestre, idcarrera })
         .eq("idmateria", editing.idmateria);
 
       setSaving(false);
@@ -80,16 +77,15 @@ export function EditMateriaDialog({ editing, setEditing, setData }: EditMateriaD
         return;
       }
 
-      // Actualiza localmente la tabla
       setData((prev) =>
         prev.map((m) =>
-          m.idmateria === editing.idmateria ? { ...m, nombre, semestre, idcarrera } : m
+          m.idmateria === editing.idmateria ? { ...m, nombre, semestre: semestre, idcarrera } : m
         )
       );
 
       setEditing(null);
     },
-    [editing, setEditing, setData]
+    [editing, setEditing, setData, semestre]
   );
 
   return (
@@ -104,7 +100,6 @@ export function EditMateriaDialog({ editing, setEditing, setData }: EditMateriaD
           </DialogHeader>
 
           <div className="grid gap-4 py-4">
-            {/* Nombre */}
             <div className="grid gap-2">
               <Label htmlFor="nombre">Nombre de la materia</Label>
               <Input
@@ -115,29 +110,25 @@ export function EditMateriaDialog({ editing, setEditing, setData }: EditMateriaD
               />
             </div>
 
-            {/* Semestre */}
             <div className="grid gap-2">
               <Label htmlFor="semestre">Semestre</Label>
               <Select
                 defaultValue={editing ? String(editing.semestre) : ""}
-                onValueChange={() => { /* solo para UI; usamos hidden input */ }}
+                onValueChange={(value) => setSemestre(Number(value)) }
               >
                 <SelectTrigger id="semestre">
                   <SelectValue placeholder="Selecciona un semestre" />
                 </SelectTrigger>
                 <SelectContent>
-                  {[1,2,3,4,5,6,7,8,9,10].map((num) => (
+                  {[1,2,3,4,5,6,7,8,9,10,11,12].map((num) => (
                     <SelectItem key={num} value={String(num)}>
                       {num}
                     </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
-              {/* Hidden para FormData */}
-              <input type="hidden" name="semestre" value={editing ? String(editing.semestre) : ""} />
             </div>
 
-            {/* Carrera */}
             <div className="grid gap-2">
               <Label htmlFor="idcarrera">Carrera</Label>
               <Select

@@ -1,7 +1,6 @@
 import { type ColumnDef } from "@tanstack/react-table";
 import { MoreHorizontal } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -11,42 +10,22 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
-import { type Factor, FactorTipo } from "@/utils/types";
+import { type Carrera } from "@/utils/types";
 
 type ColumnHandlers = {
-  onEdit: (registro: Factor) => void;
-  onDelete: (registro: Factor) => void;
+  onEdit: (registro: Carrera) => void;
+  onDelete: (registro: Carrera) => void;
 };
 
-const categoriaLabel: Record<string, string> = Object.values(FactorTipo).reduce(
-  (acc, tipo) => {
-    acc[tipo] = tipo.charAt(0).toUpperCase() + tipo.slice(1);
-    return acc;
-  },
-  {} as Record<string, string>
-);
-
-export const getColumns = ({ onEdit, onDelete }: ColumnHandlers): ColumnDef<Factor>[] => [
+export const getColumns = ({ onEdit, onDelete }: ColumnHandlers): ColumnDef<Carrera>[] => [
   {
-    accessorKey: "descripcion",
-    header: "Descripción",
+    accessorKey: "nombre",
+    header: "Nombre",
     cell: ({ row }) => (
-      <span className="block max-w-[520px] truncate" title={row.original.descripcion}>
-        {row.original.descripcion}
+      <span className="block max-w-[520px] truncate" title={row.original.nombre}>
+        {row.original.nombre}
       </span>
     ),
-  },
-  {
-    accessorKey: "categoria",
-    header: "Categoría",
-    cell: ({ row }) => {
-      const categoria = row.original.categoria;
-      return (
-        <Badge variant="secondary" className="capitalize">
-          {categoriaLabel[categoria] ?? categoria}
-        </Badge>
-      );
-    },
   },
   {
     id: "actions",

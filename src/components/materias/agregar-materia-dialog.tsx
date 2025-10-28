@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -22,16 +22,18 @@ import {
 import supabase from "@/utils/supabaseClient";
 import { useSession } from "@/context/SessionContext";
 
-type Carrera = {
-  idcarrera: string;
-  nombre: string;
-};
+import { type Carrera } from "@/utils/types";
 
 type Props = {
   onSuccess?: () => void;
   triggerLabel?: string;
   defaultSemestre?: number;
 };
+
+function clamp(n: number, min: number, max: number) {
+  if (Number.isNaN(n)) return min;
+  return Math.max(min, Math.min(max, n));
+}
 
 export default function AgregarMateriaDialog({
   onSuccess,
@@ -42,7 +44,7 @@ export default function AgregarMateriaDialog({
 
   const [nombre, setNombre] = useState("");
   const [cantidadUnidades, setCantidadUnidades] = useState<number>(1);
-  const [semestre, setSemestre] = useState<number>(1);
+  const [semestre, setSemestre] = useState<number>(defaultSemestre ?? 1);
   const [carreras, setCarreras] = useState<Carrera[]>([]);
   const [carreraId, setCarreraId] = useState<string>("");
 
@@ -52,10 +54,18 @@ export default function AgregarMateriaDialog({
 
   const { docente } = useSession();
 
+  const selectedCarrera = useMemo(
+    () => carreras.find((c) => c.idcarrera === carreraId) ?? null,
+    [carreras, carreraId]
+  );
+
+  const maxSemestres = selectedCarrera?.cantidadsemestres ?? 12;
+
   const resetForm = useCallback(() => {
     setNombre("");
-    setSemestre(1);
+    setSemestre(defaultSemestre ?? 1);
     setCarreraId("");
+    setCantidadUnidades(1);
     setError(null);
   }, [defaultSemestre]);
 
@@ -70,7 +80,7 @@ export default function AgregarMateriaDialog({
       setLoadingCarreras(true);
       const { data, error } = await supabase
         .from("carrera")
-        .select("idcarrera, nombre")
+        .select("idcarrera, nombre, cantidadsemestres")
         .order("nombre", { ascending: true });
 
       if (error) {
@@ -83,11 +93,19 @@ export default function AgregarMateriaDialog({
     fetchCarreras();
   }, [open]);
 
+  // Si cambia la carrera, asegurar que el semestre no exceda su tope
+  useEffect(() => {
+    if (!selectedCarrera) return;
+    setSemestre((prev) => clamp(prev, 1, selectedCarrera.cantidadsemestres));
+  }, [selectedCarrera]);
+
   const validate = () => {
     if (!nombre.trim()) return "El nombre de la materia es obligatorio.";
     if (!carreraId) return "Selecciona una carrera.";
-    if (semestre < 1 || semestre > 12)
-      return "El semestre debe estar entre 1 y 12.";
+    if (semestre < 1 || semestre > maxSemestres)
+      return `El semestre debe estar entre 1 y ${maxSemestres} para la carrera seleccionada.`;
+    if (cantidadUnidades < 1 || cantidadUnidades > 6)
+      return "La cantidad de unidades debe estar entre 1 y 6.";
     return null;
   };
 
@@ -102,15 +120,15 @@ export default function AgregarMateriaDialog({
     }
 
     try {
-        if (!docente?.iddocente) return;
+      if (!docente?.iddocente) return;
       setSaving(true);
 
       const payload = {
         nombre: nombre.trim(),
         iddocente: docente.iddocente,
         idcarrera: carreraId,
-        semestre: semestre,
-        cantidadunidades: cantidadUnidades
+        semestre: clamp(semestre, 1, maxSemestres), // seguridad adicional
+        cantidadunidades: cantidadUnidades,
       };
 
       const { error: dbError } = await supabase.from("materia").insert([payload]);
@@ -160,15 +178,15 @@ export default function AgregarMateriaDialog({
             </div>
 
             <div className="grid gap-2">
-              <Label htmlFor="nombre">Cantidad de unidades</Label>
+              <Label htmlFor="cantidadunidades">Cantidad de unidades</Label>
               <Input
                 id="cantidadunidades"
                 name="cantidadunidades"
+                type="number"
                 min={1}
                 max={6}
-                type="number"
-                defaultValue={1}
-                onChange={(e) => setCantidadUnidades(Number(e.target.value))}
+                value={cantidadUnidades}
+                onChange={(e) => setCantidadUnidades(clamp(Number(e.target.value), 1, 6))}
               />
             </div>
 
@@ -189,11 +207,17 @@ export default function AgregarMateriaDialog({
                 <SelectContent>
                   {carreras.map((c) => (
                     <SelectItem key={c.idcarrera} value={c.idcarrera}>
-                      {c.nombre}
+                      {c.nombre}{" "}
+                      {Number.isFinite(c.cantidadsemestres) ? `— ${c.cantidadsemestres} sem.` : ""}
                     </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
+              {carreraId && (
+                <p className="text-xs text-muted-foreground">
+                  Máximo permitido para esta carrera: {maxSemestres} semestre(s).
+                </p>
+              )}
             </div>
 
             <div className="grid gap-2">
@@ -202,17 +226,20 @@ export default function AgregarMateriaDialog({
                 id="semestre"
                 type="number"
                 min={1}
-                max={12}
-                defaultValue={1}
+                max={maxSemestres}
                 value={semestre}
-                onChange={(e) => {
-                  const val = e.target.value;
-                  setSemestre(Number(val));
-                }}
+                onChange={(e) =>
+                  setSemestre(clamp(Number(e.target.value), 1, maxSemestres))
+                }
+                disabled={!carreraId} // evita elegir semestre sin carrera
               />
+              {!carreraId && (
+                <p className="text-xs text-muted-foreground">
+                  Selecciona primero una carrera para ver el tope de semestres.
+                </p>
+              )}
             </div>
 
-            {/* Error */}
             {error && <p className="text-sm text-red-600">{error}</p>}
           </div>
 

@@ -51,28 +51,63 @@ export function CalificacionesDialog({ open, setOpen, estudiante }: Props) {
       return;
     }
 
-    const { error } = await supabase.from("calificacionasistencia").insert([
-      {
-        idestudiante: estudiante?.idestudiante,
-        idmateria: materiaId,
-        unidad,
-        asistencia: asistencias,
-        calificacion: calificacion,
-      },
-    ]);
+    try {
+      const { count: unidadesRegistradas, error: countError } = await supabase
+        .from("calificacionasistencia")
+        .select("*", { count: "exact", head: true })
+        .eq("idmateria", materiaId)
+        .eq("idestudiante", estudiante?.idestudiante);
 
-    if (error) {
-      console.error("Error al insertar registro:", error);
-      alert("Ocurrió un error al agregar la calificación.");
-    } else {
+      if (countError) {
+        console.error("Error al contar unidades:", countError);
+        alert("No se pudo verificar el número de unidades registradas.");
+        return;
+      }
+
+      const { data: materia, error: materiaError } = await supabase
+        .from("materia")
+        .select("cantidadunidades, nombre")
+        .eq("idmateria", materiaId)
+        .single();
+
+      if (materiaError || !materia) {
+        console.error("Error al obtener materia:", materiaError);
+        alert("No se pudo obtener la información de la materia.");
+        return;
+      }
+
+      if ((unidadesRegistradas ?? 0) >= (materia.cantidadunidades ?? 0)) {
+        alert(`Ya se alcanzó el límite de ${materia.cantidadunidades} unidades para la materia ${materia.nombre}.`);
+        return;
+      }
+
+      const { error } = await supabase.from("calificacionasistencia").insert([
+        {
+          idestudiante: estudiante?.idestudiante,
+          idmateria: materiaId,
+          unidad,
+          asistencia: asistencias,
+          calificacion,
+        },
+      ]);
+
+      if (error) {
+        console.error("Error al insertar registro:", error);
+        alert("Ocurrió un error al agregar la calificación.");
+        return;
+      }
+
       alert("Calificación agregada correctamente ✅");
 
       setAsistencias(0);
       setCalificacion(0);
-      setUnidad("");
+      setUnidad((u) => (typeof u === "number" ? u + 1 : 1));
       fetchCalificacionesMateria(materiaId);
+    } catch (e) {
+      console.error("Error general en handleAgregar:", e);
+      alert("Ocurrió un error inesperado.");
     }
-  }
+  };
 
   const fetchCalificacionesMateria = async (materiaId: string) => {
     if (!materiaId || !estudiante?.idestudiante) return;
@@ -90,22 +125,47 @@ export function CalificacionesDialog({ open, setOpen, estudiante }: Props) {
     };
   
   useEffect(() => {
-  if (!materiaId || !estudiante?.idestudiante) return;
+    if (!materiaId || !estudiante?.idestudiante) return;
 
-  const fetchUnidades = async () => {
-    const { count, error } = await supabase
-      .from("calificacionasistencia")
-      .select("*", { count: "exact", head: true })
-      .eq("idmateria", materiaId)
-      .eq("idestudiante", estudiante.idestudiante);
+    const fetchUnidades = async () => {
+      try {
+        const { count: unidadesRegistradas, error: countError } = await supabase
+          .from("calificacionasistencia")
+          .select("*", { count: "exact", head: true })
+          .eq("idmateria", materiaId)
+          .eq("idestudiante", estudiante.idestudiante);
 
-    if (!error && count !== null) {
-      setUnidad(count + 1);
-    }
-  };
+        if (countError) {
+          console.error("Error al contar unidades:", countError);
+          return;
+        }
 
-  fetchUnidades();
-}, [materiaId]);
+        const { data: materia, error: materiaError } = await supabase
+          .from("materia")
+          .select("cantidadunidades, nombre")
+          .eq("idmateria", materiaId)
+          .single();
+
+        if (materiaError || !materia) {
+          console.error("Error al obtener materia:", materiaError);
+          return;
+        }
+
+        const limite = materia.cantidadunidades ?? 0;
+        const actuales = unidadesRegistradas ?? 0;
+
+        if (actuales < limite) {
+          setUnidad(actuales + 1); // siguiente unidad disponible
+        } else {
+          setUnidad(limite);
+        }
+      } catch (e) {
+        console.error("Error general en fetchUnidades:", e);
+      }
+    };
+
+    fetchUnidades();
+  }, [materiaId, estudiante?.idestudiante]);
 
   useEffect(() => {
     if (!materiaId || !estudiante?.idestudiante) return;
@@ -155,7 +215,6 @@ export function CalificacionesDialog({ open, setOpen, estudiante }: Props) {
       return;
     }
 
-    // Optimista
     setCalificaciones((prev) =>
       prev.map((x) =>
         x.id === current.id ? { ...x, asistencia: a, calificacion: c } : x
@@ -168,7 +227,6 @@ export function CalificacionesDialog({ open, setOpen, estudiante }: Props) {
       .eq("id", current.id);
 
     if (error) {
-      // Revertir si falla
       setCalificaciones((prev) =>
         prev.map((x) => (x.id === current.id ? current : x))
       );

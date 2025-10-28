@@ -32,9 +32,11 @@ export default function MateriasPage() {
                 iddocente,
                 idcarrera,
                 semestre,
+                cantidadunidades,
                 carrera (
                     idcarrera,
-                    nombre
+                    nombre,
+                    cantidadsemestres
                 )`)
             .eq("iddocente", docente.iddocente)
             .order("nombre", { ascending: true });
@@ -72,7 +74,7 @@ export default function MateriasPage() {
     return (
         <main className="p-6 space-y-4">
             <div className="flex items-center justify-between">
-                <h1 className="text-xl font-semibold">Estudiantes</h1>
+                <h1 className="text-xl font-semibold">Materias</h1>
                 <div className="flex gap-2">
                 <Button variant="outline" onClick={fetchMaterias} disabled={loading}>
                     {loading ? "Cargando..." : "Refrescar"}

@@ -27,7 +27,7 @@ export default function CarrerasPage() {
 
         const { data: rows, error } = await supabase
             .from("carrera")
-            .select("idcarrera, nombre")
+            .select("idcarrera, nombre, cantidadsemestres")
             .order("nombre", { ascending: true });
 
         if (error) setError(error.message);

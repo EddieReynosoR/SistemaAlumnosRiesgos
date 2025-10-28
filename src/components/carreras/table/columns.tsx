@@ -28,6 +28,10 @@ export const getColumns = ({ onEdit, onDelete }: ColumnHandlers): ColumnDef<Carr
     ),
   },
   {
+    accessorKey: "cantidadsemestres",
+    header: "Cantidad semestres",
+  },
+  {
     id: "actions",
     header: "Acciones",
     cell: ({ row }) => {

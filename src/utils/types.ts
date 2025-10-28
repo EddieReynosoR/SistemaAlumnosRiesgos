@@ -20,6 +20,7 @@ export type EstudianteConCarrera = Estudiante & {
 export type Carrera = {
     idcarrera: string
     nombre: string
+    cantidadsemestres: number
 }
 
 export type Factor = {
@@ -45,11 +46,12 @@ export type Materia = {
   iddocente: string | null;
   idcarrera: string | null;
   semestre: number | null;
+  cantidadunidades: number;
 };
 
 export type MateriaConCarrera = Materia & {
   carrera:
-    | { idcarrera: string; nombre: string }
-    | { idcarrera: string; nombre: string }[]
+    | { idcarrera: string; nombre: string; cantidadsemestres: number; }
+    | { idcarrera: string; nombre: string; cantidadsemestres: number; }[]
     | null;
 };

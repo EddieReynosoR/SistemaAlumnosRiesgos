@@ -28,6 +28,7 @@ export default function AgregarCarreraDialog({
 }: Props) {
   const [open, setOpen] = useState(false);
   const [nombre, setNombre] = useState("");
+  const [cantidadSemestres, setCantidadSemestres] = useState<number>(1);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -64,6 +65,7 @@ export default function AgregarCarreraDialog({
 
       const payload = {
         nombre: nombre.trim(),
+        cantidadsemestres: cantidadSemestres
       };
 
       const { error: dbError } = await supabase.from("carrera").insert([payload]);
@@ -109,6 +111,16 @@ export default function AgregarCarreraDialog({
                 value={nombre}
                 onChange={(e) => setNombre(e.target.value)}
                 autoFocus
+              />
+            </div>
+
+            <div className="grid gap-2">
+              <Label htmlFor="nombre">Cantidad de semestres *</Label>
+              <Input
+                id="cantidadsemestres"
+                min={1}
+                max={12}
+                onChange={(e) => setCantidadSemestres(Number(e.target.value))}
               />
             </div>
 

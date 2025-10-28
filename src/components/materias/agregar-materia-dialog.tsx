@@ -30,18 +30,19 @@ type Carrera = {
 type Props = {
   onSuccess?: () => void;
   triggerLabel?: string;
-  defaultSemestre?: number | "";
+  defaultSemestre?: number;
 };
 
 export default function AgregarMateriaDialog({
   onSuccess,
   triggerLabel = "Agregar materia",
-  defaultSemestre = "",
+  defaultSemestre = 1,
 }: Props) {
   const [open, setOpen] = useState(false);
 
   const [nombre, setNombre] = useState("");
-  const [semestre, setSemestre] = useState<number | "">(defaultSemestre);
+  const [cantidadUnidades, setCantidadUnidades] = useState<number>(1);
+  const [semestre, setSemestre] = useState<number>(1);
   const [carreras, setCarreras] = useState<Carrera[]>([]);
   const [carreraId, setCarreraId] = useState<string>("");
 
@@ -53,7 +54,7 @@ export default function AgregarMateriaDialog({
 
   const resetForm = useCallback(() => {
     setNombre("");
-    setSemestre(defaultSemestre);
+    setSemestre(1);
     setCarreraId("");
     setError(null);
   }, [defaultSemestre]);
@@ -63,7 +64,6 @@ export default function AgregarMateriaDialog({
     if (!value) resetForm();
   };
 
-  // Cargar carreras al abrir el diálogo
   useEffect(() => {
     const fetchCarreras = async () => {
       if (!open) return;
@@ -86,7 +86,7 @@ export default function AgregarMateriaDialog({
   const validate = () => {
     if (!nombre.trim()) return "El nombre de la materia es obligatorio.";
     if (!carreraId) return "Selecciona una carrera.";
-    if (semestre !== "" && (semestre < 1 || semestre > 12))
+    if (semestre < 1 || semestre > 12)
       return "El semestre debe estar entre 1 y 12.";
     return null;
   };
@@ -109,7 +109,8 @@ export default function AgregarMateriaDialog({
         nombre: nombre.trim(),
         iddocente: docente.iddocente,
         idcarrera: carreraId,
-        semestre: semestre === "" ? null : semestre,
+        semestre: semestre,
+        cantidadunidades: cantidadUnidades
       };
 
       const { error: dbError } = await supabase.from("materia").insert([payload]);
@@ -147,7 +148,6 @@ export default function AgregarMateriaDialog({
           </DialogHeader>
 
           <div className="grid gap-4 py-2">
-            {/* Nombre */}
             <div className="grid gap-2">
               <Label htmlFor="nombre">Nombre *</Label>
               <Input
@@ -159,7 +159,19 @@ export default function AgregarMateriaDialog({
               />
             </div>
 
-            {/* Carrera */}
+            <div className="grid gap-2">
+              <Label htmlFor="nombre">Cantidad de unidades</Label>
+              <Input
+                id="cantidadunidades"
+                name="cantidadunidades"
+                min={1}
+                max={6}
+                type="number"
+                defaultValue={1}
+                onChange={(e) => setCantidadUnidades(Number(e.target.value))}
+              />
+            </div>
+
             <div className="grid gap-2">
               <Label htmlFor="carrera">Carrera *</Label>
               <Select
@@ -191,11 +203,11 @@ export default function AgregarMateriaDialog({
                 type="number"
                 min={1}
                 max={12}
-                placeholder="Ej. 1"
+                defaultValue={1}
                 value={semestre}
                 onChange={(e) => {
                   const val = e.target.value;
-                  setSemestre(val === "" ? "" : Number(val));
+                  setSemestre(Number(val));
                 }}
               />
             </div>

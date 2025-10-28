@@ -96,6 +96,7 @@ export function EditMateriaDialog({ editing, setEditing, setData }: EditMateriaD
       const form = new FormData(e.currentTarget);
       const nombre = String(form.get("nombre") ?? "").trim();
       const idcarrera = String(form.get("idcarrera") ?? "").trim();
+      const cantidadunidades = String(form.get("cantidadunidades") ?? "").trim();
 
       if (!nombre || !semestre || !idcarrera) return;
 
@@ -107,7 +108,7 @@ export function EditMateriaDialog({ editing, setEditing, setData }: EditMateriaD
       setSaving(true);
       const { error } = await supabase
         .from("materia")
-        .update({ nombre, semestre: semestre, idcarrera })
+        .update({ nombre, semestre, idcarrera, cantidadunidades })
         .eq("idmateria", editing.idmateria);
 
       setSaving(false);
@@ -129,6 +130,11 @@ export function EditMateriaDialog({ editing, setEditing, setData }: EditMateriaD
     },
     [editing, setEditing, setData, semestre, lockCarrera]
   );
+
+  const totalSemestres =
+  (Array.isArray(editing?.carrera)
+    ? editing?.carrera[0]?.cantidadsemestres
+    : editing?.carrera?.cantidadsemestres) ?? 0;
 
   return (
     <Dialog open={!!editing} onOpenChange={(open) => !open && setEditing(null)}>
@@ -163,13 +169,25 @@ export function EditMateriaDialog({ editing, setEditing, setData }: EditMateriaD
                   <SelectValue placeholder="Selecciona un semestre" />
                 </SelectTrigger>
                 <SelectContent>
-                  {[1,2,3,4,5,6,7,8,9,10,11,12].map((num) => (
+                  {Array.from({ length: totalSemestres }, (_, i) => i + 1).map((num) => (
                     <SelectItem key={num} value={String(num)}>
                       {num}
                     </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
+            </div>
+
+            <div className="grid gap-2">
+              <Label htmlFor="nombre">Cantidad de unidades</Label>
+              <Input
+                id="cantidadunidades"
+                name="cantidadunidades"
+                defaultValue={editing?.cantidadunidades ?? 3}
+                type="number"
+                min={1}
+                disabled={lockCarrera || lockCheckLoading}
+              />
             </div>
 
             <div className="grid gap-2">
@@ -201,7 +219,7 @@ export function EditMateriaDialog({ editing, setEditing, setData }: EditMateriaD
               <input type="hidden" name="idcarrera" value={carreraId} />
               {lockCarrera && (
                 <p className="text-xs text-muted-foreground">
-                  Esta materia ya tiene calificaciones registradas; no es posible cambiar la carrera o semestre.
+                  Esta materia ya tiene calificaciones registradas; no es posible cambiar la carrera, semestre o cantidad de unidades.
                 </p>
               )}
             </div>

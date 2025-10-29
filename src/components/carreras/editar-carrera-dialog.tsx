@@ -12,6 +12,7 @@ import { Button } from "@/components/ui/button";
 import { useState, useCallback, useEffect } from "react";
 import supabase from "@/utils/supabaseClient";
 import type { Carrera } from "@/utils/types";
+import { toast } from "sonner";
 
 type EditCarreraDialog = {
   editing: Carrera | null;
@@ -56,7 +57,10 @@ export function EditCarreraDialog({ editing, setEditing, setData }: EditCarreraD
       const nombre = String(form.get("nombre") ?? "").trim();
       const cantidadsemestres = String(form.get("cantidadsemestres") ?? "").trim();
 
-      if (!nombre) return;
+      if (!nombre) {
+        setError("Debes indicar el nombre para esta carrera.")
+        return;
+      }
 
       setSaving(true);
       const { error } = await supabase
@@ -68,6 +72,7 @@ export function EditCarreraDialog({ editing, setEditing, setData }: EditCarreraD
 
       if (error) {
         setError(error.message);
+        toast.error(error.message);
         return;
       }
 
@@ -77,7 +82,11 @@ export function EditCarreraDialog({ editing, setEditing, setData }: EditCarreraD
         )
       );
 
-      setEditing(null);
+      console.log("Test")
+
+      toast.success("Se editó la carrera de forma correcta.");
+
+      setEditing(null);     
     },
     [editing, setEditing, setData, bloqueada]
   );
@@ -130,7 +139,7 @@ export function EditCarreraDialog({ editing, setEditing, setData }: EditCarreraD
             )}
           </div>
 
-          {error && <p className="text-sm text-red-600">{error}</p>}
+          {error && <p className="text-sm text-red-600 mb-4">{error}</p>}
 
           <DialogFooter>
             <Button type="submit" disabled={saving}>

@@ -20,6 +20,7 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import supabase from "@/utils/supabaseClient";
+import { toast } from "sonner";
 
 import { FactorTipo } from "@/utils/types";
 
@@ -82,12 +83,12 @@ export default function AgregarFactorDialog({
 
       if (dbError) {
         setError(dbError.message);
-        alert("❌ No se pudo guardar el factor.");
+        toast.error("No se pudo guardar el factor.");
         return;
       }
 
       onSuccess?.();
-      alert("✅ Factor agregado correctamente");
+      toast.success("Factor agregado correctamente");
       setOpen(false);
       resetForm();
     } catch (err: any) {
@@ -132,7 +133,6 @@ export default function AgregarFactorDialog({
               </Select>
             </div>
 
-            {/* Descripción */}
             <div className="grid gap-2">
               <Label htmlFor="descripcion">Descripción</Label>
               <Textarea
@@ -144,7 +144,6 @@ export default function AgregarFactorDialog({
               />
             </div>
 
-            {/* Error */}
             {error && (
               <p className="text-sm text-red-600">
                 {error}

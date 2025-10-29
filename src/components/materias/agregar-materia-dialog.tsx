@@ -24,6 +24,8 @@ import { useSession } from "@/context/SessionContext";
 
 import { type Carrera } from "@/utils/types";
 
+import { toast } from "sonner";
+
 type Props = {
   onSuccess?: () => void;
   triggerLabel?: string;
@@ -127,7 +129,7 @@ export default function AgregarMateriaDialog({
         nombre: nombre.trim(),
         iddocente: docente.iddocente,
         idcarrera: carreraId,
-        semestre: clamp(semestre, 1, maxSemestres), // seguridad adicional
+        semestre: clamp(semestre, 1, maxSemestres),
         cantidadunidades: cantidadUnidades,
       };
 
@@ -135,12 +137,12 @@ export default function AgregarMateriaDialog({
 
       if (dbError) {
         setError(dbError.message);
-        alert("❌ No se pudo guardar la materia");
+        toast.error("No se pudo guardar la materia");
         return;
       }
 
       onSuccess?.();
-      alert("✅ Materia agregada correctamente");
+      toast.success("Materia agregada correctamente");
       setOpen(false);
       resetForm();
     } catch (err: any) {
@@ -231,7 +233,7 @@ export default function AgregarMateriaDialog({
                 onChange={(e) =>
                   setSemestre(clamp(Number(e.target.value), 1, maxSemestres))
                 }
-                disabled={!carreraId} // evita elegir semestre sin carrera
+                disabled={!carreraId}
               />
               {!carreraId && (
                 <p className="text-xs text-muted-foreground">

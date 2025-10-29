@@ -14,6 +14,7 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import supabase from "@/utils/supabaseClient";
 import { useSession } from "@/context/SessionContext";
+import { toast } from "sonner"
 
 type Props = {
   onSuccess?: () => void;
@@ -46,6 +47,7 @@ export default function AgregarCarreraDialog({
 
   const validate = () => {
     if (!nombre.trim()) return "El nombre de la materia es obligatorio.";
+    if (!cantidadSemestres)
     return null;
   };
 
@@ -72,12 +74,12 @@ export default function AgregarCarreraDialog({
 
       if (dbError) {
         setError(dbError.message);
-        alert("❌ No se pudo guardar la carrera");
+        toast.error("No se pudo guardar la carrera");
         return;
       }
 
       onSuccess?.();
-      alert("✅ Carrera agregada correctamente");
+      toast.success("Carrera agregada correctamente");
       setOpen(false);
       resetForm();
     } catch (err: any) {
@@ -118,6 +120,8 @@ export default function AgregarCarreraDialog({
               <Label htmlFor="nombre">Cantidad de semestres *</Label>
               <Input
                 id="cantidadsemestres"
+                type="number"
+                defaultValue={1}
                 min={1}
                 max={12}
                 onChange={(e) => setCantidadSemestres(Number(e.target.value))}

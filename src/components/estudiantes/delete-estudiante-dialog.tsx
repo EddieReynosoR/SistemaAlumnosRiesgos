@@ -13,6 +13,8 @@ import { type EstudianteConCarrera } from "@/utils/types";
 
 import supabase from "@/utils/supabaseClient";
 
+import { toast } from "sonner";
+
 type Props = {
   open: boolean;
   setOpen: (v: boolean) => void;
@@ -58,8 +60,11 @@ export default function DeleteEstudianteDialog({
     
         if (error) {
           setData(prevDataCapture);
-          alert("No se pudo eliminar al estudiante: " + error.message);
+          toast.error("No se pudo eliminar al estudiante: " + error.message);
+          return;
         }
+
+        toast.success("Se eliminó al estudiante de forma correcta.");
       }, [deleting, setData, setDeleting, setOpen]);
 
     return (

@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import { useState, useCallback } from "react";
 import supabase from "@/utils/supabaseClient";
 import type { Carrera } from "@/utils/types";
+import { toast } from "sonner"
 
 type Props = {
   open: boolean;
@@ -56,8 +57,11 @@ export function DeleteCarreraDialog({
 
     if (error) {
       setData(prevDataCapture);
-      alert("No se pudo eliminar la materia: " + error.message);
+      toast.error("No se pudo eliminar la materia: " + error.message);
+      return;
     }
+
+    toast.success("Se eliminó la carrera de forma correcta.");
   }, [deleting, setData, setDeleting, setOpen]);
 
   return (

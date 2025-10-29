@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import { useState, useCallback } from "react";
 import supabase from "@/utils/supabaseClient";
 import type { MateriaConCarrera } from "@/utils/types";
+import { toast } from "sonner";
 
 type Props = {
   open: boolean;
@@ -29,7 +30,7 @@ export function DeleteMateriaDialog({
   const [loading, setLoading] = useState(false);
 
   const onClose = useCallback(() => {
-    if (loading) return; // evitar cerrar mientras borra
+    if (loading) return;
     setDeleting(null);
     setOpen(false);
   }, [loading, setDeleting, setOpen]);
@@ -55,10 +56,12 @@ export function DeleteMateriaDialog({
     setOpen(false);
 
     if (error) {
-      // rollback
       setData(prevDataCapture);
-      alert("No se pudo eliminar la materia: " + error.message);
+      toast.error("No se pudo eliminar la materia: " + error.message);
+      return;
     }
+
+    toast.success("Se eliminó la materia de forma correcta.");
   }, [deleting, setData, setDeleting, setOpen]);
 
   return (

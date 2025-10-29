@@ -12,6 +12,7 @@ import {
 import { useState, useEffect, useMemo } from "react";
 import supabase from "@/utils/supabaseClient";
 import type { Carrera } from "@/utils/types";
+import { toast } from "sonner";
 
 type Props = { onSuccess?: () => void };
 
@@ -56,7 +57,7 @@ export function AgregarEstudianteDialog({ onSuccess }: Props) {
     e.preventDefault();
 
     if (!selectedCarrera) {
-      alert("❌ El alumno debe pertenecer a una carrera.");
+      toast.error("El alumno debe pertenecer a una carrera.");
       return;
     }
 
@@ -77,11 +78,11 @@ export function AgregarEstudianteDialog({ onSuccess }: Props) {
     setSaving(false);
 
     if (error) {
-      alert("❌ No se pudo guardar el estudiante: " + error.message);
+      toast.error("No se pudo guardar el estudiante: " + error.message);
       return;
     }
 
-    alert("✅ Estudiante agregado correctamente");
+    toast.success("✅ Estudiante agregado correctamente");
     onSuccess?.();
     setOpen(false);
   };

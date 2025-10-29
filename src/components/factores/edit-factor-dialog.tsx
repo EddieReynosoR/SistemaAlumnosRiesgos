@@ -14,6 +14,8 @@ import { type Factor, FactorTipo } from "@/utils/types";
 
 import supabase from "@/utils/supabaseClient";
 
+import { toast } from "sonner";
+
 type EditFactorDialog = {
   editing: Factor | null;
   setEditing: (m: Factor | null) => void;
@@ -33,7 +35,15 @@ export default function EditFactorDialog({ editing, setEditing, setData }: EditF
             const descripcion = String(form.get("descripcion") ?? "").trim();
             const categoria = String(form.get("categoria") ?? "").trim();
 
-            if (!descripcion || !categoria) return;
+            if (!categoria) {
+              setError("Debes de seleccionar una categoria.");
+              return;
+            }
+
+            if (!descripcion) {
+              setError("Debes de indicar una descripción.");
+              return;
+            }
 
             setSaving(true);
             const { error } = await supabase
@@ -54,6 +64,7 @@ export default function EditFactorDialog({ editing, setEditing, setData }: EditF
             )
             );
 
+            toast.success("Se eliminó el factor de forma correcta.");
             setEditing(null);
         },
         [editing]
@@ -71,22 +82,12 @@ export default function EditFactorDialog({ editing, setEditing, setData }: EditF
 
           <form onSubmit={handleSaveEdit} className="grid gap-4 pt-2">
             <div className="grid gap-2">
-              <Label htmlFor="descripcion">Descripción</Label>
-              <Input
-                id="descripcion"
-                name="descripcion"
-                defaultValue={editing?.descripcion ?? ""}
-                required
-              />
-            </div>
-
-            <div className="grid gap-2">
               <Label htmlFor="categoria">Categoría</Label>
               <Select
                 name="categoria"
                 defaultValue={editing?.categoria ?? undefined}
               >
-                <SelectTrigger id="categoria">
+                <SelectTrigger id="categoria" className="w-full">
                   <SelectValue placeholder="Selecciona una categoría" />
                 </SelectTrigger>
                 <SelectContent>
@@ -97,6 +98,15 @@ export default function EditFactorDialog({ editing, setEditing, setData }: EditF
                   ))}
                 </SelectContent>
               </Select>
+            </div>
+
+            <div className="grid gap-2">
+              <Label htmlFor="descripcion">Descripción</Label>
+              <Input
+                id="descripcion"
+                name="descripcion"
+                defaultValue={editing?.descripcion ?? ""}
+              />
             </div>
 
             {error && <p className="text-sm text-red-600">{error}</p>}

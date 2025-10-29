@@ -98,7 +98,20 @@ export function EditMateriaDialog({ editing, setEditing, setData }: EditMateriaD
       const idcarrera = String(form.get("idcarrera") ?? "").trim();
       const cantidadunidades = String(form.get("cantidadunidades") ?? "").trim();
 
-      if (!nombre || !semestre || !idcarrera) return;
+      if (!nombre) {
+        setError("Debes de indicar un nombre.");
+        return;
+      }
+
+      if (!semestre) {
+        setError("Debes de indicar un semestre.")
+        return;
+      }
+
+      if (!idcarrera) {
+        setError("Debes de indicar una carrera.")
+        return;
+      }
 
       if (lockCarrera && idcarrera !== String(editing.idcarrera)) {
         setError("No puedes cambiar la carrera o el semestre porque esta materia ya tiene calificaciones registradas.");

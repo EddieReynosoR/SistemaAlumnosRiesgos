@@ -21,6 +21,8 @@ import supabase from "@/utils/supabaseClient";
 
 import type { EstudianteConCarrera, Carrera } from "@/utils/types";
 
+import { toast } from "sonner";
+
 type EditEstudianteDialog = {
   editing: EstudianteConCarrera | null;
   setEditing: (m: EstudianteConCarrera | null) => void;
@@ -142,6 +144,9 @@ export default function EditEstudianteDialog({
           r.idestudiante === editing.idestudiante ? { ...r, ...payload } : r
         )
       );
+
+      toast.success("Se editó al estudiante de forma correcta.");
+
       setEditing(null);
     },
     [editing, carreraId, maxSemestre, setData, setEditing]

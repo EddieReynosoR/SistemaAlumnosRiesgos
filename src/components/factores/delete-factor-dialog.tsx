@@ -12,6 +12,7 @@ import { useState, useCallback } from "react";
 import { type Factor } from "@/utils/types";
 
 import supabase from "@/utils/supabaseClient";
+import { toast } from "sonner";
 
 type Props = {
   open: boolean;
@@ -57,9 +58,12 @@ export default function DeleteFactorDialog({
         setOpen(false);
 
         if (error) {
-      setData(prevDataCapture);
-      alert("No se pudo eliminar el factor: " + error.message);
-    }
+            setData(prevDataCapture);
+            toast.error("No se pudo eliminar el factor: " + error.message);
+            return;
+        }
+
+        toast.success("Se eliminó el factor de forma correcta.");
     }, [deleting, setData, setDeleting, setOpen]);
 
     return (

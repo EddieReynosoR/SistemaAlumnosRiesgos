@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import MainLayout from "../layouts/MainLayout"; 
 import supabase from "../utils/supabaseClient";
 import {
@@ -11,13 +11,22 @@ import {
   ResponsiveContainer,
   Label, 
 } from "recharts";
+import { saveAs } from "file-saver";
+import * as XLSX from "xlsx";
+import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
+import ExcelJS from "exceljs";
+import html2canvas from "html2canvas";
+
+type Formato = "excel" | "csv" | "pdf" | "todos";
 
 function Dispersion() {
-  const [data, setData] = useState([]);
+  const [data, setData] = useState<any[]>([]);
+  const [formato, setFormato] = useState<Formato | "">("");
+  const chartRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     async function obtenerDatosDispersion() {
-      // consulta las columnas de asistencia y calificacion
       const { data: datosCrudos, error } = await supabase
         .from("calificacionasistencia")
         .select("asistencia, calificacion");
@@ -32,57 +41,208 @@ function Dispersion() {
         calificacion: Number(d.calificacion),
       }));
 
-      console.log("Datos FINALES para Dispersión:", datosProcesados); 
       setData(datosProcesados);
     }
 
     obtenerDatosDispersion();
   }, []);
 
+  const generarNombreArchivo = (base: string, ext: string) => {
+    const f = new Date().toISOString().replace(/[:T]/g, "-").slice(0, 16);
+    return `${base}_${f}.${ext}`;
+  };
+
+  const guardarArchivo = (blob: Blob, nombre: string) => {
+    saveAs(blob, nombre);
+  };
+
+const exportarExcel = async () => {
+  try {
+    if (!data || data.length === 0) {
+      alert("⚠️ No hay datos para exportar.");
+      return;
+    }
+
+    // Esperar un poco por si el gráfico no ha terminado de renderizar
+    await new Promise((r) => setTimeout(r, 400));
+
+    const chartElement = chartRef.current;
+    if (!chartElement) {
+      alert("❌ No se encontró el gráfico.");
+      return;
+    }
+
+    // 📸 Capturar el gráfico como imagen base64
+    const canvas = await html2canvas(chartElement, {
+      scale: 2,
+      useCORS: true,
+      backgroundColor: "#ffffff",
+    });
+    const imgData = canvas.toDataURL("image/png");
+
+    // 🧾 Crear libro de Excel
+    const workbook = new ExcelJS.Workbook();
+
+    // --- Hoja 1: Datos ---
+    const sheet = workbook.addWorksheet("Datos");
+
+    // Escribir encabezados
+    const columnas = Object.keys(data[0]);
+    columnas.forEach((col, i) => {
+      sheet.getCell(1, i + 1).value = col;
+      sheet.getCell(1, i + 1).font = { bold: true, color: { argb: "FFFFFFFF" } };
+      sheet.getCell(1, i + 1).fill = {
+        type: "pattern",
+        pattern: "solid",
+        fgColor: { argb: "4472C4" },
+      };
+      sheet.getColumn(i + 1).width = 18;
+    });
+
+    // Escribir filas de datos
+    data.forEach((fila, filaIdx) => {
+      columnas.forEach((col, colIdx) => {
+        sheet.getCell(filaIdx + 2, colIdx + 1).value = fila[col];
+      });
+    });
+
+    // --- Hoja 2: Gráfico ---
+    const chartSheet = workbook.addWorksheet("Gráfico");
+
+    // Insertar imagen
+    const imageId = workbook.addImage({
+      base64: imgData,
+      extension: "png",
+    });
+
+    chartSheet.addImage(imageId, {
+      tl: { col: 1, row: 1 },
+      ext: { width: 700, height: 400 },
+    });
+
+    chartSheet.getCell("A20").value =
+      "Gráfica de Dispersión (Asistencia vs Calificación)";
+
+    // 💾 Guardar archivo
+    const buffer = await workbook.xlsx.writeBuffer();
+    saveAs(
+      new Blob([buffer], {
+        type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      }),
+      generarNombreArchivo("grafica_dispersion", "xlsx")
+    );
+
+    alert("✅ Exportación a Excel completada correctamente.");
+  } catch (err) {
+    console.error("❌ Error al exportar Excel:", err);
+    alert("Ocurrió un error al generar el archivo Excel. Revisa la consola.");
+  }
+};
+
+  const exportarCSV = async () => {
+    const ws = XLSX.utils.json_to_sheet(data);
+    const csv = XLSX.utils.sheet_to_csv(ws);
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
+    guardarArchivo(blob, generarNombreArchivo("grafica_dispersion", "csv"));
+  };
+
+  const exportarPDF = async () => {
+    if (!chartRef.current) return;
+
+    const doc = new jsPDF("l", "pt", "a4");
+    doc.setFontSize(16);
+    doc.text("Gráfica de Dispersión: Calificación vs Asistencia", 40, 40);
+
+    const canvas = await html2canvas(chartRef.current);
+    const imgData = canvas.toDataURL("image/png");
+    const imgWidth = 500;
+    const imgHeight = (canvas.height * imgWidth) / canvas.width;
+    doc.addImage(imgData, "PNG", 40, 60, imgWidth, imgHeight);
+
+    const columnas = Object.keys(data[0] || {});
+    const filas = data.map((fila) => columnas.map((k) => fila[k]));
+    autoTable(doc, {
+      head: [columnas],
+      body: filas,
+      startY: 80 + imgHeight,
+      theme: "striped",
+      styles: { fontSize: 8, cellPadding: 2 },
+      headStyles: { fillColor: [63, 81, 181], textColor: 255 },
+    });
+
+    const blob = doc.output("blob");
+    guardarArchivo(blob, generarNombreArchivo("grafica_dispersion", "pdf"));
+  };
+
+  const handleExportar = async (fmt: Formato) => {
+    if (!data.length) {
+      alert("No hay datos disponibles para exportar.");
+      return;
+    }
+
+    switch (fmt) {
+      case "excel":
+        await exportarExcel();
+        break;
+      case "csv":
+        await exportarCSV();
+        break;
+      case "pdf":
+        await exportarPDF();
+        break;
+      case "todos":
+        await exportarExcel();
+        await exportarCSV();
+        await exportarPDF();
+        break;
+    }
+
+    alert("Exportación completada correctamente.");
+  };
+
   return (
     <MainLayout text="Diagrama de Dispersión">
-      <div className="p-4">
+      <div className="p-6">
         <h2 className="text-2xl font-semibold mb-4">Diagrama de Dispersión</h2>
         <p className="mb-4">
-          Relación entre la asistencia y la calificación de los estudiantes por
-          unidad.
+          Relación entre la asistencia y la calificación de los estudiantes.
         </p>
-        <div className="w-full h-[400px]">
+
+        <div ref={chartRef} className="w-full h-[400px] bg-white p-2 border rounded shadow">
           <ResponsiveContainer width="100%" height="100%">
-            <ScatterChart
-              margin={{
-                top: 20, right: 20, bottom: 30, left: 30,
-              }}
-            >
+            <ScatterChart margin={{ top: 20, right: 20, bottom: 30, left: 30 }}>
               <CartesianGrid strokeDasharray="3 3" />
-              
-              <XAxis
-                type="number"
-                dataKey="asistencia"
-                name="Asistencia"
-                unit="%"
-              >
+              <XAxis type="number" dataKey="asistencia" name="Asistencia" unit="%">
                 <Label value="Asistencia (%)" offset={-20} position="insideBottom" />
               </XAxis>
-
-              <YAxis
-                type="number"
-                dataKey="calificacion"
-                name="Calificación"
-                domain={[0, 100]} 
-              >
-                 <Label value="Calificación (0-100)" angle={-90} position="insideLeft" style={{ textAnchor: 'middle' }} />
+              <YAxis type="number" dataKey="calificacion" name="Calificación" domain={[0, 100]}>
+                <Label
+                  value="Calificación (0-100)"
+                  angle={-90}
+                  position="insideLeft"
+                  style={{ textAnchor: "middle" }}
+                />
               </YAxis>
-
               <Tooltip cursor={{ strokeDasharray: "3 3" }} />
-
               <Scatter
                 name="Relación Calificación/Asistencia"
                 data={data}
-                fill="#3b82f6" 
+                fill="#3b82f6"
               />
             </ScatterChart>
           </ResponsiveContainer>
+        </div>
+
+        <div className="flex flex-wrap gap-3 mt-6">
+          {(["excel", "csv", "pdf", "todos"] as Formato[]).map((fmt) => (
+            <button
+              key={fmt}
+              onClick={() => handleExportar(fmt)}
+              className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition"
+            >
+              Exportar {fmt.toUpperCase()}
+            </button>
+          ))}
         </div>
       </div>
     </MainLayout>

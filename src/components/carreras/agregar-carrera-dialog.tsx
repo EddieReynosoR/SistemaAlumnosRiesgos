@@ -67,7 +67,9 @@ export default function AgregarCarreraDialog({
 
       const payload = {
         nombre: nombre.trim(),
-        cantidadsemestres: cantidadSemestres
+        cantidadsemestres: cantidadSemestres,
+        usuariomodifico: docente?.iddocente,
+        fechamodificacion: new Date().toISOString()
       };
 
       const { error: dbError } = await supabase.from("carrera").insert([payload]);

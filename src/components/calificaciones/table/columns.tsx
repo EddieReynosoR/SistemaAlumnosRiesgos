@@ -54,10 +54,10 @@ export const getColumns = ({ onEdit, onDelete }: ColumnHandlers): ColumnDef<Cali
             <DropdownMenuItem onClick={() => onEdit(registro)}>
               Editar
             </DropdownMenuItem>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={() => onDelete(registro)}>
+            {/* <DropdownMenuSeparator /> */}
+            {/* <DropdownMenuItem onClick={() => onDelete(registro)}>
               Eliminar
-            </DropdownMenuItem>
+            </DropdownMenuItem> */}
           </DropdownMenuContent>
         </DropdownMenu>
       );

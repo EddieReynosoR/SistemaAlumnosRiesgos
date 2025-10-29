@@ -23,6 +23,7 @@ import supabase from "@/utils/supabaseClient";
 import { toast } from "sonner";
 
 import { FactorTipo } from "@/utils/types";
+import { useSession } from "@/context/SessionContext";
 
 type Props = {
   onSuccess?: () => void;
@@ -43,6 +44,8 @@ export default function AgregarFactorDialog({
   const [descripcion, setDescripcion] = useState("");
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const { docente } = useSession();
 
   const resetForm = useCallback(() => {
     setTipo(defaultTipo ?? "");
@@ -77,7 +80,9 @@ export default function AgregarFactorDialog({
       const { error: dbError } = await supabase.from("factorriesgo").insert([
         {
           categoria: tipo,
-          descripcion: descripcion.trim() || null
+          descripcion: descripcion.trim() || null,
+          usuariomodifico: docente?.iddocente,
+          fechamodificacion: new Date().toISOString()
         },
       ]);
 

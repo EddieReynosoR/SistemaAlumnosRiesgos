@@ -13,6 +13,7 @@ import { Select, SelectTrigger, SelectContent, SelectValue, SelectItem } from "@
 import { useState, useCallback, useEffect } from "react";
 import supabase from "@/utils/supabaseClient";
 import type { MateriaConCarrera } from "@/utils/types";
+import { useSession } from "@/context/SessionContext";
 
 type Carrera = { idcarrera: string; nombre: string };
 
@@ -34,6 +35,8 @@ export function EditMateriaDialog({ editing, setEditing, setData }: EditMateriaD
 
   const [lockCarrera, setLockCarrera] = useState<boolean>(false);
   const [lockCheckLoading, setLockCheckLoading] = useState<boolean>(false);
+
+  const { docente } = useSession();
 
   useEffect(() => {
     let mounted = true;
@@ -121,7 +124,7 @@ export function EditMateriaDialog({ editing, setEditing, setData }: EditMateriaD
       setSaving(true);
       const { error } = await supabase
         .from("materia")
-        .update({ nombre, semestre, idcarrera, cantidadunidades })
+        .update({ nombre, semestre, idcarrera, cantidadunidades, usuariomodifico: docente?.iddocente, fechamodificacion: new Date().toISOString() })
         .eq("idmateria", editing.idmateria);
 
       setSaving(false);

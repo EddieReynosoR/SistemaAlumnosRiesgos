@@ -131,6 +131,8 @@ export default function AgregarMateriaDialog({
         idcarrera: carreraId,
         semestre: clamp(semestre, 1, maxSemestres),
         cantidadunidades: cantidadUnidades,
+        usuariomodifico: docente?.iddocente,
+        fechamodificacion: new Date().toISOString()
       };
 
       const { error: dbError } = await supabase.from("materia").insert([payload]);

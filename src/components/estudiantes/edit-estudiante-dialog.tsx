@@ -22,6 +22,7 @@ import supabase from "@/utils/supabaseClient";
 import type { EstudianteConCarrera, Carrera } from "@/utils/types";
 
 import { toast } from "sonner";
+import { useSession } from "@/context/SessionContext";
 
 type EditEstudianteDialog = {
   editing: EstudianteConCarrera | null;
@@ -41,14 +42,15 @@ export default function EditEstudianteDialog({
   const [carreraId, setCarreraId] = useState<string>("");
   const [semestre, setSemestre] = useState<number | "">("");
 
-  // Cargar catálogo de carreras
+  const { docente } = useSession();
+
   useEffect(() => {
     let mounted = true;
     (async () => {
       setCarrerasLoading(true);
       const { data, error } = await supabase
         .from("carrera")
-        .select("idcarrera, nombre, cantidadsemestres") // ✅ Importante traer cantidadsemestres
+        .select("idcarrera, nombre, cantidadsemestres")
         .order("nombre", { ascending: true });
 
       if (!mounted) return;
@@ -125,6 +127,8 @@ export default function EditEstudianteDialog({
         apellidomaterno: String(form.get("apellidomaterno") ?? "").trim(),
         semestre: s,
         idcarrera: carreraId,
+        usuariomodifico: docente?.iddocente,
+        fechamodificacion: new Date().toISOString()
       };
 
       const { error } = await supabase

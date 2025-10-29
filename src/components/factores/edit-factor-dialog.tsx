@@ -15,6 +15,7 @@ import { type Factor, FactorTipo } from "@/utils/types";
 import supabase from "@/utils/supabaseClient";
 
 import { toast } from "sonner";
+import { useSession } from "@/context/SessionContext";
 
 type EditFactorDialog = {
   editing: Factor | null;
@@ -25,6 +26,8 @@ type EditFactorDialog = {
 export default function EditFactorDialog({ editing, setEditing, setData }: EditFactorDialog) {
     const [saving, setSaving] = useState<boolean>(false);
     const [error, setError] = useState<string | null>(null);
+
+    const { docente } = useSession();
     
     const handleSaveEdit = useCallback(
         async (e: React.FormEvent<HTMLFormElement>) => {
@@ -48,7 +51,7 @@ export default function EditFactorDialog({ editing, setEditing, setData }: EditF
             setSaving(true);
             const { error } = await supabase
             .from("factorriesgo")
-            .update({ descripcion, categoria })
+            .update({ descripcion, categoria, usuariomodifico: docente?.iddocente, fechamodificacion: new Date().toISOString() })
             .eq("idfactor", editing.idfactor);
 
             setSaving(false);

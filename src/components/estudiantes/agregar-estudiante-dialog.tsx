@@ -13,6 +13,7 @@ import { useState, useEffect, useMemo } from "react";
 import supabase from "@/utils/supabaseClient";
 import type { Carrera } from "@/utils/types";
 import { toast } from "sonner";
+import { useSession } from "@/context/SessionContext";
 
 type Props = { onSuccess?: () => void };
 
@@ -22,6 +23,8 @@ export function AgregarEstudianteDialog({ onSuccess }: Props) {
   const [semestre, setSemestre] = useState<number | "">("");
   const [open, setOpen] = useState(false);
   const [saving, setSaving] = useState(false);
+
+  const { docente } = useSession();
 
   useEffect(() => {
     const fetchCarreras = async () => {
@@ -72,6 +75,8 @@ export function AgregarEstudianteDialog({ onSuccess }: Props) {
       apellidomaterno: String(form.get("apellidoMaterno") ?? "").trim() || null,
       semestre: s,
       idcarrera: selectedCarrera,
+      usuariomodifico: docente?.iddocente,
+      fechamodificacion: new Date().toISOString()
     };
 
     const { error } = await supabase.from("estudiante").insert(nuevoEstudiante);

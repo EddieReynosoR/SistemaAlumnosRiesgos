@@ -19,6 +19,7 @@ import { getColumns, type CalificacionAsistencia } from "@/components/calificaci
 import supabase from "@/utils/supabaseClient";
 import { DataTable } from "./table/data-table";
 import type { Estudiante } from "@/utils/types";
+import { useSession } from "@/context/SessionContext";
 
 type Props = {
   open: boolean;
@@ -39,6 +40,8 @@ export function CalificacionesDialog({ open, setOpen, estudiante }: Props) {
   const [current, setCurrent] = useState<CalificacionAsistencia | null>(null);
   const [editAsistencias, setEditAsistencias] = useState<number | "">("");
   const [editCalificacion, setEditCalificacion] = useState<number | "">("");
+
+  const { docente } = useSession();
 
   const handleAgregar = async () => {
     if (!materiaId) {
@@ -88,6 +91,8 @@ export function CalificacionesDialog({ open, setOpen, estudiante }: Props) {
           unidad,
           asistencia: asistencias,
           calificacion,
+          usuariomodifico: docente?.iddocente,
+          fechamodificacion: new Date().toISOString()
         },
       ]);
 
@@ -223,7 +228,7 @@ export function CalificacionesDialog({ open, setOpen, estudiante }: Props) {
 
     const { error } = await supabase
       .from("calificacionasistencia")
-      .update({ asistencia: a, calificacion: c })
+      .update({ asistencia: a, calificacion: c, usuariomodifico: docente?.iddocente, fechamodificacion: new Date().toISOString() })
       .eq("id", current.id);
 
     if (error) {

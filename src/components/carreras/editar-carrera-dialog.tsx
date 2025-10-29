@@ -13,6 +13,7 @@ import { useState, useCallback, useEffect } from "react";
 import supabase from "@/utils/supabaseClient";
 import type { Carrera } from "@/utils/types";
 import { toast } from "sonner";
+import { useSession } from "@/context/SessionContext";
 
 type EditCarreraDialog = {
   editing: Carrera | null;
@@ -24,6 +25,8 @@ export function EditCarreraDialog({ editing, setEditing, setData }: EditCarreraD
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [materiasCount, setMateriasCount] = useState<number | null>(null);
+
+  const { docente } = useSession();
 
   useEffect(() => {
     let mounted = true;
@@ -65,7 +68,7 @@ export function EditCarreraDialog({ editing, setEditing, setData }: EditCarreraD
       setSaving(true);
       const { error } = await supabase
         .from("carrera")
-        .update({ nombre, cantidadsemestres })
+        .update({ nombre, cantidadsemestres, usuariomodifico: docente?.iddocente, fechamodificacion: new Date().toISOString() })
         .eq("idcarrera", editing.idcarrera);
 
       setSaving(false);

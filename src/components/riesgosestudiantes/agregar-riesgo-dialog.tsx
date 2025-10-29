@@ -11,6 +11,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import supabase from "@/utils/supabaseClient";
 
 import { FactorTipo, type Factor, type Estudiante } from "@/utils/types";
+import { useSession } from "@/context/SessionContext";
 
 type Props = {
   open: boolean;
@@ -22,6 +23,9 @@ export function SeleccionarFactoresDialog({ open, setOpen, estudiante }: Props) 
   const [tipo, setTipo] = useState<FactorTipo | "">("");
   const [factores, setFactores] = useState<Factor[]>([]);
   const [checkedIds, setCheckedIds] = useState<string[]>([]);
+
+  const { docente } = useSession();
+
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -106,38 +110,35 @@ export function SeleccionarFactoresDialog({ open, setOpen, estudiante }: Props) 
     }
   };
 
-  // Guarda sincronizando: inserta nuevos y elimina desmarcados para el tipo actual
   const handleSave = async () => {
     if (!estudiante?.idestudiante || !tipo) return;
 
     setSaving(true);
     try {
-      // Lee lo que YA hay guardado para este estudiante y este TIPO (solo ids de los visibles)
       const { data: actuales, error: readErr } = await supabase
         .from("riesgoestudiante")
         .select("idfactor")
         .eq("idestudiante", estudiante.idestudiante)
-        .in("idfactor", allVisibleIds); // limitar al tipo visible
+        .in("idfactor", allVisibleIds);
 
       if (readErr) throw readErr;
 
       const actualesIds = (actuales ?? []).map(r => r.idfactor as string);
 
-      // Determina altas y bajas
       const toInsertIds = checkedIds.filter(id => !actualesIds.includes(id));
       const toDeleteIds = actualesIds.filter(id => !checkedIds.includes(id));
 
-      // Inserta nuevos
       if (toInsertIds.length > 0) {
         const registros = toInsertIds.map(id => ({
           idestudiante: estudiante.idestudiante,
           idfactor: id,
+          usuariomodifico: docente?.iddocente,
+          fechamodificacion: new Date().toISOString()
         }));
         const { error: insertErr } = await supabase.from("riesgoestudiante").insert(registros);
         if (insertErr) throw insertErr;
       }
 
-      // Elimina desmarcados
       if (toDeleteIds.length > 0) {
         const { error: delErr } = await supabase
           .from("riesgoestudiante")
@@ -147,8 +148,6 @@ export function SeleccionarFactoresDialog({ open, setOpen, estudiante }: Props) 
         if (delErr) throw delErr;
       }
 
-      // Feedback y cerrar
-      // (sustituye por toast de shadcn si prefieres)
       alert("✅ Factores de riesgo actualizados.");
       setOpen(false);
     } catch (err) {
@@ -169,7 +168,6 @@ export function SeleccionarFactoresDialog({ open, setOpen, estudiante }: Props) 
           </DialogDescription>
         </DialogHeader>
 
-        {/* Filtro por tipo */}
         <div className="grid gap-2">
           <Label>Tipo de factor</Label>
           <Select value={tipo} onValueChange={(v) => setTipo(v as FactorTipo)}>
@@ -186,7 +184,6 @@ export function SeleccionarFactoresDialog({ open, setOpen, estudiante }: Props) 
           </Select>
         </div>
 
-        {/* Checkboxes */}
         <div className="grid gap-3">
           <div className="flex items-center gap-2">
             <Checkbox

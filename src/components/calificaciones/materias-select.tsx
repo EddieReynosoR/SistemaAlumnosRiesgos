@@ -16,13 +16,11 @@ type Materia = { idmateria: string; nombre: string };
 export default function MateriaSelect({
   materiaId,
   setMateriaId,
-  carreraId,
-  semestre
+  carreraId
 }: {
   materiaId: string | undefined;
   setMateriaId: (v: string) => void;
   carreraId: string | undefined;
-  semestre: number | undefined;
 }) {
   const { docente } = useSession();
   const [materias, setMaterias] = useState<Materia[]>([]);
@@ -45,7 +43,6 @@ export default function MateriaSelect({
         .select("idmateria, nombre")
         .eq("iddocente", docente.iddocente)
         .eq("idcarrera", carreraId)
-        .gte("semestre", semestre)
         .order("nombre", { ascending: true });
 
       if (!mounted) return;

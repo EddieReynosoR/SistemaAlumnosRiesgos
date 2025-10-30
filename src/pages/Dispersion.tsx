@@ -22,7 +22,7 @@ type Formato = "excel" | "csv" | "pdf" | "todos";
 
 function Dispersion() {
   const [data, setData] = useState<any[]>([]);
-  const [formato, setFormato] = useState<Formato | "">("");
+  // const [formato, setFormato] = useState<Formato | "">("");
   const chartRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -227,7 +227,7 @@ const exportarExcel = async () => {
               <Scatter
                 name="Relación Calificación/Asistencia"
                 data={data}
-                fill="#3b82f6"
+                fill="#000B58"
               />
             </ScatterChart>
           </ResponsiveContainer>
@@ -238,7 +238,7 @@ const exportarExcel = async () => {
             <button
               key={fmt}
               onClick={() => handleExportar(fmt)}
-              className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition"
+              className="cursor-pointer hover:border-2 hover:border-Primary hover:bg-Neutral hover:text-Primary  bg-Primary text-Neutral  rounded-2xl w-50 h-10 m-5"
             >
               Exportar {fmt.toUpperCase()}
             </button>

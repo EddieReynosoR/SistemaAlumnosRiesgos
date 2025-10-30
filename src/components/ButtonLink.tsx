@@ -1,17 +1,23 @@
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 
-// Definimos el tipo de las props
 interface LinkProps {
-  to: string; // Ruta a donde dirigirá el enlace
-  text: string; // Texto visible del enlace
+  to: string;
+  text: string;
 }
 
 function ButtonLink({ to, text }: LinkProps) {
+  const location = useLocation();
+  const isActive = location.pathname === to;
+
   return (
     <li>
       <Link
         to={to}
-        className="block px-4 py-2 hover:bg-Neutral hover:text-Primary p-2 rounded"
+        className={`block px-4 py-2 rounded transition-colors duration-200
+          ${isActive
+            ? "bg-Neutral text-Primary font-semibold shadow-md"
+            : "text-Neutral hover:bg-Neutral hover:text-Primary"
+          }`}
       >
         {text}
       </Link>

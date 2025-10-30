@@ -1,10 +1,14 @@
 import React from "react";
 import ButtonLink from "./ButtonLink";
+
+
 const Navigation: React.FC = () => {
+ 
   return (
+    
     <nav className=" w-1/6 bg-Primary text-Neutral p-4">
       <ul className="space-y-4">
-        <ButtonLink to="/" text="Inicio" />
+        {/* <ButtonLink to="/home" text="Inicio" /> */}
         <ButtonLink to="/Registro" text="Registro de Estudiantes" />
         <ButtonLink to="/Factores" text="Factores de Riesgo" />
         <ButtonLink to="/Pareto" text="Pareto" />

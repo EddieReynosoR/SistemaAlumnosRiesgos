@@ -21,31 +21,31 @@ declare global {
   }
 }
 
-interface Estudiante {
-  idestudiante: number;
-  numerocontrol: string;
-  nombre: string;
-  apellidopaterno?: string;
-  apellidomaterno?: string;
-  semestre: number;
-}
+// interface Estudiante {
+//   idestudiante: number;
+//   numerocontrol: string;
+//   nombre: string;
+//   apellidopaterno?: string;
+//   apellidomaterno?: string;
+//   semestre: number;
+// }
 
-interface CalificacionAsistencia {
-  idestudiante: number;
-  calificacion: number;
-  asistencia: number;
-}
+// interface CalificacionAsistencia {
+//   idestudiante: number;
+//   calificacion: number;
+//   asistencia: number;
+// }
 
-interface FactorRiesgo {
-  idfactor: number;
-  categoria: string;
-  descripcion: string;
-}
+// interface FactorRiesgo {
+//   idfactor: number;
+//   categoria: string;
+//   descripcion: string;
+// }
 
-interface RiesgoEstudiante {
-  idestudiante: number;
-  idfactor: number;
-}
+// interface RiesgoEstudiante {
+//   idestudiante: number;
+//   idfactor: number;
+// }
 
 const ExportarDatos: React.FC = () => {
   const [formato, setFormato] = useState<Formato>("");
@@ -294,13 +294,13 @@ const exportarExcel = async (datos: any[]) => {
   };
 
   return (
-    <div>
+    <div className="text-Primary">
       <MainLayout text="Exportar Datos">
         <h2 className="text-2xl font-semibold mb-4 p-3">Exportar Datos</h2>
         <div className="max-w-5xl mx-auto p-8 bg-white border-2 border-gray-300 shadow-xl rounded-2xl mt-8">
           <form onSubmit={handleSubmit}>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <label className="block text-gray-700 font-medium mb-1">
+              <label className="block font-medium mb-1">
                 Formato de Exportación:
               </label>
               <div className="flex flex-wrap items-center gap-4">
@@ -312,7 +312,7 @@ const exportarExcel = async (datos: any[]) => {
                       value={fmt}
                       checked={formato === fmt}
                       onChange={() => setFormato(fmt as Formato)}
-                      className="text-blue-600"
+                      className="text-Primary"
                     />
                     {fmt.toUpperCase()}
                   </label>
@@ -326,38 +326,38 @@ const exportarExcel = async (datos: any[]) => {
                 id="datosEstudiantes"
                 checked={incluirDatos}
                 onChange={() => setIncluirDatos(!incluirDatos)}
-                className="text-blue-600"
+                className="text-Primary"
               />
-              <label htmlFor="datosEstudiantes" className="text-gray-700 font-medium">
+              <label htmlFor="datosEstudiantes" className=" font-medium">
                 Incluir datos de estudiante
               </label>
             </div>
 
             <div className="mt-4">
-              <label className="block text-gray-700 font-medium mb-1">
+              <label className="block  font-medium mb-1">
                 Ruta destino:
               </label>
               <button
                 type="button"
                 onClick={elegirCarpeta}
-                className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 transition"
+                className="cursor-pointer hover:border-2 hover:border-Primary hover:bg-Neutral hover:text-Primary  bg-Primary text-Neutral  rounded-2xl w-50 h-10 m-5"
               >
                 Elegir carpeta
               </button>
-              {ruta && <p className="text-sm text-gray-600 mt-1">Carpeta seleccionada ✔️</p>}
+              {ruta && <p className="text-sm text-Primary mt-1">Carpeta seleccionada ✔️</p>}
             </div>
 
             <div className="flex justify-end gap-3 pt-5">
               <button
                 type="submit"
-                className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition"
+                className="cursor-pointer hover:border-2 hover:border-Primary hover:bg-Neutral hover:text-Primary  bg-Secundary text-Neutral  rounded-2xl w-50 h-10 m-5"
               >
                 Exportar
               </button>
               <button
                 type="button"
                 onClick={handleCancelar}
-                className="bg-gray-300 text-gray-700 px-4 py-2 rounded hover:bg-gray-400 transition"
+                className="cursor-pointer hover:border-2 hover:border-Primary hover:bg-Neutral hover:text-Primary  bg-Primary text-Neutral  rounded-2xl w-50 h-10 m-5"
               >
                 Cancelar
               </button>

@@ -140,7 +140,7 @@ function Pareto() {
 
   return (
     <MainLayout text="Análisis de Pareto">
-      <div className="p-4">
+      <div className="p-4 text-Primary">
         <h2 className="text-2xl font-semibold mb-4">Análisis de Pareto</h2>
         <p className="mb-4">
           Este gráfico muestra la distribución de las categorías de factores de riesgo.
@@ -158,7 +158,7 @@ function Pareto() {
               <Bar
                 yAxisId="left"
                 dataKey="frecuencia"
-                fill="#3b82f6"
+                fill="#000B58"
                 barSize={40}
                 name="Frecuencia"
               />
@@ -176,25 +176,25 @@ function Pareto() {
         <div className="flex flex-wrap gap-3 mt-6">
           <button
             onClick={exportAll}
-            className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition"
+            className="cursor-pointer hover:border-2 hover:border-Primary hover:bg-Neutral hover:text-Primary  bg-Primary text-Neutral  rounded-2xl w-50 h-10 m-5"
           >
             Exportar Todo
           </button>
           <button
             onClick={exportToExcelWithChart}
-            className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition"
+            className="cursor-pointer hover:border-2 hover:border-Primary hover:bg-Neutral hover:text-Primary  bg-Primary text-Neutral  rounded-2xl w-50 h-10 m-5"
           >
             Exportar Excel
           </button>
           <button
             onClick={exportToCSV}
-            className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition"
+            className="cursor-pointer hover:border-2 hover:border-Primary hover:bg-Neutral hover:text-Primary  bg-Primary text-Neutral  rounded-2xl w-50 h-10 m-5"
           >
             Exportar CSV
           </button>
           <button
             onClick={exportToPDF}
-            className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition"
+            className="cursor-pointer hover:border-2 hover:border-Primary hover:bg-Neutral hover:text-Primary  bg-Primary text-Neutral  rounded-2xl w-50 h-10 m-5"
           >
             Exportar PDF
           </button>

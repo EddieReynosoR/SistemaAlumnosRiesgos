@@ -19,7 +19,7 @@ import ExcelJS from "exceljs";
 import html2canvas from "html2canvas";
 
 
-const COLORS = ["#8884d8", "#82ca9d", "#ffc658", "#ff7300", "#3b82f6", "#e03b3b"];
+const COLORS = ["#000B58", "#003161", "#006A67", "#FDEB9E", "#3b82f6", "#e03b3b"];
 type Formato = "excel" | "csv" | "pdf" | "todos";
 
 function Histograma() {
@@ -220,7 +220,7 @@ function Histograma() {
 
   return (
     <MainLayout text="Histograma">
-      <div className="p-6">
+      <div className="p-6 text-Primary">
         <h2 className="text-2xl font-semibold mb-4">
           Histograma de Riesgos por Materia
         </h2>
@@ -256,7 +256,7 @@ function Histograma() {
             <button
               key={fmt}
               onClick={() => handleExportar(fmt)}
-              className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition"
+              className="cursor-pointer hover:border-2 hover:border-Primary hover:bg-Neutral hover:text-Primary  bg-Primary text-Neutral  rounded-2xl w-50 h-10 m-5"
             >
               Exportar {fmt.toUpperCase()}
             </button>

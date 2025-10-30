@@ -5,7 +5,7 @@ import supabase from "../../utils/supabaseClient";
 
 const SignInPage = () => {
   const { session, obtenerPerfilDocente } = useSession();
-  if (session) return <Navigate to="/home" />;
+  if (session) return <Navigate to="/Registro" />;
 
   const [status, setStatus] = useState("");
   const [formValues, setFormValues] = useState({

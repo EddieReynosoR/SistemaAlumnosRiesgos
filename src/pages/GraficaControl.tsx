@@ -286,7 +286,7 @@ const exportarExcel = async () => {
 
   return (
     <MainLayout text="Gráfica de Control">
-      <div className="p-6">
+      <div className="p-6 text-Primary">
         <h2 className="text-2xl font-semibold mb-4">Gráfica de Control</h2>
         <p className="mb-4">
           Esta gráfica muestra la variación de las calificaciones por unidad, junto con los
@@ -324,7 +324,7 @@ const exportarExcel = async () => {
               <Line
                 type="monotone"
                 dataKey="calificacion"
-                stroke="#3b82f6"
+                stroke="#000B58"
                 strokeWidth={2}
                 dot={{ r: 5 }}
                 name="Calificación"
@@ -352,12 +352,12 @@ const exportarExcel = async () => {
           </ResponsiveContainer>
         </div>
 
-        <div className="flex flex-wrap gap-3 mt-6">
+        <div className="flex flex-wrap gap-3 mt-6 ">
           {(["excel", "csv", "pdf", "todos"] as Formato[]).map((fmt) => (
             <button
               key={fmt}
               onClick={() => handleExportar(fmt)}
-              className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition"
+              className="cursor-pointer hover:border-2 hover:border-Primary hover:bg-Neutral hover:text-Primary  bg-Primary text-Neutral  rounded-2xl w-50 h-10 m-5"
             >
               Exportar {fmt.toUpperCase()}
             </button>

@@ -7,21 +7,21 @@ import NotFoundPage from "../pages/404Page.tsx";
 import AuthProtectedRoute from "./AuthProtectedRoute.tsx";
 import Home from "@/pages/Home.tsx";
 import App from "../App.tsx";
-import RegistroEstudiantes from "@/pages/RegistroEstudiantes.tsx";
-import FactoresRiesgo from "@/pages/FactoresRiesgo.tsx";
 import Pareto from "@/pages/Pareto.tsx";
 import GraficaControl from "@/pages/GraficaControl.tsx";
 import Histograma from "@/pages/Histogramas.tsx";
 import Dispersion from "@/pages/Dispersion.tsx";
 import ExportarDatos from "@/pages/ExportarDatos.tsx";
+import EstudiantesPage from "@/pages/EstudiantesPage.tsx";
+import MateriasPage from "@/pages/MateriasPage.tsx";
+import FactoresPage from "@/pages/FactoresPage.tsx";
+import CarrerasPage from "@/pages/CarrerasPage.tsx";
 
 const router = createBrowserRouter([
-  // I recommend you reflect the routes here in the pages folder
   {
     path: "/",
     element: <App />,
     children: [
-      // Public routes
       {
         path: "/",
         element: <HomePage />,
@@ -34,7 +34,6 @@ const router = createBrowserRouter([
         path: "/auth/sign-up",
         element: <SignUpPage />,
       },
-      // Auth Protected routes
       {
         path: "/",
         element: <AuthProtectedRoute />,
@@ -46,14 +45,6 @@ const router = createBrowserRouter([
           {
             path:"/home",
             element:<Home/>,
-          },
-          {
-            path:"/Registro",
-            element:<RegistroEstudiantes/>,
-          },
-          {
-            path:"/Factores",
-            element:<FactoresRiesgo/>,
           },
           {
             path:"/Pareto",
@@ -74,6 +65,22 @@ const router = createBrowserRouter([
           {
             path:"/Exportar",
             element:<ExportarDatos/>
+          },
+          {
+            path: "/Estudiantes",
+            element: <EstudiantesPage />
+          },
+          {
+            path: "/Materias",
+            element: <MateriasPage />
+          },
+          {
+            path: "/Factores",
+            element: <FactoresPage />
+          },
+          {
+            path: "/Carreras",
+            element: <CarrerasPage />
           }
         ],
       },

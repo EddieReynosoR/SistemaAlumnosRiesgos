@@ -16,6 +16,7 @@ import EstudiantesPage from "@/pages/EstudiantesPage.tsx";
 import MateriasPage from "@/pages/MateriasPage.tsx";
 import FactoresPage from "@/pages/FactoresPage.tsx";
 import CarrerasPage from "@/pages/CarrerasPage.tsx";
+import ImportarDatos from "@/pages/ImportarDatos.tsx";
 
 const router = createBrowserRouter([
   {
@@ -81,6 +82,10 @@ const router = createBrowserRouter([
           {
             path: "/Carreras",
             element: <CarrerasPage />
+          },
+          {
+            path: "/Importar",
+            element: <ImportarDatos />
           }
         ],
       },

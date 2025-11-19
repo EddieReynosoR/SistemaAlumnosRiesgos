@@ -357,7 +357,8 @@ const exportarExcel = async () => {
             <button
               key={fmt}
               onClick={() => handleExportar(fmt)}
-              className="cursor-pointer hover:border-2 hover:border-Primary hover:bg-Neutral hover:text-Primary  bg-Primary text-Neutral  rounded-2xl w-50 h-10 m-5"
+              className="px-8 py-2 rounded-lg font-semibold text-white flex items-center gap-2
+                          bg-[hsl(219,57%,51%)] hover:bg-[hsl(219,61%,65%)] transition shadow"
             >
               Exportar {fmt.toUpperCase()}
             </button>

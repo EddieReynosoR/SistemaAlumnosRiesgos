@@ -5,6 +5,11 @@ import * as XLSX from "xlsx";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import supabase from "../utils/supabaseClient";
+import { 
+  FaFileUpload, 
+  FaFileExcel, 
+  FaTimesCircle 
+} from "react-icons/fa";
 
 type Formato = "excel" | "csv" | "pdf" | "todos" | "";
 
@@ -340,9 +345,10 @@ const exportarExcel = async (datos: any[]) => {
               <button
                 type="button"
                 onClick={elegirCarpeta}
-                className="cursor-pointer hover:border-2 hover:border-Primary hover:bg-Neutral hover:text-Primary  bg-Primary text-Neutral  rounded-2xl w-50 h-10 m-5"
+                className="px-8 py-2 rounded-lg font-semibold text-white flex items-center gap-2
+                          bg-[hsl(219,57%,51%)] hover:bg-[hsl(219,61%,65%)] transition shadow"
               >
-                Elegir carpeta
+                Elegir carpeta <FaFileUpload/>
               </button>
               {ruta && <p className="text-sm text-Primary mt-1">Carpeta seleccionada ✔️</p>}
             </div>
@@ -350,16 +356,17 @@ const exportarExcel = async (datos: any[]) => {
             <div className="flex justify-end gap-3 pt-5">
               <button
                 type="submit"
-                className="cursor-pointer hover:border-2 hover:border-Primary hover:bg-Neutral hover:text-Primary  bg-Secundary text-Neutral  rounded-2xl w-50 h-10 m-5"
+                className="px-8 py-2 rounded-lg font-semibold text-white flex items-center gap-2
+                          bg-[hsl(219,57%,51%)] hover:bg-[hsl(219,61%,65%)] transition shadow"
               >
-                Exportar
+                Exportar <FaFileExcel />
               </button>
               <button
                 type="button"
                 onClick={handleCancelar}
-                className="cursor-pointer hover:border-2 hover:border-Primary hover:bg-Neutral hover:text-Primary  bg-Primary text-Neutral  rounded-2xl w-50 h-10 m-5"
+                className="px-8 py-2 rounded-lg font-semibold text-white bg-[#e74c3c] hover:bg-red-600 transition flex items-center gap-2"
               >
-                Cancelar
+                Cancelar <FaTimesCircle />
               </button>
             </div>
           </form>

@@ -176,25 +176,29 @@ function Pareto() {
         <div className="flex flex-wrap gap-3 mt-6">
           <button
             onClick={exportAll}
-            className="cursor-pointer hover:border-2 hover:border-Primary hover:bg-Neutral hover:text-Primary  bg-Primary text-Neutral  rounded-2xl w-50 h-10 m-5"
+            className="px-8 py-2 rounded-lg font-semibold text-white flex items-center gap-2
+                          bg-[hsl(219,57%,51%)] hover:bg-[hsl(219,61%,65%)] transition shadow"
           >
             Exportar Todo
           </button>
           <button
             onClick={exportToExcelWithChart}
-            className="cursor-pointer hover:border-2 hover:border-Primary hover:bg-Neutral hover:text-Primary  bg-Primary text-Neutral  rounded-2xl w-50 h-10 m-5"
+            className="px-8 py-2 rounded-lg font-semibold text-white flex items-center gap-2
+                          bg-[hsl(219,57%,51%)] hover:bg-[hsl(219,61%,65%)] transition shadow"
           >
             Exportar Excel
           </button>
           <button
             onClick={exportToCSV}
-            className="cursor-pointer hover:border-2 hover:border-Primary hover:bg-Neutral hover:text-Primary  bg-Primary text-Neutral  rounded-2xl w-50 h-10 m-5"
+            className="px-8 py-2 rounded-lg font-semibold text-white flex items-center gap-2
+                          bg-[hsl(219,57%,51%)] hover:bg-[hsl(219,61%,65%)] transition shadow"
           >
             Exportar CSV
           </button>
           <button
             onClick={exportToPDF}
-            className="cursor-pointer hover:border-2 hover:border-Primary hover:bg-Neutral hover:text-Primary  bg-Primary text-Neutral  rounded-2xl w-50 h-10 m-5"
+            className="px-8 py-2 rounded-lg font-semibold text-white flex items-center gap-2
+                          bg-[hsl(219,57%,51%)] hover:bg-[hsl(219,61%,65%)] transition shadow"
           >
             Exportar PDF
           </button>

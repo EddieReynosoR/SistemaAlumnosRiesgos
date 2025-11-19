@@ -1,5 +1,3 @@
-// ========= SOLO PEGA ESTE COMPONENTE COMPLETO ==========
-
 import { useState } from "react"; 
 import MainLayout from "../layouts/MainLayout";
 import * as XLSX from "xlsx";
@@ -46,9 +44,7 @@ export default function ImportarEstudiantesForm() {
   const [loading, setLoading] = useState(false);
 
   const esUUID = (v: string) =>
-    /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(
-      v
-    );
+    /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(v);
 
   const validarColumnas = (row: any) => {
     const columnasArchivo = Object.keys(row).map((c) => c.toLowerCase());
@@ -128,7 +124,7 @@ export default function ImportarEstudiantesForm() {
   };
 
   // =======================
-  // INSERTAR EN LAS TABLAS
+  // INSERTAR EN LAS TABLAS (CON ERRORES AGRUPADOS)
   // =======================
   const guardarEnSupabase = async () => {
     if (preview.length === 0) {
@@ -139,8 +135,12 @@ export default function ImportarEstudiantesForm() {
     setLoading(true);
     setMensaje("");
 
+    const erroresAgrupados: string[] = []; // <--- Aquí agrupamos todo
+
     try {
-      for (const row of preview) {
+      for (const [index, row] of preview.entries()) {
+        const filaExcel = index + 2;
+
         // 1️⃣ INSERTAR ESTUDIANTE
         const { data: estudiante, error: errEst } = await supabase
           .from("estudiante")
@@ -155,36 +155,62 @@ export default function ImportarEstudiantesForm() {
           .select("idestudiante")
           .single();
 
-        if (errEst) throw errEst;
+        if (errEst) {
+          erroresAgrupados.push(
+            `Fila ${filaExcel}: No se pudo insertar el estudiante (${row.numerocontrol}).`
+          );
+          continue;
+        }
 
         const idestudiante = estudiante.idestudiante;
 
-        // 2️⃣ INSERTAR RIESGO (tabla correcta riesgoestudiante)
-        const { error: errRiesgo } = await supabase.from("riesgoestudiante").insert({
-          idestudiante: idestudiante,
-          idfactor: row.idfactor,
-        });
+        // 2️⃣ INSERTAR RIESGO
+        const { error: errRiesgo } = await supabase
+          .from("riesgoestudiante")
+          .insert({
+            idestudiante: idestudiante,
+            idfactor: row.idfactor,
+          });
 
-        if (errRiesgo) throw errRiesgo;
+        if (errRiesgo) {
+          erroresAgrupados.push(
+            `Fila ${filaExcel}: No se pudo insertar el riesgo del estudiante (${row.numerocontrol}).`
+          );
+        }
 
-        // 3️⃣ INSERTAR CALIFICACIÓN + ASISTENCIA
-        const { error: errCal } = await supabase.from("calificacionasistencia").insert({
-          idestudiante: idestudiante,
-          idmateria: row.idmateria,
-          unidad: row.unidad,
-          asistencia: row.asistencia,
-          calificacion: row.calificacion,
-        });
+        // 3️⃣ INSERTAR CALIFICACIÓN
+        const { error: errCal } = await supabase
+          .from("calificacionasistencia")
+          .insert({
+            idestudiante: idestudiante,
+            idmateria: row.idmateria,
+            unidad: row.unidad,
+            asistencia: row.asistencia,
+            calificacion: row.calificacion,
+          });
 
-        if (errCal) throw errCal;
+        if (errCal) {
+          erroresAgrupados.push(
+            `Fila ${filaExcel}: No se pudo insertar la calificación/asistencia del estudiante (${row.numerocontrol}).`
+          );
+        }
       }
 
-      setMensaje("✅ Todos los registros fueron guardados correctamente.");
+      // MOSTRAR ERRORES AGRUPADOS
+      if (erroresAgrupados.length > 0) {
+        setMensaje(
+          "❌ Se encontraron errores:\n\n" +
+            erroresAgrupados.map((e) => `• ${e}`).join("\n")
+        );
+      } else {
+        setMensaje("✅ Todos los registros fueron guardados correctamente.");
+      }
+
       setPreview([]);
       setArchivo(null);
 
     } catch (error: any) {
-      setMensaje("❌ Error: " + error.message);
+      setMensaje("❌ Error inesperado: " + error.message);
     }
 
     setLoading(false);
@@ -245,7 +271,7 @@ export default function ImportarEstudiantesForm() {
                         <tr key={i} className="hover:bg-gray-50">
                           {COLUMNAS_ESPERADAS.map((c) => (
                             <td key={c} className="border p-2">{(row as any)[c]}</td>
-                          ))}
+                          ))} 
                         </tr>
                       ))}
                     </tbody>
@@ -278,7 +304,9 @@ export default function ImportarEstudiantesForm() {
             </div>
 
             {mensaje && (
-              <p className="mt-4 text-center font-semibold text-gray-700">{mensaje}</p>
+              <pre className="mt-4 text-center font-semibold text-gray-700 whitespace-pre-wrap">
+                {mensaje}
+              </pre>
             )}
 
           </div>

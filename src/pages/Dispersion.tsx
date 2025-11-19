@@ -147,32 +147,120 @@ const exportarExcel = async () => {
   };
 
   const exportarPDF = async () => {
-    if (!chartRef.current) return;
+  if (!chartRef.current) return;
 
-    const doc = new jsPDF("l", "pt", "a4");
-    doc.setFontSize(16);
-    doc.text("Gráfica de Dispersión: Calificación vs Asistencia", 40, 40);
+  const doc = new jsPDF("l", "pt", "a4");
 
-    const canvas = await html2canvas(chartRef.current);
-    const imgData = canvas.toDataURL("image/png");
-    const imgWidth = 500;
-    const imgHeight = (canvas.height * imgWidth) / canvas.width;
-    doc.addImage(imgData, "PNG", 40, 60, imgWidth, imgHeight);
+  // ============================
+  //       ENCABEZADO
+  // ============================
+  doc.setFontSize(20);
+  doc.setTextColor(40, 40, 40);
 
-    const columnas = Object.keys(data[0] || {});
-    const filas = data.map((fila) => columnas.map((k) => fila[k]));
-    autoTable(doc, {
-      head: [columnas],
-      body: filas,
-      startY: 80 + imgHeight,
-      theme: "striped",
-      styles: { fontSize: 8, cellPadding: 2 },
-      headStyles: { fillColor: [63, 81, 181], textColor: 255 },
-    });
+  doc.text(
+    "Gráfica de Dispersión: Calificación vs Asistencia",
+    doc.internal.pageSize.getWidth() / 2,
+    45,
+    { align: "center" }
+  );
 
-    const blob = doc.output("blob");
-    guardarArchivo(blob, generarNombreArchivo("grafica_dispersion", "pdf"));
-  };
+  doc.setFontSize(11);
+  doc.setTextColor(100, 100, 100);
+  doc.text(
+    "Generado automáticamente por el sistema académico",
+    doc.internal.pageSize.getWidth() / 2,
+    65,
+    { align: "center" }
+  );
+
+  // ============================
+  //       INSERTAR GRÁFICA
+  // ============================
+  const canvas = await html2canvas(chartRef.current);
+  const imgData = canvas.toDataURL("image/png");
+  const imgWidth = 540;
+  const imgHeight = (canvas.height * imgWidth) / canvas.width;
+
+  const imgX = (doc.internal.pageSize.getWidth() - imgWidth) / 2; // centrado
+  const imgY = 90;
+
+  // Marco de la imagen (estético)
+  doc.setDrawColor(220, 220, 220);
+  doc.setLineWidth(1);
+  doc.rect(imgX - 5, imgY - 5, imgWidth + 10, imgHeight + 10);
+
+  doc.addImage(imgData, "PNG", imgX, imgY, imgWidth, imgHeight);
+
+  // ============================
+  //       TABLA DE DATOS
+  // ============================
+  const columnas = Object.keys(data[0] || {});
+  const filas = data.map((fila) => columnas.map((k) => fila[k]));
+
+  autoTable(doc, {
+    head: [columnas],
+    body: filas,
+    startY: imgY + imgHeight + 40,
+    margin: { left: 20, right: 20 },
+    theme: "grid",
+
+    styles: {
+      fontSize: 9,
+      cellPadding: 4,
+      overflow: "linebreak",
+      halign: "center",
+      lineColor: [225, 225, 225],
+    },
+
+    headStyles: {
+      fillColor: [33, 150, 243],
+      textColor: 255,
+      fontSize: 10,
+      fontStyle: "bold",
+      halign: "center",
+    },
+
+    alternateRowStyles: {
+      fillColor: [245, 245, 245],
+    },
+
+    bodyStyles: {
+      textColor: [60, 60, 60],
+    },
+
+    // ============================
+    //       PIE DE PÁGINA
+    // ============================
+    didDrawPage: (data) => {
+      const pageWidth = doc.internal.pageSize.getWidth();
+      const pageHeight = doc.internal.pageSize.getHeight();
+
+      doc.setFontSize(9);
+      doc.setTextColor(120, 120, 120);
+
+      // Número de página
+      doc.text(
+        `Página ${doc.getNumberOfPages()}`,
+        pageWidth - 60,
+        pageHeight - 20
+      );
+
+      // Leyenda
+      doc.text(
+        "Sistema Académico • © 2025",
+        20,
+        pageHeight - 20
+      );
+    },
+  });
+
+  // ============================
+  //       EXPORTAR PDF
+  // ============================
+  const blob = doc.output("blob");
+  guardarArchivo(blob, generarNombreArchivo("grafica_dispersion", "pdf"));
+};
+
 
   const handleExportar = async (fmt: Formato) => {
     if (!data.length) {

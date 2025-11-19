@@ -17,6 +17,7 @@ import ExcelJS from "exceljs";
 import { jsPDF } from "jspdf";
 import html2canvas from "html2canvas";
 import { saveAs } from "file-saver";
+import autoTable from "jspdf-autotable";
 
 function Pareto() {
   const [data, setData] = useState([]);
@@ -99,26 +100,99 @@ function Pareto() {
     saveAs(new Blob([buffer]), "pareto_con_grafica.xlsx");
   };
 
-  const exportToPDF = () => {
-    const doc = new jsPDF();
-    doc.text("Análisis de Pareto", 20, 20);
+  const exportToPDF = async () => {
+  if (!chartRef.current) return;
 
-    if (chartRef.current) {
-      html2canvas(chartRef.current).then((canvas) => {
-        const imgData = canvas.toDataURL("image/png");
-        doc.addImage(imgData, "PNG", 20, 30, 180, 100);
-        doc.text("Datos de Pareto:", 20, 140);
-        data.forEach((d, index) => {
-          doc.text(
-            `${d.categoria}: Frecuencia ${d.frecuencia}, Porcentaje ${d.porcentaje}%`,
-            20,
-            150 + index * 10
-          );
-        });
-        doc.save("pareto.pdf");
-      });
-    }
-  };
+  const doc = new jsPDF("p", "pt", "a4");
+
+  // Encabezado
+  doc.setFontSize(20);
+  doc.setTextColor(40, 40, 40);
+  doc.text("Análisis de Pareto", doc.internal.pageSize.getWidth() / 2, 40, {
+    align: "center",
+  });
+
+  doc.setFontSize(11);
+  doc.setTextColor(100, 100, 100);
+  doc.text(
+    "Generado automáticamente por el sistema académico",
+    doc.internal.pageSize.getWidth() / 2,
+    60,
+    { align: "center" }
+  );
+
+  // Gráfica
+  const canvas = await html2canvas(chartRef.current, {
+    scale: 2,
+    useCORS: true,
+    allowTaint: true,
+  });
+
+  const imgData = canvas.toDataURL("image/png");
+  const imgWidth = 380;
+  const imgHeight = (canvas.height * imgWidth) / canvas.width;
+
+  const imgX = (doc.internal.pageSize.getWidth() - imgWidth) / 2;
+  const imgY = 90;
+
+  doc.setDrawColor(220, 220, 220);
+  doc.setLineWidth(1);
+  doc.rect(imgX - 5, imgY - 5, imgWidth + 10, imgHeight + 10);
+
+  doc.addImage(imgData, "PNG", imgX, imgY, imgWidth, imgHeight);
+
+  // Tabla
+  const columnas = ["Categoría", "Frecuencia", "Porcentaje (%)"];
+  const filas = data.map((d) => [d.categoria, d.frecuencia, d.porcentaje]);
+
+  const startY = imgY + imgHeight + 40;
+  const pageHeight = doc.internal.pageSize.getHeight();
+
+  autoTable(doc, {
+    head: [columnas],
+    body: filas,
+    startY: startY > pageHeight - 80 ? 90 : startY,
+    margin: { left: 20, right: 20 },
+    theme: "grid",
+
+    styles: {
+      fontSize: 10,
+      cellPadding: 4,
+      lineColor: [225, 225, 225],
+      halign: "center",
+    },
+
+    headStyles: {
+      fillColor: [33, 150, 243],
+      textColor: 255,
+      fontSize: 11,
+      fontStyle: "bold",
+    },
+
+    alternateRowStyles: {
+      fillColor: [245, 245, 245],
+    },
+
+    bodyStyles: {
+      textColor: [60, 60, 60],
+    },
+
+    didDrawPage: () => {
+      const w = doc.internal.pageSize.getWidth();
+      const h = doc.internal.pageSize.getHeight();
+
+      doc.setFontSize(9);
+      doc.setTextColor(120, 120, 120);
+
+      doc.text(`Página ${doc.getNumberOfPages()}`, w - 60, h - 20);
+      doc.text("Sistema Académico • © 2025", 20, h - 20);
+    },
+  });
+
+  // Guardar PDF
+  doc.save("pareto.pdf");
+};
+
 
   const exportToCSV = () => {
     const csvContent = [

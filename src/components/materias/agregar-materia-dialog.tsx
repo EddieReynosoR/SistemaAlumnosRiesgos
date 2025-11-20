@@ -25,6 +25,7 @@ import { useSession } from "@/context/SessionContext";
 import { type Carrera } from "@/utils/types";
 
 import { toast } from "sonner";
+import ErrorMessage from "../ErrorMessage";
 
 type Props = {
   onSuccess?: () => void;
@@ -244,7 +245,7 @@ export default function AgregarMateriaDialog({
               )}
             </div>
 
-            {error && <p className="text-sm text-red-600">{error}</p>}
+            <ErrorMessage message={error} />
           </div>
 
           <DialogFooter className="mt-2 flex gap-2">

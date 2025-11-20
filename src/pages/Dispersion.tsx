@@ -22,7 +22,6 @@ type Formato = "excel" | "csv" | "pdf" | "todos";
 
 function Dispersion() {
   const [data, setData] = useState<any[]>([]);
-  // const [formato, setFormato] = useState<Formato | "">("");
   const chartRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -63,16 +62,14 @@ const exportarExcel = async () => {
       return;
     }
 
-    // Esperar un poco por si el gráfico no ha terminado de renderizar
     await new Promise((r) => setTimeout(r, 400));
 
     const chartElement = chartRef.current;
     if (!chartElement) {
-      alert("❌ No se encontró el gráfico.");
+      alert("No se encontró el gráfico.");
       return;
     }
 
-    // 📸 Capturar el gráfico como imagen base64
     const canvas = await html2canvas(chartElement, {
       scale: 2,
       useCORS: true,
@@ -80,13 +77,10 @@ const exportarExcel = async () => {
     });
     const imgData = canvas.toDataURL("image/png");
 
-    // 🧾 Crear libro de Excel
     const workbook = new ExcelJS.Workbook();
 
-    // --- Hoja 1: Datos ---
     const sheet = workbook.addWorksheet("Datos");
 
-    // Escribir encabezados
     const columnas = Object.keys(data[0]);
     columnas.forEach((col, i) => {
       sheet.getCell(1, i + 1).value = col;
@@ -99,17 +93,14 @@ const exportarExcel = async () => {
       sheet.getColumn(i + 1).width = 18;
     });
 
-    // Escribir filas de datos
     data.forEach((fila, filaIdx) => {
       columnas.forEach((col, colIdx) => {
         sheet.getCell(filaIdx + 2, colIdx + 1).value = fila[col];
       });
     });
 
-    // --- Hoja 2: Gráfico ---
     const chartSheet = workbook.addWorksheet("Gráfico");
 
-    // Insertar imagen
     const imageId = workbook.addImage({
       base64: imgData,
       extension: "png",
@@ -123,7 +114,6 @@ const exportarExcel = async () => {
     chartSheet.getCell("A20").value =
       "Gráfica de Dispersión (Asistencia vs Calificación)";
 
-    // 💾 Guardar archivo
     const buffer = await workbook.xlsx.writeBuffer();
     saveAs(
       new Blob([buffer], {
@@ -132,9 +122,9 @@ const exportarExcel = async () => {
       generarNombreArchivo("grafica_dispersion", "xlsx")
     );
 
-    alert("✅ Exportación a Excel completada correctamente.");
+    alert("Exportación a Excel completada correctamente.");
   } catch (err) {
-    console.error("❌ Error al exportar Excel:", err);
+    console.error("Error al exportar Excel:", err);
     alert("Ocurrió un error al generar el archivo Excel. Revisa la consola.");
   }
 };
@@ -151,9 +141,7 @@ const exportarExcel = async () => {
 
   const doc = new jsPDF("l", "pt", "a4");
 
-  // ============================
-  //       ENCABEZADO
-  // ============================
+
   doc.setFontSize(20);
   doc.setTextColor(40, 40, 40);
 
@@ -173,27 +161,22 @@ const exportarExcel = async () => {
     { align: "center" }
   );
 
-  // ============================
-  //       INSERTAR GRÁFICA
-  // ============================
+
   const canvas = await html2canvas(chartRef.current);
   const imgData = canvas.toDataURL("image/png");
   const imgWidth = 540;
   const imgHeight = (canvas.height * imgWidth) / canvas.width;
 
-  const imgX = (doc.internal.pageSize.getWidth() - imgWidth) / 2; // centrado
+  const imgX = (doc.internal.pageSize.getWidth() - imgWidth) / 2;
   const imgY = 90;
 
-  // Marco de la imagen (estético)
   doc.setDrawColor(220, 220, 220);
   doc.setLineWidth(1);
   doc.rect(imgX - 5, imgY - 5, imgWidth + 10, imgHeight + 10);
 
   doc.addImage(imgData, "PNG", imgX, imgY, imgWidth, imgHeight);
 
-  // ============================
-  //       TABLA DE DATOS
-  // ============================
+
   const columnas = Object.keys(data[0] || {});
   const filas = data.map((fila) => columnas.map((k) => fila[k]));
 
@@ -228,9 +211,7 @@ const exportarExcel = async () => {
       textColor: [60, 60, 60],
     },
 
-    // ============================
-    //       PIE DE PÁGINA
-    // ============================
+
     didDrawPage: (data) => {
       const pageWidth = doc.internal.pageSize.getWidth();
       const pageHeight = doc.internal.pageSize.getHeight();
@@ -238,14 +219,13 @@ const exportarExcel = async () => {
       doc.setFontSize(9);
       doc.setTextColor(120, 120, 120);
 
-      // Número de página
       doc.text(
         `Página ${doc.getNumberOfPages()}`,
         pageWidth - 60,
         pageHeight - 20
       );
 
-      // Leyenda
+      
       doc.text(
         "Sistema Académico • © 2025",
         20,
@@ -254,9 +234,7 @@ const exportarExcel = async () => {
     },
   });
 
-  // ============================
-  //       EXPORTAR PDF
-  // ============================
+  
   const blob = doc.output("blob");
   guardarArchivo(blob, generarNombreArchivo("grafica_dispersion", "pdf"));
 };

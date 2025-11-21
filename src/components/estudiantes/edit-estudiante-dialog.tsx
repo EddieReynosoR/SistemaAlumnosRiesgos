@@ -30,6 +30,44 @@ type EditEstudianteDialog = {
   setData: React.Dispatch<React.SetStateAction<EstudianteConCarrera[]>>;
 };
 
+function FieldError({ message }: { message?: string | null }) {
+  if (!message) return null;
+
+  return (
+    <p
+      className={`flex items-center gap-2 text-sm font-bold text-white bg-red-600 px-3 py-2 rounded-md transition-all duration-300 ${
+        message ? "opacity-100 translate-y-0" : "opacity-0 -translate-y-2"
+      }`}
+    >
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        fill="none"
+        viewBox="0 0 24 24"
+        strokeWidth={2}
+        stroke="white"
+        className="w-5 h-5"
+      >
+        <path
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          d="M12 9v3m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+        />
+      </svg>
+
+      {message || " "}
+    </p>
+  );
+}
+
+type FieldErrors = {
+  numerocontrol?: string;
+  nombre?: string;
+  apellidopaterno?: string;
+  apellidomaterno?: string;
+  carrera?: string;
+  semestre?: string;
+};
+
 export default function EditEstudianteDialog({
   editing,
   setEditing,
@@ -37,6 +75,8 @@ export default function EditEstudianteDialog({
 }: EditEstudianteDialog) {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
+
   const [carreras, setCarreras] = useState<Carrera[]>([]);
   const [carrerasLoading, setCarrerasLoading] = useState(false);
   const [carreraId, setCarreraId] = useState<string>("");
@@ -67,6 +107,8 @@ export default function EditEstudianteDialog({
     else setCarreraId("");
 
     setSemestre(editing?.semestre ?? "");
+    setFieldErrors({});
+    setError(null);
   }, [editing]);
 
   const maxSemestre = useMemo(() => {
@@ -88,58 +130,115 @@ export default function EditEstudianteDialog({
     async (e: React.FormEvent<HTMLFormElement>) => {
       e.preventDefault();
       if (!editing) return;
+
       setSaving(true);
+      setError(null);
 
       const form = new FormData(e.currentTarget);
-      const s = Number(form.get("semestre"));
-      if (!s || s < 1 || s > maxSemestre) {
-        setError(`El semestre debe estar entre 1 y ${maxSemestre}.`);
+
+      const numerocontrol = String(form.get("numerocontrol") ?? "").trim();
+      const nombre = String(form.get("nombre") ?? "").trim();
+      const apellidopaterno = String(
+        form.get("apellidopaterno") ?? ""
+      ).trim();
+      const apellidomaternoRaw = String(
+        form.get("apellidomaterno") ?? ""
+      ).trim();
+      const apellidomaterno = apellidomaternoRaw || null;
+
+      const newFieldErrors: FieldErrors = {};
+
+      if (!numerocontrol) {
+        newFieldErrors.numerocontrol = "El número de control es obligatorio.";
+      } else if (numerocontrol.length < 8) {
+        newFieldErrors.numerocontrol =
+          "El número de control debe tener al menos 8 caracteres.";
+      }
+        else if (!/^\d+$/.test(numerocontrol)) {
+        newFieldErrors.numerocontrol = "El número de control solo debe contener números.";
+      }
+
+      if (!nombre) {
+        newFieldErrors.nombre = "El nombre es obligatorio.";
+      } else if (nombre.length < 2) {
+        newFieldErrors.nombre = "El nombre debe tener al menos 2 caracteres.";
+      }
+
+      if (!apellidopaterno) {
+        newFieldErrors.apellidopaterno = "El apellido paterno es obligatorio.";
+      } else if (apellidopaterno.length < 2) {
+        newFieldErrors.apellidopaterno =
+          "El apellido paterno debe tener al menos 2 caracteres.";
+      }
+
+      if (apellidomaternoRaw && apellidomaternoRaw.length < 2) {
+        newFieldErrors.apellidomaterno =
+          "Si capturas apellido materno, debe tener al menos 2 caracteres.";
+      }
+
+      if (!carreraId) {
+        newFieldErrors.carrera = "Debes seleccionar una carrera.";
+      }
+
+      const sRaw = String(form.get("semestre") ?? "").trim();
+      const s = Number(sRaw);
+      if (!sRaw) {
+        newFieldErrors.semestre = "El semestre es obligatorio.";
+      } else if (Number.isNaN(s) || s < 1 || s > maxSemestre) {
+        newFieldErrors.semestre = `El semestre debe estar entre 1 y ${maxSemestre}.`;
+      }
+
+      if (Object.keys(newFieldErrors).length > 0) {
+        setFieldErrors(newFieldErrors);
         setSaving(false);
         return;
       }
+
+      setFieldErrors({});
 
       if (s < editing.semestre) {
-      const { count, error: checkError } = await supabase
-        .from("materia")
-        .select("*", { count: "exact", head: true })
-        .eq("idcarrera", carreraId)
-        .gt("semestre", s);
+        const { count, error: checkError } = await supabase
+          .from("materia")
+          .select("*", { count: "exact", head: true })
+          .eq("idcarrera", carreraId)
+          .gt("semestre", s);
 
-      if (checkError) {
-        setError("Error verificando materias relacionadas.");
-        setSaving(false);
-        return;
-      }
+        if (checkError) {
+          setError("Error verificando materias relacionadas.");
+          setSaving(false);
+          return;
+        }
 
-      if (count && count > 0) {
-        setError(
-          `No puedes bajar el semestre a ${s} porque existen materias registradas de semestres posteriores (${count} encontradas).`
-        );
-        setSaving(false);
-        return;
+        if (count && count > 0) {
+          setFieldErrors((prev) => ({
+            ...prev,
+            semestre: `No puedes bajar el semestre a ${s} porque existen materias registradas de semestres posteriores (${count} encontradas).`,
+          }));
+          setSaving(false);
+          return;
+        }
       }
-    }
 
       const payload = {
-        numerocontrol: String(form.get("numerocontrol") ?? "").trim(),
-        nombre: String(form.get("nombre") ?? "").trim(),
-        apellidopaterno: String(form.get("apellidopaterno") ?? "").trim(),
-        apellidomaterno: String(form.get("apellidomaterno") ?? "").trim(),
+        numerocontrol,
+        nombre,
+        apellidopaterno,
+        apellidomaterno,
         semestre: s,
         idcarrera: carreraId,
         usuariomodifico: docente?.iddocente,
-        fechamodificacion: new Date().toISOString()
+        fechamodificacion: new Date().toISOString(),
       };
 
-      const { error } = await supabase
+      const { error: updateError } = await supabase
         .from("estudiante")
         .update(payload)
         .eq("idestudiante", editing.idestudiante);
 
       setSaving(false);
 
-      if (error) {
-        setError(error.message);
+      if (updateError) {
+        setError(updateError.message);
         return;
       }
 
@@ -150,10 +249,9 @@ export default function EditEstudianteDialog({
       );
 
       toast.success("Se editó al estudiante de forma correcta.");
-
       setEditing(null);
     },
-    [editing, carreraId, maxSemestre, setData, setEditing]
+    [editing, carreraId, maxSemestre, setData, setEditing, docente]
   );
 
   return (
@@ -163,6 +261,7 @@ export default function EditEstudianteDialog({
         if (!open) {
           setEditing(null);
           setError(null);
+          setFieldErrors({});
         }
       }}
     >
@@ -181,8 +280,8 @@ export default function EditEstudianteDialog({
               id="numerocontrol"
               name="numerocontrol"
               defaultValue={editing?.numerocontrol ?? ""}
-              required
             />
+            <FieldError message={fieldErrors.numerocontrol} />
           </div>
 
           <div className="grid gap-2">
@@ -191,8 +290,8 @@ export default function EditEstudianteDialog({
               id="nombre"
               name="nombre"
               defaultValue={editing?.nombre ?? ""}
-              required
             />
+            <FieldError message={fieldErrors.nombre} />
           </div>
 
           <div className="grid gap-2">
@@ -201,24 +300,28 @@ export default function EditEstudianteDialog({
               id="apellidopaterno"
               name="apellidopaterno"
               defaultValue={editing?.apellidopaterno ?? ""}
-              required
             />
+            <FieldError message={fieldErrors.apellidopaterno} />
           </div>
 
           <div className="grid gap-2">
-            <Label htmlFor="apellidomaterno">Apellido materno</Label>
+            <Label htmlFor="apellidomaterno">Apellido materno (Opcional)</Label>
             <Input
               id="apellidomaterno"
               name="apellidomaterno"
               defaultValue={editing?.apellidomaterno ?? ""}
             />
+            <FieldError message={fieldErrors.apellidomaterno} />
           </div>
 
           <div className="grid gap-2">
             <Label htmlFor="idcarrera">Carrera</Label>
             <Select
               value={carreraId}
-              onValueChange={setCarreraId}
+              onValueChange={(value) => {
+                setCarreraId(value);
+                setFieldErrors((prev) => ({ ...prev, carrera: undefined }));
+              }}
               disabled={carrerasLoading}
             >
               <SelectTrigger id="idcarrera">
@@ -238,6 +341,7 @@ export default function EditEstudianteDialog({
                 ))}
               </SelectContent>
             </Select>
+            <FieldError message={fieldErrors.carrera} />
           </div>
 
           <div className="grid gap-2">
@@ -251,21 +355,47 @@ export default function EditEstudianteDialog({
               value={semestre}
               onChange={(e) => {
                 const raw = e.target.value;
-                if (raw === "") return setSemestre("");
+                if (raw === "") {
+                  setSemestre("");
+                  setFieldErrors((prev) => ({ ...prev, semestre: undefined }));
+                  return;
+                }
                 const v = Number(raw);
                 if (Number.isNaN(v)) return;
-                setSemestre(Math.min(Math.max(v, 1), maxSemestre)); // clamp
+                const clamped = Math.min(Math.max(v, 1), maxSemestre);
+                setSemestre(clamped);
+                setFieldErrors((prev) => ({ ...prev, semestre: undefined }));
               }}
-              required
             />
             {carreraId && (
               <p className="text-xs text-muted-foreground">
                 Rango permitido: 1 a {maxSemestre}
               </p>
             )}
+            <FieldError message={fieldErrors.semestre} />
           </div>
 
-          {error && <p className="text-sm text-red-600">{error}</p>}
+          {error && (
+            <p
+              className={`mt-1 flex items-center gap-2 text-sm font-bold text-white bg-red-600 px-3 py-2 rounded-md transition-all duration-300`}
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+                strokeWidth={2}
+                stroke="white"
+                className="w-5 h-5"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M12 9v3m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                />
+              </svg>
+              {error}
+            </p>
+          )}
 
           <div className="flex items-center gap-2 pt-2">
             <Button type="submit" disabled={saving}>

@@ -14,6 +14,7 @@ import { useState, useCallback, useEffect } from "react";
 import supabase from "@/utils/supabaseClient";
 import type { MateriaConCarrera } from "@/utils/types";
 import { useSession } from "@/context/SessionContext";
+import ErrorMessage from "../ErrorMessage";
 
 type Carrera = { idcarrera: string; nombre: string };
 
@@ -241,9 +242,9 @@ export function EditMateriaDialog({ editing, setEditing, setData }: EditMateriaD
             </div>
           </div>
 
-          {error && <p className="text-sm text-red-600">{error}</p>}
+          <ErrorMessage message={error} />
 
-          <DialogFooter>
+          <DialogFooter className="mt-4 flex gap-2">
             <Button type="submit" disabled={saving || !carreraId}>
               {saving ? "Guardando..." : "Guardar cambios"}
             </Button>

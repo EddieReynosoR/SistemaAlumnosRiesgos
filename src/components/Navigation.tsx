@@ -7,10 +7,10 @@ const Navigation: React.FC = () => {
  
   return (
     
-    <nav className=" w-1/6 bg-Primary text-Neutral p-4">
+    <nav className=" w-1/6 bg-primary overflow-y-auto  p-4">
       <ul className="space-y-4">
-        {/* <ButtonLink to="/home" text="Inicio" /> */}
-        <ButtonLink to="/Registro" text="Registro de Estudiantes" />
+      
+        {/* <ButtonLink to="/Registro" text="Registro de Estudiantes" /> */}
         <ButtonLink to="/Estudiantes" text="Estudiantes" />
         <ButtonLink to="/Factores" text="Factores de Riesgo" />
         <ButtonLink to="/Materias" text="Materias" />

@@ -9,16 +9,16 @@ const ProtectedPage = () => {
 
   return (
     <main>
-      <nav className="h-15 bg-Primary flex items-center ">
+      <nav className="h-15 bg-primary flex items-center ">
         <Link className="home-link " to="/">
-          <button className="cursor-pointer hover:border-2 hover:border-Primary hover:bg-Neutral hover:text-Primary  bg-Primary text-Neutral  rounded-2xl w-25 h-10 m-2">
+          <button className="cursor-pointer hover:border-2 hover:border-primary hover:bg-neutral hover:text-primary  bg-primary text-neutral  rounded-2xl w-25 h-10 m-2">
             ◄ Home
           </button>
         </Link>
       </nav>
       <div className="flex justify-center mt-35">
 
-      <section className="main-container border-b-2 border-t-2 shadow-2xl text-Primary border-Primary rounded-lg h-75 w-180 flex flex-col justify-evenly  items-center">
+      <section className="main-container border-b-2 border-t-2 shadow-2xl text-primary border-primary rounded-lg h-75 w-180 flex flex-col justify-evenly  items-center">
         <h1 className="header-text">Página protegida</h1>
 
         <p>Usuario: {session.user.email}</p>

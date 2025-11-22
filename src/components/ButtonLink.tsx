@@ -15,8 +15,8 @@ function ButtonLink({ to, text }: LinkProps) {
         to={to}
         className={`block px-4 py-2 rounded transition-colors duration-200
           ${isActive
-            ? "bg-Neutral text-Primary font-semibold shadow-md"
-            : "text-Neutral hover:bg-Neutral hover:text-Primary"
+            ? "bg-neutral text-primary font-semibold shadow-md"
+            : "text-neutral hover:bg-neutral hover:text-primary"
           }`}
       >
         {text}

@@ -105,7 +105,7 @@ const handleInputChange = (e: React.ChangeEvent<HTMLInputElement|HTMLSelectEleme
               required
             />
             <span
-              className="absolute left-0 bottom-0 h-0.5 bg-Primary w-0 
+              className="absolute left-0 bottom-0 h-0.5 bg-primary w-0 
                transition-all duration-300 ease-in-out group-focus-within:w-full"
             ></span>
           </div>
@@ -120,7 +120,7 @@ const handleInputChange = (e: React.ChangeEvent<HTMLInputElement|HTMLSelectEleme
               required
             />
             <span
-              className="absolute left-0 bottom-0 h-0.5 bg-Primary w-0 
+              className="absolute left-0 bottom-0 h-0.5 bg-primary w-0 
                transition-all duration-300 ease-in-out group-focus-within:w-full"
             ></span>
           </div>
@@ -135,7 +135,7 @@ const handleInputChange = (e: React.ChangeEvent<HTMLInputElement|HTMLSelectEleme
               required
             />
             <span
-              className="absolute left-0 bottom-0 h-0.5 bg-Primary w-0 
+              className="absolute left-0 bottom-0 h-0.5 bg-primary w-0 
                transition-all duration-300 ease-in-out group-focus-within:w-full"
             ></span>
           </div>
@@ -151,7 +151,7 @@ const handleInputChange = (e: React.ChangeEvent<HTMLInputElement|HTMLSelectEleme
               required
             />
             <span
-              className="absolute left-0 bottom-0 h-0.5 bg-Primary w-0 
+              className="absolute left-0 bottom-0 h-0.5 bg-primary w-0 
                transition-all duration-300 ease-in-out group-focus-within:w-full"
             ></span>
           </div>
@@ -166,7 +166,7 @@ const handleInputChange = (e: React.ChangeEvent<HTMLInputElement|HTMLSelectEleme
               required
             />
             <span
-              className="absolute left-0 bottom-0 h-0.5 bg-Primary w-0 
+              className="absolute left-0 bottom-0 h-0.5 bg-primary w-0 
                transition-all duration-300 ease-in-out group-focus-within:w-full"
             ></span>
           </div>
@@ -185,14 +185,14 @@ const handleInputChange = (e: React.ChangeEvent<HTMLInputElement|HTMLSelectEleme
   </select>
 
   <span
-    className="absolute left-0 bottom-0 h-0.5 bg-Primary w-0 
+    className="absolute left-0 bottom-0 h-0.5 bg-primary w-0 
      transition-all duration-300 ease-in-out group-focus-within:w-full"
   ></span>
 </div>
 
           <button
             type="submit"
-            className="cursor-pointer self-end col-span-2 bg-Primary text-Neutral  rounded-2xl w-100 h-10 m-5"
+            className="cursor-pointer self-end col-span-2 bg-primary text-neutral  rounded-2xl w-100 h-10 m-5"
           >
             Crear cuenta
           </button>

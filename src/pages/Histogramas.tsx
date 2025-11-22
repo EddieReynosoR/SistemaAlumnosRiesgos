@@ -19,7 +19,8 @@ import ExcelJS from "exceljs";
 import html2canvas from "html2canvas";
 
 
-const COLORS = ["#000B58", "#003161", "#006A67", "#FDEB9E", "#3b82f6", "#e03b3b"];
+const COLORS = ["var(--primary)", "var(--secondary)", "var(--tertiary)", "var(--neutral)", "#3b82f6", "#e03b3b"];
+// const COLORS = ["#000B58", "#003161", "#006A67", "#FDEB9E", "#3b82f6", "#e03b3b"];
 type Formato = "excel" | "csv" | "pdf" | "todos";
 
 function Histograma() {
@@ -115,7 +116,7 @@ function Histograma() {
     const canvas = await html2canvas(chartElement, {
       scale: 2,
       useCORS: true,
-      backgroundColor: "#ffffff",
+      backgroundColor: "var(--background)",
     });
     const imgData = canvas.toDataURL("image/png");
 
@@ -220,23 +221,23 @@ function Histograma() {
 
   return (
     <MainLayout text="Histograma">
-      <div className="p-6 text-Primary">
-        <h2 className="text-2xl font-semibold mb-4">
+      <div className="p-6 text-primary">
+        <h2 className="text-2xl  font-semibold mb-4">
           Histograma de Riesgos por Materia
         </h2>
-        <p className="mb-4">
+        <p className="mb-4 text-neutral">
           Frecuencia de factores de riesgo agrupados por cada materia.
         </p>
 
         <div
           ref={chartRef}
-          className="w-full h-[400px] bg-white p-4 rounded-2xl shadow-md"
+          className="w-full h-[400px] bg-background p-4 rounded-2xl shadow-md"
         >
           <ResponsiveContainer width="100%" height="100%">
             <BarChart data={data}>
               <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="materia" />
-              <YAxis allowDecimals={false} />
+              <XAxis stroke="var(--text)" tick={{ fill: "var(--text)" }} dataKey="materia" />
+              <YAxis stroke="var(--text)" tick={{ fill: "var(--text)" }} allowDecimals={false} />
               <Tooltip />
               <Legend />
               {factores.map((factor, index) => (
@@ -256,7 +257,7 @@ function Histograma() {
             <button
               key={fmt}
               onClick={() => handleExportar(fmt)}
-              className="cursor-pointer hover:border-2 hover:border-Primary hover:bg-Neutral hover:text-Primary  bg-Primary text-Neutral  rounded-2xl w-50 h-10 m-5"
+              className="cursor-pointer hover:border-2 hover:border-primary hover:bg-secondary hover:text-primary  bg-primary text-neutral  rounded-2xl w-50 h-10 m-5"
             >
               Exportar {fmt.toUpperCase()}
             </button>

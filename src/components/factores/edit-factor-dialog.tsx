@@ -16,6 +16,7 @@ import supabase from "@/utils/supabaseClient";
 
 import { toast } from "sonner";
 import { useSession } from "@/context/SessionContext";
+import ErrorMessage from "../ErrorMessage";
 
 type EditFactorDialog = {
   editing: Factor | null;
@@ -112,7 +113,7 @@ export default function EditFactorDialog({ editing, setEditing, setData }: EditF
               />
             </div>
 
-            {error && <p className="text-sm text-red-600">{error}</p>}
+            <ErrorMessage message={error} />
 
             <div className="flex items-center gap-2 pt-2">
               <Button type="submit" disabled={saving}>

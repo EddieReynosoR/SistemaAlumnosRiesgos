@@ -5,7 +5,7 @@ import SignUpPage from "../pages/auth/SignUpPage.tsx";
 import ProtectedPage from "../pages/ProtectedPage.tsx";
 import NotFoundPage from "../pages/404Page.tsx";
 import AuthProtectedRoute from "./AuthProtectedRoute.tsx";
-import Home from "@/pages/Home.tsx";
+import RegistroEstudiantes from "@/pages/RegistroEstudiantes.tsx";
 import App from "../App.tsx";
 import Pareto from "@/pages/Pareto.tsx";
 import GraficaControl from "@/pages/GraficaControl.tsx";
@@ -44,8 +44,8 @@ const router = createBrowserRouter([
             element: <ProtectedPage />,
           },
           {
-            path:"/home",
-            element:<Home/>,
+            path:"/Registro",
+            element:<RegistroEstudiantes/>,
           },
           {
             path:"/Pareto",

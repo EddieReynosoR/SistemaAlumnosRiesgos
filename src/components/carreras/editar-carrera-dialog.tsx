@@ -14,6 +14,7 @@ import supabase from "@/utils/supabaseClient";
 import type { Carrera } from "@/utils/types";
 import { toast } from "sonner";
 import { useSession } from "@/context/SessionContext";
+import ErrorMessage from "../ErrorMessage";
 
 type EditCarreraDialog = {
   editing: Carrera | null;
@@ -142,9 +143,9 @@ export function EditCarreraDialog({ editing, setEditing, setData }: EditCarreraD
             )}
           </div>
 
-          {error && <p className="text-sm text-red-600 mb-4">{error}</p>}
+          <ErrorMessage message={error} />
 
-          <DialogFooter>
+          <DialogFooter className="mt-3 flex gap-2">
             <Button type="submit" disabled={saving}>
               {saving ? "Guardando..." : "Guardar cambios"}
             </Button>

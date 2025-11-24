@@ -214,7 +214,7 @@ function Pareto() {
 
   return (
     <MainLayout text="Análisis de Pareto">
-      <div className="p-4 text-Primary">
+      <div className="p-4 text-primary">
         <h2 className="text-2xl font-semibold mb-4">Análisis de Pareto</h2>
         <p className="mb-4">
           Este gráfico muestra la distribución de las categorías de factores de riesgo.
@@ -224,22 +224,22 @@ function Pareto() {
           <ResponsiveContainer width="100%" height="100%">
             <ComposedChart data={data}>
               <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="categoria" />
-              <YAxis yAxisId="left" />
-              <YAxis yAxisId="right" orientation="right" domain={[0, 100]} />
+              <XAxis stroke="var(--text)" dataKey="categoria" />
+              <YAxis stroke="var(--text)" yAxisId="left" />
+              <YAxis stroke="var(--text)" yAxisId="right" orientation="right" domain={[0, 100]} />
               <Tooltip />
               <Legend />
               <Bar
                 yAxisId="left"
                 dataKey="frecuencia"
-                fill="#000B58"
+                fill="var(--primary)"
                 barSize={40}
                 name="Frecuencia"
               />
               <Line
                 yAxisId="right"
                 dataKey="porcentaje"
-                stroke="#f59e0b"
+                stroke="var(--neutral)"
                 strokeWidth={3}
                 name="Porcentaje acumulado"
               />
@@ -250,29 +250,25 @@ function Pareto() {
         <div className="flex flex-wrap gap-3 mt-6">
           <button
             onClick={exportAll}
-            className="px-8 py-2 rounded-lg font-semibold text-white flex items-center gap-2
-                          bg-[hsl(219,57%,51%)] hover:bg-[hsl(219,61%,65%)] transition shadow"
+            className="cursor-pointer hover:border-2 hover:border-Primary hover:bg-Neutral hover:text-Primary  bg-Primary text-Neutral  rounded-2xl w-50 h-10 m-5"
           >
             Exportar Todo
           </button>
           <button
             onClick={exportToExcelWithChart}
-            className="px-8 py-2 rounded-lg font-semibold text-white flex items-center gap-2
-                          bg-[hsl(219,57%,51%)] hover:bg-[hsl(219,61%,65%)] transition shadow"
+            className="cursor-pointer hover:border-2 hover:border-Primary hover:bg-Neutral hover:text-Primary  bg-Primary text-Neutral  rounded-2xl w-50 h-10 m-5"
           >
             Exportar Excel
           </button>
           <button
             onClick={exportToCSV}
-            className="px-8 py-2 rounded-lg font-semibold text-white flex items-center gap-2
-                          bg-[hsl(219,57%,51%)] hover:bg-[hsl(219,61%,65%)] transition shadow"
+            className="cursor-pointer hover:border-2 hover:border-Primary hover:bg-Neutral hover:text-Primary  bg-Primary text-Neutral  rounded-2xl w-50 h-10 m-5"
           >
             Exportar CSV
           </button>
           <button
             onClick={exportToPDF}
-            className="px-8 py-2 rounded-lg font-semibold text-white flex items-center gap-2
-                          bg-[hsl(219,57%,51%)] hover:bg-[hsl(219,61%,65%)] transition shadow"
+            className="cursor-pointer hover:border-2 hover:border-Primary hover:bg-Neutral hover:text-Primary  bg-Primary text-Neutral  rounded-2xl w-50 h-10 m-5"
           >
             Exportar PDF
           </button>

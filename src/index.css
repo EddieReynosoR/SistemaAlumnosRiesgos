@@ -1,12 +1,7 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 
-@theme{
-  --color-Primary:#000B58;
-  --color-Secundary:#003161;
-  --color-Tertiary:#006A67;
-  --color-Neutral:#FDEB9E
-}
+
 
 @custom-variant dark (&:is(.dark *));
 
@@ -21,10 +16,18 @@
   --color-card-foreground: var(--card-foreground);
   --color-popover: var(--popover);
   --color-popover-foreground: var(--popover-foreground);
+  /* colores */
   --color-primary: var(--primary);
   --color-primary-foreground: var(--primary-foreground);
   --color-secondary: var(--secondary);
   --color-secondary-foreground: var(--secondary-foreground);
+  /* Agregados */
+  --color-text: var(--text);
+  --color-tertiary: var(--tertiary);
+  --color-tertiary-foreground: var(--tertiary-foreground);
+  --color-neutral: var(--neutral);
+  --color-neutral-foreground: var(--neutral-foreground);
+  /*  */
   --color-muted: var(--muted);
   --color-muted-foreground: var(--muted-foreground);
   --color-accent: var(--accent);
@@ -56,10 +59,15 @@
   --card-foreground: oklch(0.145 0 0);
   --popover: oklch(1 0 0);
   --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.205 0 0);
+  --primary: #000B58;
   --primary-foreground: oklch(0.985 0 0);
-  --secondary: oklch(0.97 0 0);
+  --secondary: #003161;
   --secondary-foreground: oklch(0.205 0 0);
+  /* Agregados */
+  --text:#000B58;
+  --tertiary:#006A67;
+  --neutral:#FDEB9E;
+  /*  */
   --muted: oklch(0.97 0 0);
   --muted-foreground: oklch(0.556 0 0);
   --accent: oklch(0.97 0 0);
@@ -84,16 +92,22 @@
 }
 
 .dark {
-  --background: oklch(0.145 0 0);
+  --background: oklch(44.2% 0.017 285.786);
   --foreground: oklch(0.985 0 0);
   --card: oklch(0.205 0 0);
   --card-foreground: oklch(0.985 0 0);
   --popover: oklch(0.205 0 0);
   --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.922 0 0);
+  /* Colores */
+  --primary: oklch(14.1% 0.005 285.823);
   --primary-foreground: oklch(0.205 0 0);
   --secondary: oklch(0.269 0 0);
   --secondary-foreground: oklch(0.985 0 0);
+  /* Agregados */
+  --text:white;
+  --tertiary: oklch(0.42 0.15 120);
+  --neutral: oklch(72.802% 0.16221 123.631);
+  /*  */
   --muted: oklch(0.269 0 0);
   --muted-foreground: oklch(0.708 0 0);
   --accent: oklch(0.269 0 0);

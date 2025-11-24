@@ -1,4 +1,5 @@
 // src/pages/FactoresPage.tsx
+import MainLayout from "@/layouts/MainLayout";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { DataTableFactores } from "@/components/factores/table/data-table";
 import { getColumns } from "@/components/factores/table/columns";
@@ -8,6 +9,7 @@ import { type Factor } from "@/utils/types";
 import { Button } from "@/components/ui/button";
 import EditFactorDialog from "@/components/factores/edit-factor-dialog";
 import DeleteFactorDialog from "@/components/factores/delete-factor-dialog";
+
 
 export default function FactoresPage() {
     const [data, setData] = useState<Factor[]>([]);
@@ -52,6 +54,8 @@ export default function FactoresPage() {
     );
 
   return (
+    <MainLayout text="Factores de riesgo">
+
     <main className="p-6 space-y-4">
       <div className="flex items-center justify-between">
         <h1 className="text-xl font-semibold">Factores de riesgo</h1>
@@ -73,7 +77,8 @@ export default function FactoresPage() {
           deleting={deleting}
           setDeleting={setDeleting}
           setData={setData}
-      />
+          />
     </main>
+          </MainLayout>
   );
 }

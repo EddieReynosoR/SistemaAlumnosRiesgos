@@ -10,7 +10,7 @@ import { CalificacionesDialog } from "@/components/calificaciones/calificaciones
 import { SeleccionarFactoresDialog } from "@/components/riesgosestudiantes/agregar-riesgo-dialog";
 import EditEstudianteDialog from "@/components/estudiantes/edit-estudiante-dialog";
 import DeleteEstudianteDialog from "@/components/estudiantes/delete-estudiante-dialog";
-
+import MainLayout from "@/layouts/MainLayout";
 export default function EstudiantesPage() {
   const [data, setData] = useState<EstudianteConCarrera[]>([]);
   const [loading, setLoading] = useState(true);
@@ -26,7 +26,8 @@ export default function EstudiantesPage() {
     setLoading(true);
     const { data: rows, error } = await supabase
       .from("estudiante")
-      .select(`
+      .select(
+        `
         idestudiante,
         numerocontrol,
         nombre,
@@ -38,7 +39,8 @@ export default function EstudiantesPage() {
           idcarrera,
           nombre
         )
-      `)
+      `
+      )
       .order("idestudiante", { ascending: false });
 
     if (error) setError(error.message);
@@ -68,19 +70,32 @@ export default function EstudiantesPage() {
   }, []);
 
   const columns = useMemo(
-    () => getColumns({ onFactor: handleFactor, onCalificacion: handleCalificacion, onEdit: handleEdit, onDelete: handleDelete }),
+    () =>
+      getColumns({
+        onFactor: handleFactor,
+        onCalificacion: handleCalificacion,
+        onEdit: handleEdit,
+        onDelete: handleDelete,
+      }),
     [handleCalificacion, handleEdit, handleDelete]
   );
 
-  if (loading) return <main className="p-6">Cargando…</main>
-  if (error) return <main className="p-6 text-red-600">Error: {error}</main>
+  // if (loading) return <main className="p-6">Cargando…</main>;
+  // if (error) return <main className="p-6 text-red-600">Error: {error}</main>;
 
   return (
-    <main className="p-6 space-y-4">
+
+    <MainLayout text="Estudiantes">
+      <div className="p-6 space-y-4">
+        
       <div className="flex items-center justify-between">
         <h1 className="text-xl font-semibold">Estudiantes</h1>
         <div className="flex gap-2">
-          <Button variant="outline" onClick={fetchEstudiantes} disabled={loading}>
+          <Button
+            variant="outline"
+            onClick={fetchEstudiantes}
+            disabled={loading}
+          >
             {loading ? "Cargando..." : "Refrescar"}
           </Button>
         </div>
@@ -89,20 +104,40 @@ export default function EstudiantesPage() {
       {error ? (
         <div className="text-sm text-red-600">Error: {error}</div>
       ) : null}
-      <DataTable columns={columns} data={data} globalFilterColumns={["numerocontrol", "nombre"]} onRefresh={fetchEstudiantes} />
+      <DataTable
+        columns={columns}
+        data={data}
+        globalFilterColumns={["numerocontrol", "nombre"]}
+        onRefresh={fetchEstudiantes}
+      />
 
-      <EditEstudianteDialog editing={editing} setEditing={setEditing} setData={setData} />
+      <EditEstudianteDialog
+        editing={editing}
+        setEditing={setEditing}
+        setData={setData}
+      />
 
-      <DeleteEstudianteDialog open={deleteDialog}
-                setOpen={setDeleteDialog}
-                deleting={deleting}
-                setDeleting={setDeleting}
-                setData={setData}
-            />
+      <DeleteEstudianteDialog
+        open={deleteDialog}
+        setOpen={setDeleteDialog}
+        deleting={deleting}
+        setDeleting={setDeleting}
+        setData={setData}
+        />
 
-      <CalificacionesDialog open={!!calificacion} setOpen={(open) => !open && setCalificacion(null)} estudiante={calificacion} />
+      <CalificacionesDialog
+        open={!!calificacion}
+        setOpen={(open) => !open && setCalificacion(null)}
+        estudiante={calificacion}
+        />
 
-      <SeleccionarFactoresDialog open={!!factor} setOpen={(open) => !open && setFactor(null)} estudiante={factor} />
-    </main>
-  )
+      <SeleccionarFactoresDialog
+        open={!!factor}
+        setOpen={(open) => !open && setFactor(null)}
+        estudiante={factor}
+        />
+    </div>
+    </MainLayout>
+
+  );
 }

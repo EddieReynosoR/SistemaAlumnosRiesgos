@@ -24,6 +24,7 @@ import { toast } from "sonner";
 
 import { FactorTipo } from "@/utils/types";
 import { useSession } from "@/context/SessionContext";
+import ErrorMessage from "../ErrorMessage";
 
 type Props = {
   onSuccess?: () => void;
@@ -149,11 +150,7 @@ export default function AgregarFactorDialog({
               />
             </div>
 
-            {error && (
-              <p className="text-sm text-red-600">
-                {error}
-              </p>
-            )}
+            <ErrorMessage message={error} />
           </div>
 
           <DialogFooter className="mt-2 flex gap-2">

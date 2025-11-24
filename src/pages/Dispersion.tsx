@@ -274,15 +274,16 @@ const exportarExcel = async () => {
           Relación entre la asistencia y la calificación de los estudiantes.
         </p>
 
-        <div ref={chartRef} className="w-full h-[400px] bg-white p-2 border rounded shadow">
+        <div ref={chartRef} className="w-full h-[400px] bg-background p-2 border rounded shadow">
           <ResponsiveContainer width="100%" height="100%">
             <ScatterChart margin={{ top: 20, right: 20, bottom: 30, left: 30 }}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis type="number" dataKey="asistencia" name="Asistencia" unit="%">
-                <Label value="Asistencia (%)" offset={-20} position="insideBottom" />
+              <CartesianGrid  strokeDasharray="3 3" />
+              <XAxis stroke="var(--text)"    tick={{ fill: "var(--text)" }} type="number" dataKey="asistencia" name="Asistencia" unit="%">
+                <Label  fill="var(--text)" value="Asistencia (%)" offset={-20} position="insideBottom" />
               </XAxis>
-              <YAxis type="number" dataKey="calificacion" name="Calificación" domain={[0, 100]}>
+              <YAxis   stroke="var(--text)" tick={{ fill: "var(--text)" }}  type="number" dataKey="calificacion" name="Calificación" domain={[0, 100]}>
                 <Label
+                fill="var(--text)"
                   value="Calificación (0-100)"
                   angle={-90}
                   position="insideLeft"
@@ -293,7 +294,7 @@ const exportarExcel = async () => {
               <Scatter
                 name="Relación Calificación/Asistencia"
                 data={data}
-                fill="#000B58"
+                fill="var(--primary)"
               />
             </ScatterChart>
           </ResponsiveContainer>
@@ -304,8 +305,7 @@ const exportarExcel = async () => {
             <button
               key={fmt}
               onClick={() => handleExportar(fmt)}
-              className="px-8 py-2 rounded-lg font-semibold text-white flex items-center gap-2
-                          bg-[hsl(219,57%,51%)] hover:bg-[hsl(219,61%,65%)] transition shadow"
+              className="cursor-pointer hover:border-2 hover:border-Primary hover:bg-Neutral hover:text-Primary  bg-Primary text-Neutral  rounded-2xl w-50 h-10 m-5"
             >
               Exportar {fmt.toUpperCase()}
             </button>

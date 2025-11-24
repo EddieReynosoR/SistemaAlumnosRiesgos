@@ -358,10 +358,10 @@ const exportarExcel = async (datos: any[]) => {
   };
 
   return (
-    <div className="text-Primary">
+    <div className="text-primary">
       <MainLayout text="Exportar Datos">
         <h2 className="text-2xl font-semibold mb-4 p-3">Exportar Datos</h2>
-        <div className="max-w-5xl mx-auto p-8 bg-white border-2 border-gray-300 shadow-xl rounded-2xl mt-8">
+        <div className="max-w-5xl mx-auto p-8 bg-backgroud border-2 border-gray-300 shadow-xl rounded-2xl mt-8">
           <form onSubmit={handleSubmit}>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <label className="block font-medium mb-1">
@@ -376,7 +376,7 @@ const exportarExcel = async (datos: any[]) => {
                       value={fmt}
                       checked={formato === fmt}
                       onChange={() => setFormato(fmt as Formato)}
-                      className="text-Primary"
+                      className="text-primary"
                     />
                     {fmt.toUpperCase()}
                   </label>
@@ -390,7 +390,7 @@ const exportarExcel = async (datos: any[]) => {
                 id="datosEstudiantes"
                 checked={incluirDatos}
                 onChange={() => setIncluirDatos(!incluirDatos)}
-                className="text-Primary"
+                className="text-primary"
               />
               <label htmlFor="datosEstudiantes" className=" font-medium">
                 Incluir datos de estudiante
@@ -404,26 +404,24 @@ const exportarExcel = async (datos: any[]) => {
               <button
                 type="button"
                 onClick={elegirCarpeta}
-                className="px-8 py-2 rounded-lg font-semibold text-white flex items-center gap-2
-                          bg-[hsl(219,57%,51%)] hover:bg-[hsl(219,61%,65%)] transition shadow"
+                className="cursor-pointer hover:border-2 hover:border-primary hover:bg-neutral hover:text-primary  bg-primary text-neutral  rounded-2xl w-50 h-10 m-5"
               >
                 Elegir carpeta <FaFileUpload/>
               </button>
-              {ruta && <p className="text-sm text-Primary mt-1">Carpeta seleccionada ✔️</p>}
+              {ruta && <p className="text-sm text-primary mt-1">Carpeta seleccionada ✔️</p>}
             </div>
 
             <div className="flex justify-end gap-3 pt-5">
               <button
                 type="submit"
-                className="px-8 py-2 rounded-lg font-semibold text-white flex items-center gap-2
-                          bg-[hsl(219,57%,51%)] hover:bg-[hsl(219,61%,65%)] transition shadow"
+                className="cursor-pointer hover:border-2 hover:border-primary hover:bg-neutral hover:text-primary  bg-secondary text-neutral  rounded-2xl w-50 h-10 m-5"
               >
                 Exportar <FaFileExcel />
               </button>
               <button
                 type="button"
                 onClick={handleCancelar}
-                className="px-8 py-2 rounded-lg font-semibold text-white bg-[#e74c3c] hover:bg-red-600 transition flex items-center gap-2"
+                className="cursor-pointer hover:border-2 hover:border-primary hover:bg-neutral hover:text-primary  bg-primary text-neutral  rounded-2xl w-50 h-10 m-5"
               >
                 Cancelar <FaTimesCircle />
               </button>

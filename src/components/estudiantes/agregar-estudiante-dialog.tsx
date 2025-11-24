@@ -1,12 +1,22 @@
 import { Button } from "@/components/ui/button";
 import {
-  Dialog, DialogClose, DialogContent, DialogDescription,
-  DialogFooter, DialogHeader, DialogTitle, DialogTrigger,
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
-  Select, SelectContent, SelectItem, SelectTrigger, SelectValue
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
 } from "@/components/ui/select";
 
 import { useState, useEffect, useMemo } from "react";
@@ -17,12 +27,52 @@ import { useSession } from "@/context/SessionContext";
 
 type Props = { onSuccess?: () => void };
 
+function FieldError({ message }: { message?: string }) {
+  if (!message) return null;
+
+  return (
+    <p
+      className={`flex items-center gap-2 text-sm font-bold text-white bg-red-600 px-3 py-2 rounded-md transition-all duration-300 ${
+        message ? "opacity-100 translate-y-0" : "opacity-0 -translate-y-2"
+      }`}
+    >
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        fill="none"
+        viewBox="0 0 24 24"
+        strokeWidth={2}
+        stroke="white"
+        className="w-5 h-5"
+      >
+        <path
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          d="M12 9v3m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+        />
+      </svg>
+
+      {message || " "}
+    </p>
+  );
+}
+
+type FieldErrors = {
+  ncontrol?: string;
+  nombre?: string;
+  apellidoPaterno?: string;
+  apellidoMaterno?: string;
+  carrera?: string;
+  semestre?: string;
+};
+
 export function AgregarEstudianteDialog({ onSuccess }: Props) {
   const [carreras, setCarreras] = useState<Carrera[]>([]);
   const [selectedCarrera, setSelectedCarrera] = useState<string>("");
   const [semestre, setSemestre] = useState<number | "">("");
   const [open, setOpen] = useState(false);
   const [saving, setSaving] = useState(false);
+
+  const [errors, setErrors] = useState<FieldErrors>({});
 
   const { docente } = useSession();
 
@@ -39,7 +89,8 @@ export function AgregarEstudianteDialog({ onSuccess }: Props) {
 
   const maxSemestre = useMemo(() => {
     return (
-      carreras.find((c) => c.idcarrera === selectedCarrera)?.cantidadsemestres ?? 12
+      carreras.find((c) => c.idcarrera === selectedCarrera)?.cantidadsemestres ??
+      12
     );
   }, [carreras, selectedCarrera]);
 
@@ -59,24 +110,74 @@ export function AgregarEstudianteDialog({ onSuccess }: Props) {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
+    const newErrors: FieldErrors = {};
+
+    const form = new FormData(e.currentTarget as HTMLFormElement);
+    const ncontrol = String(form.get("ncontrol") ?? "").trim();
+    const nombre = String(form.get("nombre") ?? "").trim();
+    const apellidoPaterno = String(form.get("apellidoPaterno") ?? "").trim();
+    const apellidoMaternoRaw = String(
+      form.get("apellidoMaterno") ?? ""
+    ).trim();
+    const apellidoMaterno = apellidoMaternoRaw || null;
+
+    if (!ncontrol) {
+      newErrors.ncontrol = "El número de control es obligatorio.";
+    } else if (ncontrol.length < 8) {
+      newErrors.ncontrol = "El número de control debe tener al menos 8 caracteres.";
+    }
+    else if (!/^\d+$/.test(ncontrol)) {
+      newErrors.ncontrol = "El número de control solo debe contener números.";
+    }
+
+    if (!nombre) {
+      newErrors.nombre = "El nombre es obligatorio.";
+    } else if (nombre.length < 2) {
+      newErrors.nombre = "El nombre debe tener al menos 2 caracteres.";
+    }
+
+    if (!apellidoPaterno) {
+      newErrors.apellidoPaterno = "El apellido paterno es obligatorio.";
+    } else if (apellidoPaterno.length < 2) {
+      newErrors.apellidoPaterno =
+        "El apellido paterno debe tener al menos 2 caracteres.";
+    }
+
+    if (apellidoMaternoRaw && apellidoMaternoRaw.length < 2) {
+      newErrors.apellidoMaterno =
+        "Si capturas apellido materno, debe tener al menos 2 caracteres.";
+    }
+
     if (!selectedCarrera) {
-      toast.error("El alumno debe pertenecer a una carrera.");
-      return;
+      newErrors.carrera = "Debes seleccionar una carrera.";
     }
 
     const s = Number(semestre);
+    if (!selectedCarrera) {
+      newErrors.semestre = "Selecciona primero una carrera.";
+    } else if (!semestre) {
+      newErrors.semestre = "El semestre es obligatorio.";
+    } else if (Number.isNaN(s) || s < 1 || s > maxSemestre) {
+      newErrors.semestre = `El semestre debe estar entre 1 y ${maxSemestre}.`;
+    }
+
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors);
+      return;
+    }
+
+    setErrors({});
 
     setSaving(true);
-    const form = new FormData(e.currentTarget as HTMLFormElement);
     const nuevoEstudiante = {
-      numerocontrol: String(form.get("ncontrol") ?? "").trim(),
-      nombre: String(form.get("nombre") ?? "").trim(),
-      apellidopaterno: String(form.get("apellidoPaterno") ?? "").trim(),
-      apellidomaterno: String(form.get("apellidoMaterno") ?? "").trim() || null,
+      numerocontrol: ncontrol,
+      nombre,
+      apellidopaterno: apellidoPaterno,
+      apellidomaterno: apellidoMaterno,
       semestre: s,
       idcarrera: selectedCarrera,
       usuariomodifico: docente?.iddocente,
-      fechamodificacion: new Date().toISOString()
+      fechamodificacion: new Date().toISOString(),
     };
 
     const { error } = await supabase.from("estudiante").insert(nuevoEstudiante);
@@ -87,7 +188,7 @@ export function AgregarEstudianteDialog({ onSuccess }: Props) {
       return;
     }
 
-    toast.success("✅ Estudiante agregado correctamente");
+    toast.success("Estudiante agregado correctamente");
     onSuccess?.();
     setOpen(false);
   };
@@ -109,29 +210,58 @@ export function AgregarEstudianteDialog({ onSuccess }: Props) {
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="grid gap-4">
-          <div className="grid gap-3">
+          <div className="grid gap-2">
             <Label htmlFor="ncontrol">Número de control</Label>
-            <Input id="ncontrol" name="ncontrol" placeholder="21212036" required />
+            <Input
+              id="ncontrol"
+              name="ncontrol"
+              placeholder="21212036"
+            />
+            <FieldError message={errors.ncontrol} />
           </div>
 
-          <div className="grid gap-3">
+          <div className="grid gap-2">
             <Label htmlFor="nombre">Nombre</Label>
-            <Input id="nombre" name="nombre" placeholder="Eduardo" required />
+            <Input
+              id="nombre"
+              name="nombre"
+              placeholder="Eduardo"
+            />
+            <FieldError message={errors.nombre} />
           </div>
 
-          <div className="grid gap-3">
+          <div className="grid gap-2">
             <Label htmlFor="apellidoPaterno">Apellido paterno</Label>
-            <Input id="apellidoPaterno" name="apellidoPaterno" placeholder="Reynoso" required />
+            <Input
+              id="apellidoPaterno"
+              name="apellidoPaterno"
+              placeholder="Reynoso"
+            />
+            <FieldError message={errors.apellidoPaterno} />
           </div>
 
-          <div className="grid gap-3">
-            <Label htmlFor="apellidoMaterno">Apellido materno (opcional)</Label>
-            <Input id="apellidoMaterno" name="apellidoMaterno" placeholder="Reynoso" />
+          <div className="grid gap-2">
+            <Label htmlFor="apellidoMaterno">
+              Apellido materno (opcional)
+            </Label>
+            <Input
+              id="apellidoMaterno"
+              name="apellidoMaterno"
+              placeholder="Rosales"
+            />
+            <FieldError message={errors.apellidoMaterno} />
           </div>
 
-          <div className="grid gap-3">
+          <div className="grid gap-2">
             <Label>Carrera</Label>
-            <Select value={selectedCarrera} onValueChange={setSelectedCarrera}>
+            <Select
+              value={selectedCarrera}
+              onValueChange={(value) => {
+                setSelectedCarrera(value);
+                // 🔴 limpiar error al cambiar
+                setErrors((prev) => ({ ...prev, carrera: undefined }));
+              }}
+            >
               <SelectTrigger>
                 <SelectValue placeholder="Selecciona una carrera" />
               </SelectTrigger>
@@ -143,9 +273,10 @@ export function AgregarEstudianteDialog({ onSuccess }: Props) {
                 ))}
               </SelectContent>
             </Select>
+            <FieldError message={errors.carrera} />
           </div>
 
-          <div className="grid gap-3">
+          <div className="grid gap-1.5">
             <Label htmlFor="semestre">Semestre</Label>
             <Input
               type="number"
@@ -158,24 +289,33 @@ export function AgregarEstudianteDialog({ onSuccess }: Props) {
               value={semestre}
               onChange={(e) => {
                 const raw = e.target.value;
-                if (raw === "") return setSemestre("");
+                if (raw === "") {
+                  setSemestre("");
+                  setErrors((prev) => ({ ...prev, semestre: undefined }));
+                  return;
+                }
                 const v = Number(raw);
                 if (Number.isNaN(v)) return;
-                // clamp
-                setSemestre(Math.min(Math.max(v, 1), maxSemestre));
+                const clamped = Math.min(Math.max(v, 1), maxSemestre);
+                setSemestre(clamped);
+                setErrors((prev) => ({ ...prev, semestre: undefined }));
               }}
-              required
             />
             {!!selectedCarrera && (
               <p className="text-xs text-muted-foreground">
                 Rango permitido: 1 a {maxSemestre}
               </p>
             )}
+            <FieldError message={errors.semestre} />
           </div>
 
           <DialogFooter className="mt-2">
             <DialogClose asChild>
-              <Button type="button" variant="outline" onClick={() => setOpen(false)}>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setOpen(false)}
+              >
                 Cancelar
               </Button>
             </DialogClose>

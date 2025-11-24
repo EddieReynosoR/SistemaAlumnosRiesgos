@@ -5,7 +5,7 @@ import supabase from "../../utils/supabaseClient";
 
 const SignInPage = () => {
   const { session, obtenerPerfilDocente } = useSession();
-  if (session) return <Navigate to="/Registro" />;
+  if (session) return <Navigate to="/Estudiantes" />;
 
   const [status, setStatus] = useState("");
   const [formValues, setFormValues] = useState({
@@ -33,13 +33,13 @@ const SignInPage = () => {
   };
   return (
     <main>
-      <nav className=" bg-Primary text-Neutral p-5">
+      <nav className=" bg-primary text-neutral p-5">
         <Link className="home-link" to="/">
           ◄ Home
         </Link>
       </nav>
       <form
-        className="main-container flex text-Primary flex-col  h-full justify-center items-center"
+        className="main-container bg-se flex text-primary flex-col  h-full justify-center items-center"
         onSubmit={handleSubmit}
       >
         <h1 className="header-text m-5">Iniciar Sesión</h1>
@@ -56,7 +56,7 @@ const SignInPage = () => {
           placeholder="Email"
           />
                     <span
-            className="absolute left-0 bottom-0 h-0.5 bg-Primary w-0 
+            className="absolute left-0 bottom-0 h-0.5 bg-primary w-0 
                transition-all duration-300 ease-in-out group-focus-within:w-full"
           ></span>
           </div>
@@ -70,17 +70,17 @@ const SignInPage = () => {
           placeholder="Password"
           />
           <span
-            className="absolute left-0 bottom-0 h-0.5 bg-Primary w-0 
+            className="absolute left-0 bottom-0 h-0.5 bg-primary w-0 
                transition-all duration-300 ease-in-out group-focus-within:w-full"
           ></span>
           </div>
         <button
-          className="cursor-pointer bg-Primary text-Neutral  rounded-2xl w-50 h-10 m-5"
+          className="cursor-pointer bg-primary text-neutral  rounded-2xl w-50 h-10 m-5"
           type="submit"
         >
           Login
         </button>
-        <Link className="auth-link hover:text-Tertiary" to="/auth/sign-up">
+        <Link className="auth-link hover:text-tertiary" to="/auth/sign-up">
           ¿No tienes una cuenta? Regístrate
         </Link>
         {status && <p>{status}</p>}

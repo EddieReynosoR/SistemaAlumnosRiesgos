@@ -15,6 +15,7 @@ import { Input } from "@/components/ui/input";
 import supabase from "@/utils/supabaseClient";
 import { useSession } from "@/context/SessionContext";
 import { toast } from "sonner"
+import ErrorMessage from "../ErrorMessage";
 
 type Props = {
   onSuccess?: () => void;
@@ -129,8 +130,8 @@ export default function AgregarCarreraDialog({
                 onChange={(e) => setCantidadSemestres(Number(e.target.value))}
               />
             </div>
-
-            {error && <p className="text-sm text-red-600">{error}</p>}
+           
+            <ErrorMessage message={error} />
           </div>
 
           <DialogFooter className="mt-2 flex gap-2">

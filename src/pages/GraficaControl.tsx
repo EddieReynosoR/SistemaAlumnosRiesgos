@@ -374,7 +374,7 @@ const exportarExcel = async () => {
 
   return (
     <MainLayout text="Gráfica de Control">
-      <div className="p-6 text-Primary">
+      <div className="p-6 text-primary">
         <h2 className="text-2xl font-semibold mb-4">Gráfica de Control</h2>
         <p className="mb-4">
           Esta gráfica muestra la variación de las calificaciones por unidad, junto con los
@@ -383,15 +383,18 @@ const exportarExcel = async () => {
 
         <div
           ref={chartRef}
-          className="w-full h-[400px] bg-white p-4 rounded-2xl shadow-md"
+          className="w-full h-[400px] bg-background p-4 rounded-2xl shadow-md"
         >
-          <ResponsiveContainer width="100%" height="100%">
+          <ResponsiveContainer  width="100%" height="100%">
             <LineChart
+            
               data={data}
               margin={{ top: 20, right: 30, left: 20, bottom: 10 }}
             >
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis
+              stroke="var(--text)" 
+              
                 dataKey="unidad"
                 label={{
                   value: "Unidad",
@@ -400,6 +403,7 @@ const exportarExcel = async () => {
                 }}
               />
               <YAxis
+              stroke="var(--text)" 
                 label={{
                   value: "Calificación",
                   angle: -90,
@@ -412,7 +416,7 @@ const exportarExcel = async () => {
               <Line
                 type="monotone"
                 dataKey="calificacion"
-                stroke="#000B58"
+                stroke="var(--primary)"
                 strokeWidth={2}
                 dot={{ r: 5 }}
                 name="Calificación"
@@ -445,8 +449,12 @@ const exportarExcel = async () => {
             <button
               key={fmt}
               onClick={() => handleExportar(fmt)}
+<<<<<<< HEAD
               className="px-8 py-2 rounded-lg font-semibold text-white flex items-center gap-2
                           bg-[hsl(219,57%,51%)] hover:bg-[hsl(219,61%,65%)] transition shadow"
+=======
+              className="cursor-pointer hover:border-2 hover:border-primary hover:bg-neutral hover:text-primary  bg-primary text-neutral  rounded-2xl w-50 h-10 m-5"
+>>>>>>> 1fd73871532e21f7c87d4842b0bb3d3ac9ccf45a
             >
               Exportar {fmt.toUpperCase()}
             </button>

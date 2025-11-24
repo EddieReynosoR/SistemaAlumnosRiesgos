@@ -63,136 +63,124 @@ function Pareto() {
     obtenerDatos();
   }, []);
 
-  // ✅ Exportar Excel con la gráfica incluida
   const exportToExcelWithChart = async () => {
     if (!chartRef.current) return;
 
-    const canvas = await html2canvas(chartRef.current);
+    const canvas = await html2canvas(chartRef.current, {
+        scale: 2,
+        useCORS: true,
+        allowTaint: true,
+        backgroundColor: "#ffffff",
+    });
     const imgData = canvas.toDataURL("image/png");
 
     const workbook = new ExcelJS.Workbook();
     const worksheet = workbook.addWorksheet("Pareto");
 
-    // Encabezados
     worksheet.columns = [
       { header: "Categoría", key: "categoria", width: 30 },
       { header: "Frecuencia", key: "frecuencia", width: 15 },
       { header: "Porcentaje", key: "porcentaje", width: 15 },
     ];
 
-    // Datos
     data.forEach((item) => worksheet.addRow(item));
 
-    // Agregar imagen
     const imageId = workbook.addImage({
       base64: imgData,
       extension: "png",
     });
 
-    // Insertar imagen (posición fila 1, columna 5)
     worksheet.addImage(imageId, {
       tl: { col: 5, row: 1 },
       ext: { width: 500, height: 300 },
     });
 
-    // Generar buffer y guardar archivo
     const buffer = await workbook.xlsx.writeBuffer();
     saveAs(new Blob([buffer]), "pareto_con_grafica.xlsx");
   };
 
   const exportToPDF = async () => {
-  if (!chartRef.current) return;
+    if (!chartRef.current) return;
 
-  const doc = new jsPDF("p", "pt", "a4");
+    const doc = new jsPDF("p", "pt", "a4");
 
-  // Encabezado
-  doc.setFontSize(20);
-  doc.setTextColor(40, 40, 40);
-  doc.text("Análisis de Pareto", doc.internal.pageSize.getWidth() / 2, 40, {
-    align: "center",
-  });
+    doc.setFontSize(20);
+    doc.setTextColor(40, 40, 40);
+    doc.text("Análisis de Pareto", doc.internal.pageSize.getWidth() / 2, 40, {
+      align: "center",
+    });
 
-  doc.setFontSize(11);
-  doc.setTextColor(100, 100, 100);
-  doc.text(
-    "Generado automáticamente por el sistema académico",
-    doc.internal.pageSize.getWidth() / 2,
-    60,
-    { align: "center" }
-  );
+    doc.setFontSize(11);
+    doc.setTextColor(100, 100, 100);
+    doc.text(
+      "Generado automáticamente por el sistema académico",
+      doc.internal.pageSize.getWidth() / 2,
+      60,
+      { align: "center" }
+    );
 
-  // Gráfica
-  const canvas = await html2canvas(chartRef.current, {
-    scale: 2,
-    useCORS: true,
-    allowTaint: true,
-  });
+    const canvas = await html2canvas(chartRef.current, {
+      scale: 2,
+      useCORS: true,
+      allowTaint: true,
+      backgroundColor: "#ffffff",
+    });
 
-  const imgData = canvas.toDataURL("image/png");
-  const imgWidth = 380;
-  const imgHeight = (canvas.height * imgWidth) / canvas.width;
+    const imgData = canvas.toDataURL("image/png");
+    const imgWidth = 380;
+    const imgHeight = (canvas.height * imgWidth) / canvas.width;
 
-  const imgX = (doc.internal.pageSize.getWidth() - imgWidth) / 2;
-  const imgY = 90;
+    const imgX = (doc.internal.pageSize.getWidth() - imgWidth) / 2;
+    const imgY = 90;
 
-  doc.setDrawColor(220, 220, 220);
-  doc.setLineWidth(1);
-  doc.rect(imgX - 5, imgY - 5, imgWidth + 10, imgHeight + 10);
+    doc.setDrawColor(220, 220, 220);
+    doc.setLineWidth(1);
+    doc.rect(imgX - 5, imgY - 5, imgWidth + 10, imgHeight + 10);
 
-  doc.addImage(imgData, "PNG", imgX, imgY, imgWidth, imgHeight);
+    doc.addImage(imgData, "PNG", imgX, imgY, imgWidth, imgHeight);
 
-  // Tabla
-  const columnas = ["Categoría", "Frecuencia", "Porcentaje (%)"];
-  const filas = data.map((d) => [d.categoria, d.frecuencia, d.porcentaje]);
+    const columnas = ["Categoría", "Frecuencia", "Porcentaje (%)"];
+    const filas = data.map((d) => [d.categoria, d.frecuencia, d.porcentaje]);
 
-  const startY = imgY + imgHeight + 40;
-  const pageHeight = doc.internal.pageSize.getHeight();
+    const startY = imgY + imgHeight + 40;
+    const pageHeight = doc.internal.pageSize.getHeight();
 
-  autoTable(doc, {
-    head: [columnas],
-    body: filas,
-    startY: startY > pageHeight - 80 ? 90 : startY,
-    margin: { left: 20, right: 20 },
-    theme: "grid",
+    autoTable(doc, {
+      head: [columnas],
+      body: filas,
+      startY: startY > pageHeight - 80 ? 90 : startY,
+      margin: { left: 20, right: 20 },
+      theme: "grid",
+      styles: {
+        fontSize: 10,
+        cellPadding: 4,
+        lineColor: [225, 225, 225],
+        halign: "center",
+      },
+      headStyles: {
+        fillColor: [33, 150, 243],
+        textColor: 255,
+        fontSize: 11,
+        fontStyle: "bold",
+      },
+      alternateRowStyles: {
+        fillColor: [245, 245, 245],
+      },
+      bodyStyles: {
+        textColor: [60, 60, 60],
+      },
+      didDrawPage: () => {
+        const w = doc.internal.pageSize.getWidth();
+        const h = doc.internal.pageSize.getHeight();
+        doc.setFontSize(9);
+        doc.setTextColor(120, 120, 120);
+        doc.text(`Página ${doc.getNumberOfPages()}`, w - 60, h - 20);
+        doc.text("Sistema Académico • © 2025", 20, h - 20);
+      },
+    });
 
-    styles: {
-      fontSize: 10,
-      cellPadding: 4,
-      lineColor: [225, 225, 225],
-      halign: "center",
-    },
-
-    headStyles: {
-      fillColor: [33, 150, 243],
-      textColor: 255,
-      fontSize: 11,
-      fontStyle: "bold",
-    },
-
-    alternateRowStyles: {
-      fillColor: [245, 245, 245],
-    },
-
-    bodyStyles: {
-      textColor: [60, 60, 60],
-    },
-
-    didDrawPage: () => {
-      const w = doc.internal.pageSize.getWidth();
-      const h = doc.internal.pageSize.getHeight();
-
-      doc.setFontSize(9);
-      doc.setTextColor(120, 120, 120);
-
-      doc.text(`Página ${doc.getNumberOfPages()}`, w - 60, h - 20);
-      doc.text("Sistema Académico • © 2025", 20, h - 20);
-    },
-  });
-
-  // Guardar PDF
-  doc.save("pareto.pdf");
-};
-
+    doc.save("pareto.pdf");
+  };
 
   const exportToCSV = () => {
     const csvContent = [
@@ -212,6 +200,19 @@ function Pareto() {
     exportToPDF();
   };
 
+  // --- ACCESIBILIDAD ---
+  useEffect(() => {
+    const manejarAtajos = (e: KeyboardEvent) => {
+      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return;
+      if (e.altKey && e.key.toLowerCase() === 'e') { e.preventDefault(); exportToExcelWithChart(); }
+      if (e.altKey && e.key.toLowerCase() === 'c') { e.preventDefault(); exportToCSV(); }
+      if (e.altKey && e.key.toLowerCase() === 'p') { e.preventDefault(); exportToPDF(); }
+      if (e.altKey && e.key.toLowerCase() === 't') { e.preventDefault(); exportAll(); }
+    };
+    window.addEventListener('keydown', manejarAtajos);
+    return () => window.removeEventListener('keydown', manejarAtajos);
+  }, [data]);
+
   return (
     <MainLayout text="Análisis de Pareto">
       <div className="p-4 text-primary">
@@ -220,26 +221,26 @@ function Pareto() {
           Este gráfico muestra la distribución de las categorías de factores de riesgo.
         </p>
 
-        <div className="w-full h-[400px]" ref={chartRef}>
+        <div className="w-full h-[400px]" ref={chartRef} style={{ backgroundColor: "#ffffff", color: "#333333" }}>
           <ResponsiveContainer width="100%" height="100%">
             <ComposedChart data={data}>
               <CartesianGrid strokeDasharray="3 3" />
-              <XAxis stroke="var(--text)" dataKey="categoria" />
-              <YAxis stroke="var(--text)" yAxisId="left" />
-              <YAxis stroke="var(--text)" yAxisId="right" orientation="right" domain={[0, 100]} />
-              <Tooltip />
-              <Legend />
+              <XAxis stroke="#666666" dataKey="categoria" />
+              <YAxis stroke="#666666" yAxisId="left" />
+              <YAxis stroke="#666666" yAxisId="right" orientation="right" domain={[0, 100]} />
+              <Tooltip contentStyle={{ color: "#000" }} />
+              <Legend wrapperStyle={{ color: "#000" }}/>
               <Bar
                 yAxisId="left"
                 dataKey="frecuencia"
-                fill="var(--primary)"
+                fill="#3b82f6"
                 barSize={40}
                 name="Frecuencia"
               />
               <Line
                 yAxisId="right"
                 dataKey="porcentaje"
-                stroke="var(--neutral)"
+                stroke="#e03b3b"
                 strokeWidth={3}
                 name="Porcentaje acumulado"
               />
@@ -250,25 +251,29 @@ function Pareto() {
         <div className="flex flex-wrap gap-3 mt-6">
           <button
             onClick={exportAll}
-            className="cursor-pointer hover:border-2 hover:border-Primary hover:bg-Neutral hover:text-Primary  bg-Primary text-Neutral  rounded-2xl w-50 h-10 m-5"
+            title="Exportar Todo (Atajo: Alt + T)"
+            className="cursor-pointer hover:border-2 hover:border-Primary hover:bg-Neutral hover:text-Primary bg-Primary text-Neutral rounded-2xl w-50 h-10 m-5 focus:outline-none focus:ring-4 focus:ring-blue-500 focus:border-transparent"
           >
             Exportar Todo
           </button>
           <button
             onClick={exportToExcelWithChart}
-            className="cursor-pointer hover:border-2 hover:border-Primary hover:bg-Neutral hover:text-Primary  bg-Primary text-Neutral  rounded-2xl w-50 h-10 m-5"
+            title="Exportar Excel (Atajo: Alt + E)"
+            className="cursor-pointer hover:border-2 hover:border-Primary hover:bg-Neutral hover:text-Primary bg-Primary text-Neutral rounded-2xl w-50 h-10 m-5 focus:outline-none focus:ring-4 focus:ring-blue-500 focus:border-transparent"
           >
             Exportar Excel
           </button>
           <button
             onClick={exportToCSV}
-            className="cursor-pointer hover:border-2 hover:border-Primary hover:bg-Neutral hover:text-Primary  bg-Primary text-Neutral  rounded-2xl w-50 h-10 m-5"
+            title="Exportar CSV (Atajo: Alt + C)"
+            className="cursor-pointer hover:border-2 hover:border-Primary hover:bg-Neutral hover:text-Primary bg-Primary text-Neutral rounded-2xl w-50 h-10 m-5 focus:outline-none focus:ring-4 focus:ring-blue-500 focus:border-transparent"
           >
             Exportar CSV
           </button>
           <button
             onClick={exportToPDF}
-            className="cursor-pointer hover:border-2 hover:border-Primary hover:bg-Neutral hover:text-Primary  bg-Primary text-Neutral  rounded-2xl w-50 h-10 m-5"
+            title="Exportar PDF (Atajo: Alt + P)"
+            className="cursor-pointer hover:border-2 hover:border-Primary hover:bg-Neutral hover:text-Primary bg-Primary text-Neutral rounded-2xl w-50 h-10 m-5 focus:outline-none focus:ring-4 focus:ring-blue-500 focus:border-transparent"
           >
             Exportar PDF
           </button>

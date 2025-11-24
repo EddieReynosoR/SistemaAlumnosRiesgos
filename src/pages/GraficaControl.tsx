@@ -14,7 +14,7 @@ import {
 } from "recharts";
 import { saveAs } from "file-saver";
 import * as XLSX from "xlsx";
-import jsPDF from "jspdf";
+import { jsPDF } from "jspdf";
 import autoTable from "jspdf-autotable";
 import ExcelJS from "exceljs";
 import html2canvas from "html2canvas";
@@ -123,94 +123,91 @@ function GraficaControl() {
     return { rows, headersBonitos, rowsParaPDF };
   };
 
-const exportarExcel = async () => {
-    if (!data || data.length === 0) {
-      alert("⚠️ No hay datos para exportar en Excel.");
-      return;
-    }
+  const exportarExcel = async () => {
+    try {
+      if (!data || data.length === 0) {
+        alert("⚠️ No hay datos para exportar en Excel.");
+        return;
+      }
 
-    const { rows } = prepararDatosExport();
-    const filasExcel = rows.map((p) => ({
-      Unidad: p.unidad,
-      Calificacion: p.calificacion,
-      Media: Number(p.media.toFixed(2)),
-      UCL_3s: Number(p.ucl.toFixed(2)),
-      LCL_3s: Number(p.lcl.toFixed(2)),
-    }));
+      await new Promise((r) => setTimeout(r, 500));
 
-    const workbook = new ExcelJS.Workbook();
-    const sheet = workbook.addWorksheet("Datos");
+      const { rows } = prepararDatosExport();
+      const filasExcel = rows.map((p) => ({
+        Unidad: p.unidad,
+        Calificacion: p.calificacion,
+        Media: Number(p.media.toFixed(2)),
+        UCL_3s: Number(p.ucl.toFixed(2)),
+        LCL_3s: Number(p.lcl.toFixed(2)),
+      }));
 
-    sheet.addRow(["Unidad", "Calificación", "Media", "UCL (+3σ)", "LCL (-3σ)"]);
+      const workbook = new ExcelJS.Workbook();
+      const sheet = workbook.addWorksheet("Datos");
 
-    filasExcel.forEach((fila) => {
-      sheet.addRow([
-        fila.Unidad,
-        fila.Calificacion,
-        fila.Media,
-        fila.UCL_3s,
-        fila.LCL_3s,
-      ]);
-    });
+      sheet.addRow(["Unidad", "Calificación", "Media", "UCL (+3σ)", "LCL (-3σ)"]);
 
-    const encabezados = sheet.getRow(1);
-    encabezados.font = { bold: true, color: { argb: "FFFFFF" } };
-    encabezados.fill = { type: "pattern", pattern: "solid", fgColor: { argb: "4F81BD" } };
-    encabezados.alignment = { horizontal: "center", vertical: "middle" };
-
-    sheet.columns.forEach((col, idx) => {
-      let maxLength = 0;
-      
-      sheet.eachRow((row, rowIndex) => {
-        const cellValue = String(row.getCell(idx + 1).value);
-        maxLength = Math.max(maxLength, cellValue.length);
+      filasExcel.forEach((fila) => {
+        sheet.addRow([
+          fila.Unidad,
+          fila.Calificacion,
+          fila.Media,
+          fila.UCL_3s,
+          fila.LCL_3s,
+        ]);
       });
-      col.width = maxLength + 2; 
-    });
 
-    const chartSheet = workbook.addWorksheet("Gráfico");
+      const encabezados = sheet.getRow(1);
+      encabezados.font = { bold: true, color: { argb: "FFFFFF" } };
+      encabezados.fill = { type: "pattern", pattern: "solid", fgColor: { argb: "4F81BD" } };
+      encabezados.alignment = { horizontal: "center", vertical: "middle" };
 
-    const chartElement = chartRef.current;
-    if (!chartElement) {
-      alert("No se encontró el gráfico.");
-      return;
+      sheet.columns.forEach((col, idx) => {
+        let maxLength = 0;
+        sheet.eachRow((row) => {
+          const cellValue = String(row.getCell(idx + 1).value);
+          maxLength = Math.max(maxLength, cellValue.length);
+        });
+        col.width = maxLength + 2;
+      });
+
+      const chartSheet = workbook.addWorksheet("Gráfico");
+      const chartElement = chartRef.current;
+      
+      if (!chartElement) throw new Error("Gráfico no encontrado");
+
+      const canvas = await html2canvas(chartElement, {
+        scale: 2,
+        useCORS: true,
+        allowTaint: true,
+        backgroundColor: "#ffffff",
+      });
+
+      const imgData = canvas.toDataURL("image/png");
+      const imageId = workbook.addImage({
+        base64: imgData,
+        extension: "png",
+      });
+
+      chartSheet.addImage(imageId, {
+        tl: { col: 1, row: 1 },
+        ext: { width: 700, height: 400 },
+      });
+
+      const buffer = await workbook.xlsx.writeBuffer();
+      saveAs(new Blob([buffer], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" }), generarNombreArchivo("grafica_control", "xlsx"));
+
+    } catch (err: any) {
+      console.error("Error Excel:", err);
+      alert(`Error al exportar Excel: ${err.message}`);
     }
-
-    const canvas = await html2canvas(chartElement, {
-      scale: 2,
-      useCORS: true,
-      backgroundColor: "#ffffff",
-    });
-
-    const imgData = canvas.toDataURL("image/png");
-
-    // Agregar la imagen al Excel
-    const imageId = workbook.addImage({
-      base64: imgData,
-      extension: "png",
-    });
-
-    chartSheet.addImage(imageId, {
-      tl: { col: 1, row: 1 },
-      ext: { width: 700, height: 400 },
-    });
-
-    // Guardar el archivo Excel
-    const buffer = await workbook.xlsx.writeBuffer();
-    saveAs(new Blob([buffer], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" }), generarNombreArchivo("grafica_control", "xlsx"));
-
-    alert("✅ Exportación a Excel completada correctamente.");
-};
-
+  };
 
   const exportarCSV = async () => {
     if (!data || data.length === 0) {
       alert("⚠️ No hay datos para exportar en CSV.");
       return;
     }
-
     const { rows } = prepararDatosExport();
-
     const filasCSV = rows.map((p) => ({
       Unidad: p.unidad,
       Calificacion: p.calificacion,
@@ -221,240 +218,138 @@ const exportarExcel = async () => {
 
     const ws = XLSX.utils.json_to_sheet(filasCSV);
     const csv = XLSX.utils.sheet_to_csv(ws);
-
     const blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
     guardarArchivo(blob, generarNombreArchivo("grafica_control", "csv"));
   };
 
   const exportarPDF = async () => {
-  if (!chartRef.current) {
-    alert("No pude capturar la gráfica.");
-    return;
-  }
+    try {
+      if (!chartRef.current) throw new Error("Gráfico no encontrado");
 
-  const { headersBonitos, rowsParaPDF } = prepararDatosExport();
+      const { headersBonitos, rowsParaPDF } = prepararDatosExport();
+      const doc = new jsPDF("l", "pt", "a4");
 
-  const doc = new jsPDF("l", "pt", "a4");
+      doc.setFontSize(20);
+      doc.setTextColor(40, 40, 40);
+      doc.text("Gráfica de Control: Calificación por Unidad", doc.internal.pageSize.getWidth() / 2, 45, { align: "center" });
 
-  // ============================
-  //          ENCABEZADO
-  // ============================
-  doc.setFontSize(20);
-  doc.setTextColor(40, 40, 40);
+      doc.setFontSize(11);
+      doc.setTextColor(100, 100, 100);
+      doc.text("Generado automáticamente", doc.internal.pageSize.getWidth() / 2, 65, { align: "center" });
 
-  doc.text(
-    "Gráfica de Control: Calificación por Unidad",
-    doc.internal.pageSize.getWidth() / 2,
-    45,
-    { align: "center" }
-  );
+      const canvas = await html2canvas(chartRef.current, {
+        scale: 2,
+        useCORS: true,
+        allowTaint: true,
+        backgroundColor: "#ffffff",
+      });
 
-  doc.setFontSize(11);
-  doc.setTextColor(100, 100, 100);
-  doc.text(
-    "Generado automáticamente por el sistema académico",
-    doc.internal.pageSize.getWidth() / 2,
-    65,
-    { align: "center" }
-  );
+      const imgData = canvas.toDataURL("image/png");
+      const imgWidth = 540;
+      const imgHeight = (canvas.height * imgWidth) / canvas.width;
+      const imgX = (doc.internal.pageSize.getWidth() - imgWidth) / 2;
+      const imgY = 90;
 
-  // ============================
-  //        CAPTURA DE GRÁFICA
-  // ============================
-  const canvas = await html2canvas(chartRef.current);
-  const imgData = canvas.toDataURL("image/png");
+      doc.setDrawColor(220, 220, 220);
+      doc.setLineWidth(1);
+      doc.rect(imgX - 5, imgY - 5, imgWidth + 10, imgHeight + 10);
+      doc.addImage(imgData, "PNG", imgX, imgY, imgWidth, imgHeight);
 
-  const imgWidth = 540;
-  const imgHeight = (canvas.height * imgWidth) / canvas.width;
+      autoTable(doc, {
+        head: [headersBonitos],
+        body: rowsParaPDF,
+        startY: imgY + imgHeight + 40,
+        theme: "grid",
+        styles: { fontSize: 9, halign: "center" },
+        headStyles: { fillColor: [33, 150, 243], textColor: 255, fontStyle: "bold" },
+      });
 
-  const imgX = (doc.internal.pageSize.getWidth() - imgWidth) / 2;
-  const imgY = 90;
-
-  // Marco estético suave
-  doc.setDrawColor(220, 220, 220);
-  doc.setLineWidth(1);
-  doc.rect(imgX - 5, imgY - 5, imgWidth + 10, imgHeight + 10);
-
-  // Insertar imagen centrada
-  doc.addImage(imgData, "PNG", imgX, imgY, imgWidth, imgHeight);
-
-  // ============================
-  //        TABLA DE DATOS
-  // ============================
-  autoTable(doc, {
-    head: [headersBonitos],
-    body: rowsParaPDF,
-    startY: imgY + imgHeight + 40,
-    margin: { left: 20, right: 20 },
-    theme: "grid",
-
-    styles: {
-      fontSize: 9,
-      cellPadding: 4,
-      overflow: "linebreak",
-      lineColor: [225, 225, 225],
-      halign: "center",
-    },
-
-    headStyles: {
-      fillColor: [33, 150, 243],
-      textColor: 255,
-      fontSize: 10,
-      fontStyle: "bold",
-      halign: "center",
-    },
-
-    alternateRowStyles: {
-      fillColor: [245, 245, 245],
-    },
-
-    bodyStyles: {
-      textColor: [60, 60, 60],
-    },
-
-    // ============================
-    //        PIE DE PÁGINA
-    // ============================
-    didDrawPage: (data) => {
-      const pageWidth = doc.internal.pageSize.getWidth();
-      const pageHeight = doc.internal.pageSize.getHeight();
-
-      doc.setFontSize(9);
-      doc.setTextColor(120, 120, 120);
-
-      // Número de página
-      doc.text(
-        `Página ${doc.getNumberOfPages()}`,
-        pageWidth - 60,
-        pageHeight - 20
-      );
-
-      // Etiqueta
-      doc.text(
-        "Sistema Académico • © 2025",
-        20,
-        pageHeight - 20
-      );
-    },
-  });
-
-  // ============================
-  //         EXPORTAR PDF
-  // ============================
-  const blob = doc.output("blob");
-  guardarArchivo(blob, generarNombreArchivo("grafica_control", "pdf"));
-};
-
+      const blob = doc.output("blob");
+      guardarArchivo(blob, generarNombreArchivo("grafica_control", "pdf"));
+    } catch (err: any) {
+      console.error("Error PDF:", err);
+      alert(`Error al exportar PDF: ${err.message}`);
+    }
+  };
 
   const handleExportar = async (fmt: Formato) => {
-    if (!data.length) {
-      alert("No hay datos disponibles para exportar.");
-      return;
-    }
-
-    switch (fmt) {
-      case "excel":
-        await exportarExcel();
-        break;
-      case "csv":
-        await exportarCSV();
-        break;
-      case "pdf":
-        await exportarPDF();
-        break;
-      case "todos":
-        await exportarExcel();
-        await exportarCSV();
-        await exportarPDF();
-        break;
-    }
-
-    alert("Exportación completada correctamente.");
+    if (!data.length) return alert("No hay datos disponibles.");
+    
+    setTimeout(async () => {
+        switch (fmt) {
+        case "excel": await exportarExcel(); break;
+        case "csv": await exportarCSV(); break;
+        case "pdf": await exportarPDF(); break;
+        case "todos": await exportarExcel(); await exportarCSV(); await exportarPDF(); break;
+        }
+    }, 100);
   };
+
+  // --- ACCESIBILIDAD (ATAJOS) ---
+  useEffect(() => {
+    const manejarAtajos = (e: KeyboardEvent) => {
+      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return;
+      if (e.altKey && e.key.toLowerCase() === 'e') { e.preventDefault(); handleExportar('excel'); }
+      if (e.altKey && e.key.toLowerCase() === 'c') { e.preventDefault(); handleExportar('csv'); }
+      if (e.altKey && e.key.toLowerCase() === 'p') { e.preventDefault(); handleExportar('pdf'); }
+      if (e.altKey && e.key.toLowerCase() === 't') { e.preventDefault(); handleExportar('todos'); }
+    };
+    window.addEventListener('keydown', manejarAtajos);
+    return () => window.removeEventListener('keydown', manejarAtajos);
+  }, [data]);
 
   return (
     <MainLayout text="Gráfica de Control">
       <div className="p-6 text-primary">
         <h2 className="text-2xl font-semibold mb-4">Gráfica de Control</h2>
-        <p className="mb-4">
-          Esta gráfica muestra la variación de las calificaciones por unidad, junto con los
-          límites de control estadístico (±3σ) y la media general.
+        <p className="mb-4 text-neutral">
+          Esta gráfica muestra la variación de las calificaciones por unidad.
         </p>
 
         <div
           ref={chartRef}
-          className="w-full h-[400px] bg-background p-4 rounded-2xl shadow-md"
+          className="w-full h-[400px] p-4 rounded-2xl shadow-md"
+          style={{ backgroundColor: "#ffffff", color: "#333333" }}
         >
-          <ResponsiveContainer  width="100%" height="100%">
+          <ResponsiveContainer width="100%" height="100%">
             <LineChart
-            
               data={data}
               margin={{ top: 20, right: 30, left: 20, bottom: 10 }}
             >
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis
-              stroke="var(--text)" 
-              
+                stroke="#666666"
+                tick={{ fill: "#666666" }}
                 dataKey="unidad"
-                label={{
-                  value: "Unidad",
-                  position: "insideBottom",
-                  offset: -5,
-                }}
+                label={{ value: "Unidad", position: "insideBottom", offset: -5, fill: "#666666" }}
               />
               <YAxis
-              stroke="var(--text)" 
-                label={{
-                  value: "Calificación",
-                  angle: -90,
-                  position: "insideLeft",
-                }}
+                stroke="#666666"
+                tick={{ fill: "#666666" }}
+                label={{ value: "Calificación", angle: -90, position: "insideLeft", fill: "#666666" }}
               />
-              <Tooltip />
-              <Legend />
+              <Tooltip 
+                contentStyle={{ backgroundColor: "#fff", borderColor: "#ccc", color: "#000" }}
+              />
+              <Legend wrapperStyle={{ color: "#000000" }} />
 
-              <Line
-                type="monotone"
-                dataKey="calificacion"
-                stroke="var(--primary)"
-                strokeWidth={2}
-                dot={{ r: 5 }}
-                name="Calificación"
-              />
-
-              <ReferenceLine
-                y={mean}
-                label="Media"
-                stroke="green"
-                strokeDasharray="5 5"
-              />
-              <ReferenceLine
-                y={ucl}
-                label="UCL (+3σ)"
-                stroke="red"
-                strokeDasharray="5 5"
-              />
-              <ReferenceLine
-                y={lcl}
-                label="LCL (-3σ)"
-                stroke="red"
-                strokeDasharray="5 5"
-              />
+              <Line type="monotone" dataKey="calificacion" stroke="#3b82f6" strokeWidth={2} dot={{ r: 5 }} name="Calificación" />
+              <ReferenceLine y={mean} label="Media" stroke="green" strokeDasharray="5 5" />
+              <ReferenceLine y={ucl} label="UCL (+3σ)" stroke="red" strokeDasharray="5 5" />
+              <ReferenceLine y={lcl} label="LCL (-3σ)" stroke="red" strokeDasharray="5 5" />
             </LineChart>
           </ResponsiveContainer>
         </div>
 
-        <div className="flex flex-wrap gap-3 mt-6 ">
+        <div className="flex flex-wrap gap-3 mt-6">
           {(["excel", "csv", "pdf", "todos"] as Formato[]).map((fmt) => (
             <button
               key={fmt}
               onClick={() => handleExportar(fmt)}
-<<<<<<< HEAD
-              className="px-8 py-2 rounded-lg font-semibold text-white flex items-center gap-2
-                          bg-[hsl(219,57%,51%)] hover:bg-[hsl(219,61%,65%)] transition shadow"
-=======
-              className="cursor-pointer hover:border-2 hover:border-primary hover:bg-neutral hover:text-primary  bg-primary text-neutral  rounded-2xl w-50 h-10 m-5"
->>>>>>> 1fd73871532e21f7c87d4842b0bb3d3ac9ccf45a
+              title={`Exportar como ${fmt.toUpperCase()} (Atajo: Alt + ${fmt === "todos" ? "T" : fmt.charAt(0).toUpperCase()})`}
+              className="cursor-pointer hover:border-2 hover:border-primary hover:bg-secondary hover:text-primary 
+                         bg-primary text-neutral rounded-2xl w-50 h-10 m-5 px-6 font-medium transition-all
+                         focus:outline-none focus:ring-4 focus:ring-blue-500 focus:border-transparent"
             >
               Exportar {fmt.toUpperCase()}
             </button>

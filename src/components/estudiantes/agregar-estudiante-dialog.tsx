@@ -76,6 +76,23 @@ export function AgregarEstudianteDialog({ onSuccess }: Props) {
 
   const { docente } = useSession();
 
+  // --- NUEVO: ESCUCHAR TECLADO (ATAJO ALT + E) ---
+  useEffect(() => {
+    const manejarAtajo = (e: KeyboardEvent) => {
+      // Ignorar si el usuario escribe en un input
+      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return;
+
+      // Atajo Alt + E
+      if (e.altKey && e.key.toLowerCase() === 'e') {
+        e.preventDefault();
+        setOpen(true); // ¡Abrimos el modal directamente!
+      }
+    };
+
+    window.addEventListener('keydown', manejarAtajo);
+    return () => window.removeEventListener('keydown', manejarAtajo);
+  }, []);
+
   useEffect(() => {
     const fetchCarreras = async () => {
       const { data, error } = await supabase
@@ -196,7 +213,13 @@ export function AgregarEstudianteDialog({ onSuccess }: Props) {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button variant="default" onClick={() => setOpen(true)}>
+        {/* --- AQUÍ ESTÁ EL BOTÓN QUE QUERÍAS MODIFICAR --- */}
+        <Button 
+          variant="default" 
+          onClick={() => setOpen(true)}
+          title="Agregar Estudiante (Atajo: Alt + E)"
+          className="focus:outline-none focus:ring-4 focus:ring-blue-500 focus:border-transparent"
+        >
           Agregar Estudiante
         </Button>
       </DialogTrigger>

@@ -71,7 +71,7 @@ export default function DeleteFactorDialog({
             open={open}
             onOpenChange={(o) => !o && onClose()}
             >
-            <DialogContent>
+            <DialogContent className="text-text">
                 <DialogHeader>
                 <DialogTitle>Eliminar factor</DialogTitle>
                 <DialogDescription>
@@ -98,6 +98,7 @@ export default function DeleteFactorDialog({
                 </Button>
                 <Button
                     type="button"
+                    className="cursor-pointer text-text bg-neutral hover:bg-neutral/90"
                     variant="destructive"
                     onClick={confirmDelete}
                     disabled={loading}

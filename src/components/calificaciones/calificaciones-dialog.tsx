@@ -273,7 +273,7 @@ export function CalificacionesDialog({ open, setOpen, estudiante }: Props) {
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogContent className="sm:max-w-[800px]">
+      <DialogContent className="sm:max-w-[800px] text-text">
         <DialogHeader>
           <DialogTitle>Administrar calificaciones</DialogTitle>
           <DialogDescription>

@@ -6,17 +6,17 @@ import Settings from "@/components/Settings";
 const HomePage = () => {
   const { session } = useSession();
   return (
-    <main className="min-h-screen">
+    <main className=" flex flex-col h-screen">
       <nav className="p-4 flex justify-end bg-primary text-neutral border-b-2 ">
         <Settings />
       </nav>
-      <div className=" bg-primary-foreground  flex flex-col items-center justify-center">
-        <section className="">
-          <h1 className="text-4xl font-bold mb-4 text-center text-primary">
+     
+        <section className="bg-background flex-1 h-lvh flex flex-col items-center justify-center">
+          <h1 className="text-4xl font-bold mb-4 text-center text-text">
             Bienvenido al Sistema de Gestión de Alumnos en Riesgo
           </h1>
 
-          <div className="m-5 ">
+          <div className="m-5 text-text ">
             <p>Usuario actual: {session?.user.email || "Sin sesión"}</p>
           </div>
 
@@ -57,7 +57,7 @@ const HomePage = () => {
             </Link> */}
           </div>
         </section>
-      </div>
+      
     </main>
   );
 };

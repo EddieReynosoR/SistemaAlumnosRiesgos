@@ -76,7 +76,7 @@ export default function EditFactorDialog({ editing, setEditing, setData }: EditF
 
     return (
         <Dialog open={!!editing} onOpenChange={(open) => !open && setEditing(null)}>
-        <DialogContent>
+        <DialogContent className="text-text">
           <DialogHeader>
             <DialogTitle>Editar factor</DialogTitle>
             <DialogDescription>

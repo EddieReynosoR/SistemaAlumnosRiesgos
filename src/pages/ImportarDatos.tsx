@@ -217,7 +217,7 @@ export default function ImportarEstudiantesForm() {
   };
 
   return (
-    <div className="text-Primary">
+    <div className="">
       <MainLayout text="Importar Estudiantes">
 
         <div className="w-full flex justify-center items-center py-10">
@@ -230,13 +230,13 @@ export default function ImportarEstudiantesForm() {
             {/* ARCHIVO */}
             <div className="mb-6">
               <label className="font-semibold text-gray-700">Archivo CSV o Excel</label>
-              <div className="flex items-center bg-gray-100 border px-3 py-2 rounded-lg mt-1">
-                <FaFileUpload className="text-gray-500 mr-2" />
+              <div className="flex items-center bg-background border px-3 py-2 rounded-lg mt-1">
+                <FaFileUpload className="text-text mr-2" />
                 <input
                   type="file"
                   accept=".csv, .xlsx, .xls"
                   onChange={leerArchivo}
-                  className="bg-transparent w-full outline-none"
+                  className="bg-transparent cursor-pointer hover: w-full outline-none"
                 />
               </div>
             </div>
@@ -285,7 +285,7 @@ export default function ImportarEstudiantesForm() {
               <button
                 onClick={guardarEnSupabase}
                 disabled={loading}
-                className="px-8 py-2 rounded-lg font-semibold text-white flex items-center gap-2 bg-[hsl(219,57%,51%)] hover:bg-[hsl(219,61%,65%)] transition shadow"
+                className="flex items-center gap-2  px-8 py-2 border-2 cursor-pointer hover:border-2 hover:border-primary hover:bg-neutral hover:text-primary  bg-secondary text-neutral  rounded-2xl transition shadow"
               >
                 Guardar {loading ? "..." : <FaFileExcel />}
               </button>
@@ -297,7 +297,7 @@ export default function ImportarEstudiantesForm() {
                   setErrores([]);
                   setMensaje("");
                 }}
-                className="px-8 py-2 rounded-lg font-semibold text-white bg-[#e74c3c] hover:bg-red-600 transition flex items-center gap-2"
+                className="flex items-center gap-2  px-8 py-2 border-2 cursor-pointer hover:border-2 hover:border-primary hover:bg-neutral hover:text-primary  bg-secondary text-neutral  rounded-2xl"
               >
                 Cancelar <FaTimesCircle />
               </button>

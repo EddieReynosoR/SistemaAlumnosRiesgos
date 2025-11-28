@@ -351,7 +351,7 @@ export default function Settings() {
                 onCheckedChange={handleDarkModeChange}
                 id="darkmode"
               />
-              <Label htmlFor="darkmode">Modo oscuro</Label>
+              <Label className="text-text" htmlFor="darkmode">Modo oscuro</Label>
             </div>
           </div>
         );
@@ -367,16 +367,16 @@ export default function Settings() {
                 id="ttsHover"
                 onCheckedChange={handleTextToSpeech}
               />
-              <Label htmlFor="ttsHover">Lectura por voz</Label>
+              <Label className="text-text"  htmlFor="ttsHover">Lectura por voz</Label>
             </div>
 
             {ttsEnabled && (
               <>
                 <div>
-                  <Label className="font-semibold">Tipo de voz</Label>
+                  <Label className="font-semibold text-text">Tipo de voz</Label>
                   <div className="mt-2 flex gap-4">
 
-                    <label className="flex items-center gap-2 cursor-pointer">
+                    <label className="flex items-center gap-2 text-text cursor-pointer">
                       <input
                         type="radio"
                         name="voiceType"
@@ -387,7 +387,7 @@ export default function Settings() {
                       Femenina
                     </label>
 
-                    <label className="flex items-center gap-2 cursor-pointer">
+                    <label className="flex items-center text-text gap-2 cursor-pointer">
                       <input
                         type="radio"
                         name="voiceType"
@@ -402,7 +402,7 @@ export default function Settings() {
                 </div>
 
                 <div>
-                  <Label className="font-semibold">Velocidad</Label>
+                  <Label className="font-semibold text-text">Velocidad</Label>
                   <input
                     type="range"
                     min="0.5"
@@ -412,11 +412,11 @@ export default function Settings() {
                     onChange={(e) => handleRateChange(Number(e.target.value))}
                     className="w-full cursor-pointer"
                   />
-                  <p className="text-sm text-gray-500">Actual: {ttsRate.toFixed(1)}</p>
+                  <p className="text-sm text-text">Actual: {ttsRate.toFixed(1)}</p>
                 </div>
 
                 <div>
-                  <Label className="font-semibold">Volumen</Label>
+                  <Label className="font-semibold text-text">Volumen</Label>
                   <input
                     type="range"
                     min="0"
@@ -426,7 +426,7 @@ export default function Settings() {
                     onChange={(e) => handleVolumeChange(Number(e.target.value))}
                     className="w-full cursor-pointer"
                   />
-                  <p className="text-sm text-gray-500">Actual: {ttsVolume.toFixed(1)}</p>
+                  <p className="text-sm text-text">Actual: {ttsVolume.toFixed(1)}</p>
                 </div>
 
               </>
@@ -445,16 +445,16 @@ export default function Settings() {
                 id="dyslexiaToggle"
                 onCheckedChange={handleDyslexiaToggle}
               />
-              <Label htmlFor="dyslexiaToggle">Modo Dislexia</Label>
+              <Label className="text-text"  htmlFor="dyslexiaToggle">Modo Dislexia</Label>
             </div>
 
             {dyslexiaEnabled && (
               <>
                 <div>
-                  <Label className="font-semibold">Tipo de fuente</Label>
+                  <Label className="font-semibold text-text">Tipo de fuente</Label>
                   <div className="mt-2 flex gap-4">
 
-                    <label className="flex items-center gap-2 cursor-pointer">
+                    <label className="flex text-text items-center gap-2 cursor-pointer">
                       <input
                         type="radio"
                         name="dysFont"
@@ -465,7 +465,7 @@ export default function Settings() {
                       Lexend
                     </label>
 
-                    <label className="flex items-center gap-2 cursor-pointer">
+                    <label className="flex  text-text items-center gap-2 cursor-pointer">
                       <input
                         type="radio"
                         name="dysFont"
@@ -480,20 +480,21 @@ export default function Settings() {
                 </div>
 
                 <div>
-                  <Label className="font-semibold">Espaciado entre letras</Label>
+                  <Label className=" text-text font-semibold">Espaciado entre letras</Label>
                   <input
                     type="range"
                     min="0"
                     max="5"
+                    
                     value={dyslexiaSpacing}
                     onChange={(e) => handleSpacingChange(Number(e.target.value))}
                     className="w-full cursor-pointer"
                   />
-                  <p className="text-sm text-gray-500">Actual: {dyslexiaSpacing}px</p>
+                  <p className="text-sm text-text">Actual: {dyslexiaSpacing}px</p>
                 </div>
 
                 <div>
-                  <Label className="font-semibold">Interlineado</Label>
+                  <Label className=" text-text font-semibold">Interlineado</Label>
                   <input
                     type="range"
                     min="1"
@@ -503,7 +504,7 @@ export default function Settings() {
                     onChange={(e) => handleLineHeightChange(Number(e.target.value))}
                     className="w-full cursor-pointer"
                   />
-                  <p className="text-sm text-gray-500">Actual: {dyslexiaLineHeight}</p>
+                  <p className="text-sm text-text">Actual: {dyslexiaLineHeight}</p>
                 </div>
 
               </>
@@ -522,15 +523,15 @@ export default function Settings() {
                 id="parkinsonToggle"
                 onCheckedChange={handleParkinsonToggle}
               />
-              <Label htmlFor="parkinsonToggle">Modo Asistido (Cursor Grande)</Label>
+              <Label className="text-text"  htmlFor="parkinsonToggle">Modo Asistido (Cursor Grande)</Label>
             </div>
 
             {parkinsonEnabled && (
               <>
                 <div>
-                  <Label className="font-semibold">Tamaño del indicador</Label>
+                  <Label className="text-text font-semibold">Tamaño del indicador</Label>
                   <div className="flex items-center gap-4 mt-2">
-                    <span className="text-xs">Pequeño</span>
+                    <span className="text-text text-xs">Pequeño</span>
                     <input
                         type="range"
                         min="20"
@@ -540,11 +541,11 @@ export default function Settings() {
                         onChange={(e) => handleCursorSizeChange(Number(e.target.value))}
                         className="flex-1 cursor-pointer"
                     />
-                    <span className="text-xs">Grande</span>
+                    <span className=" text-text  text-xs">Grande</span>
                   </div>
-                  <p className="text-sm text-gray-500 mt-1">Actual: {cursorSize}px</p>
+                  <p className="text-sm text-text mt-1">Actual: {cursorSize}px</p>
                 </div>
-                <div className="bg-blue-50 p-3 rounded text-sm text-blue-800 border border-blue-200">
+                <div className="bg-background p-3 rounded text-sm text-text border border-primary">
                   <p className="font-semibold">🟢 Click Asistido Activo</p>
                   <p>El cursor rojo funciona como un imán. Si haces click cerca de un botón (dentro del círculo rojo), el sistema lo presionará por ti automáticamente.</p>
                 </div>
@@ -565,9 +566,9 @@ export default function Settings() {
       case "accesibilidad":
         return (
           <>
-            <DialogHeader>
+            <DialogHeader className="text-text">
               <DialogTitle>Accesibilidad</DialogTitle>
-              <DialogDescription>
+              <DialogDescription >
                 Ajustes visuales, auditivos y de lectura.
               </DialogDescription>
             </DialogHeader>
@@ -579,8 +580,7 @@ export default function Settings() {
                 onClick={() => setSubSection("pantalla")}
                 className={`px-4 py-2 rounded whitespace-nowrap flex-shrink-0 ${
                   subSection === "pantalla"
-                    ? "bg-neutral text-primary font-semibold shadow"
-                    : "hover:bg-neutral hover:text-primary"
+                    ?  "bg-primary text-neutral font-semibold shadow-md" : "hover:bg-primary hover:text-neutral text-text"
                 }`}
               >
                 Pantalla
@@ -590,8 +590,7 @@ export default function Settings() {
                 onClick={() => setSubSection("sonido")}
                 className={`px-4 py-2 rounded whitespace-nowrap flex-shrink-0 ${
                   subSection === "sonido"
-                    ? "bg-neutral text-primary font-semibold shadow"
-                    : "hover:bg-neutral hover:text-primary"
+                    ?  "bg-primary text-neutral font-semibold shadow-md" : "hover:bg-primary hover:text-neutral text-text"
                 }`}
               >
                 Sonido
@@ -601,8 +600,7 @@ export default function Settings() {
                 onClick={() => setSubSection("dislexia")}
                 className={`px-4 py-2 rounded whitespace-nowrap flex-shrink-0 ${
                   subSection === "dislexia"
-                    ? "bg-neutral text-primary font-semibold shadow"
-                    : "hover:bg-neutral hover:text-primary"
+                    ? "bg-primary text-neutral font-semibold shadow-md" : "hover:bg-primary hover:text-neutral text-text"
                 }`}
               >
                 Dislexia
@@ -612,8 +610,7 @@ export default function Settings() {
                 onClick={() => setSubSection("parkinson")}
                 className={`px-4 py-2 rounded whitespace-nowrap flex-shrink-0 ${
                   subSection === "parkinson"
-                    ? "bg-neutral text-primary font-semibold shadow"
-                    : "hover:bg-neutral hover:text-primary"
+                    ?  "bg-primary text-neutral font-semibold shadow-md" : "hover:bg-primary hover:text-neutral text-text"
                 }`}
               >
                 Parkinson
@@ -630,7 +627,7 @@ export default function Settings() {
         return (
           <>
             <DialogHeader>
-              <DialogTitle>Perfil</DialogTitle>
+              <DialogTitle className="text-text">Perfil</DialogTitle>
               <DialogDescription>Opciones de cuenta.</DialogDescription>
             </DialogHeader>
 
@@ -677,8 +674,8 @@ export default function Settings() {
 
             <button
               onClick={() => handleSection("accesibilidad")}
-              className={`block px-4 py-2 rounded transition-colors duration-200 ${
-                AccActive ? "bg-neutral text-primary font-semibold shadow-md" : "hover:bg-neutral hover:text-primary"
+              className={`block px-4 py-2 rounded  transition-colors duration-200 ${
+                AccActive ? "bg-primary text-neutral font-semibold shadow-md" : "hover:bg-primary hover:text-neutral text-text"
               }`}
             >
               Accesibilidad
@@ -688,7 +685,7 @@ export default function Settings() {
               <button
               onClick={() => handleSection("perfil")}
               className={`block px-4 py-2 rounded transition-colors duration-200 ${
-                PerfilActive ? "bg-neutral text-primary font-semibold shadow-md" : "hover:bg-neutral hover:text-primary"
+                PerfilActive ?  "bg-primary text-neutral font-semibold shadow-md" : "hover:bg-primary hover:text-neutral text-text"
                 }`}
                 >
               Perfil

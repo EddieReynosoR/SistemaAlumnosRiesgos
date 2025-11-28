@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Link, Navigate } from "react-router-dom";
 import { useSession } from "../../context/SessionContext";
 import supabase from "../../utils/supabaseClient";
-
+import Settings from "@/components/Settings";
 type SignUpForm = {
   email: string;
   password: string;
@@ -74,22 +74,23 @@ const SignUpPage = () => {
   };
 
   return (
-    <main>
-      <nav className="bg-primary text-neutral p-5">
+    <main className="flex flex-col h-screen bg-background  text-text">
+      <nav className="bg-primary text-neutral p-5 flex justify-between items-center">
         <Link className="home-link " to="/">
           ◄ Home
         </Link>
+        <Settings />
       </nav>
 
       <form
-        className="main-container flex text-primary flex-col  h-full justify-center items-center"
+        className="main-container flex  flex-col  h-full justify-center items-center"
         onSubmit={handleSubmit}
       >
-        <h1 className="header-text">Registrarse</h1>
+        <h1 className="header-text">Registrate</h1>
         <div className="relative m-5 w-64 group">
           <legend className="text-xs">Email</legend>
           <input
-            className="w-full p-2 border-none border-b-2 border-gray-400 bg-transparent outline-none"
+            className="w-full p-2 border-none border-b-2 text-text border-gray-400 bg-transparent outline-none"
             name="email"
             onChange={handleInputChange}
             type="email"
@@ -117,7 +118,7 @@ const SignUpPage = () => {
         <div className="relative m-5 w-64 group">
           <legend className="text-xs">Nombre</legend>
           <input
-            className="w-full p-2 border-none border-b-2 border-gray-400 bg-transparent outline-none"
+            className="w-full p-2 border-none border-b-2 border-gray-400 bg-transparent outline-none focus:outline-none focus-visible:outline-none"
             name="nombre"
             onChange={handleInputChange}
             type="text"
@@ -162,7 +163,7 @@ const SignUpPage = () => {
 
         <button
           type="submit"
-          className="cursor-pointer bg-primary text-neutral  rounded-2xl w-50 h-10 m-5"
+          className="cursor-pointer hover:border-2 hover:border-primary hover:bg-neutral hover:text-primary  bg-primary text-neutral  rounded-2xl w-50 h-10 m-5"
         >
           Crear cuenta
         </button>

@@ -16,7 +16,7 @@ function MainLayout({ text, children }: MainLayoutProps) {
         </div>
         <div className="flex h-[calc(100vh-72px)]">
           <Navigation />
-          <main className="overflow-y-auto w-5/6 bg-background ">
+          <main className="overflow-y-auto flex-1 w-5/6 bg-background text-text ">
             {children}
 
           </main>

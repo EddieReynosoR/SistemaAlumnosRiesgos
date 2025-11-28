@@ -69,7 +69,7 @@ export default function DeleteEstudianteDialog({
 
     return (
         <Dialog open={open} onOpenChange={(o) => !o && onClose()}>
-        <DialogContent>
+        <DialogContent className="text-text">
           <DialogHeader>
             <DialogTitle>Eliminar estudiante</DialogTitle>
             <DialogDescription>
@@ -85,6 +85,7 @@ export default function DeleteEstudianteDialog({
               Cancelar
             </Button>
             <Button
+              className="cursor-pointer text-text bg-neutral hover:bg-neutral/90"
               variant="destructive"
               onClick={confirmDelete}
               disabled={loading}

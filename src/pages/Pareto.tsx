@@ -215,32 +215,34 @@ function Pareto() {
 
   return (
     <MainLayout text="Análisis de Pareto">
-      <div className="p-4 text-primary">
+      <div className="p-4 ">
         <h2 className="text-2xl font-semibold mb-4">Análisis de Pareto</h2>
         <p className="mb-4">
           Este gráfico muestra la distribución de las categorías de factores de riesgo.
         </p>
 
-        <div className="w-full h-[400px]" ref={chartRef} style={{ backgroundColor: "#ffffff", color: "#333333" }}>
+        <div className="w-full h-[400px]" ref={chartRef} style={{ backgroundColor: "var(--background)", color: "var(--text)" }}>
           <ResponsiveContainer width="100%" height="100%">
             <ComposedChart data={data}>
               <CartesianGrid strokeDasharray="3 3" />
-              <XAxis stroke="#666666" dataKey="categoria" />
-              <YAxis stroke="#666666" yAxisId="left" />
-              <YAxis stroke="#666666" yAxisId="right" orientation="right" domain={[0, 100]} />
+              <XAxis stroke="var(--text)" dataKey="categoria" />
+              <YAxis stroke="var(--text)" yAxisId="left" />
+              <YAxis stroke="var(--text)" yAxisId="right" orientation="right" domain={[0, 100]} />
               <Tooltip contentStyle={{ color: "#000" }} />
               <Legend wrapperStyle={{ color: "#000" }}/>
               <Bar
                 yAxisId="left"
                 dataKey="frecuencia"
-                fill="#3b82f6"
+                fill="var(--primary)"
                 barSize={40}
                 name="Frecuencia"
+                label={{ fill: "var(--text)", position: "top" }}
               />
+              
               <Line
                 yAxisId="right"
                 dataKey="porcentaje"
-                stroke="#e03b3b"
+                stroke="var(--destructive)"
                 strokeWidth={3}
                 name="Porcentaje acumulado"
               />

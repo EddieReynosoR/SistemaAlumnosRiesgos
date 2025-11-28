@@ -404,9 +404,10 @@ const exportarExcel = async (datos: any[]) => {
               <button
                 type="button"
                 onClick={elegirCarpeta}
-                className="cursor-pointer hover:border-2 hover:border-primary hover:bg-neutral hover:text-primary  bg-primary text-neutral  rounded-2xl w-50 h-10 m-5"
-              >
-                Elegir carpeta <FaFileUpload/>
+                className="flex items-center gap-2  px-8 py-2 cursor-pointer hover:border-2 hover:border-primary hover:bg-neutral hover:text-primary  bg-primary text-neutral  rounded-2xl "
+                >
+                <FaFileUpload/>
+                Elegir carpeta
               </button>
               {ruta && <p className="text-sm text-primary mt-1">Carpeta seleccionada ✔️</p>}
             </div>
@@ -414,16 +415,18 @@ const exportarExcel = async (datos: any[]) => {
             <div className="flex justify-end gap-3 pt-5">
               <button
                 type="submit"
-                className="cursor-pointer hover:border-2 hover:border-primary hover:bg-neutral hover:text-primary  bg-secondary text-neutral  rounded-2xl w-50 h-10 m-5"
+                className=" flex items-center gap-2  px-8 py-2 border-2 cursor-pointer hover:border-2 hover:border-primary hover:bg-neutral hover:text-primary  bg-secondary text-neutral  rounded-2xl"
               >
-                Exportar <FaFileExcel />
+                <FaFileExcel />
+                Exportar 
               </button>
               <button
                 type="button"
                 onClick={handleCancelar}
-                className="cursor-pointer hover:border-2 hover:border-primary hover:bg-neutral hover:text-primary  bg-primary text-neutral  rounded-2xl w-50 h-10 m-5"
+                className="flex items-center gap-2  px-8 py-2 cursor-pointer hover:border-2 hover:border-primary hover:bg-neutral hover:text-primary  bg-primary text-neutral  rounded-2xl"
               >
-                Cancelar <FaTimesCircle />
+                <FaTimesCircle />
+                Cancelar 
               </button>
             </div>
           </form>

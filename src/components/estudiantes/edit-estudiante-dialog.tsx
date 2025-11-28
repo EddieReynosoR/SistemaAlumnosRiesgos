@@ -265,7 +265,7 @@ export default function EditEstudianteDialog({
         }
       }}
     >
-      <DialogContent>
+      <DialogContent className="text-text">
         <DialogHeader>
           <DialogTitle>Editar estudiante</DialogTitle>
           <DialogDescription>

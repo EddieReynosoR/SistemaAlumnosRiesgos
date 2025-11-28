@@ -160,7 +160,7 @@ export function SeleccionarFactoresDialog({ open, setOpen, estudiante }: Props) 
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogContent className="sm:max-w-[520px]">
+      <DialogContent className="sm:max-w-[520px] text-text">
         <DialogHeader>
           <DialogTitle>Seleccionar factores de riesgo</DialogTitle>
           <DialogDescription>

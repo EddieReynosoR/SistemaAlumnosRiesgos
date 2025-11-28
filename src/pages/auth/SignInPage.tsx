@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Link, Navigate } from "react-router-dom";
 import { useSession } from "../../context/SessionContext";
 import supabase from "../../utils/supabaseClient";
-
+import Settings from "@/components/Settings";
 const SignInPage = () => {
   const { session, obtenerPerfilDocente } = useSession();
   if (session) return <Navigate to="/Estudiantes" />;
@@ -32,14 +32,15 @@ const SignInPage = () => {
     setStatus("");
   };
   return (
-    <main>
-      <nav className=" bg-primary text-neutral p-5">
+    <main className="flex flex-col h-screen bg-background  text-text">
+      <nav className=" bg-primary text-neutral p-5 flex justify-between items-center">
         <Link className="home-link" to="/">
           ◄ Home
         </Link>
+        <Settings />
       </nav>
       <form
-        className="main-container bg-se flex text-primary flex-col  h-full justify-center items-center"
+        className="main-container  flex   flex-col   justify-center items-center"
         onSubmit={handleSubmit}
       >
         <h1 className="header-text m-5">Iniciar Sesión</h1>
@@ -49,7 +50,7 @@ const SignInPage = () => {
         <div className="relative m-5 w-64 group">
           <legend className="text-xs">Email</legend>
         <input
-            className="w-full p-2 border-none border-b-2 border-gray-900 bg-transparent outline-none"
+            className="w-full p-2 border-none border-b-2 text-text border-gray-900 bg-transparent outline-none focus:outline-none focus-visible:outline-none"
           name="email"
           onChange={handleInputChange}
           type="email"

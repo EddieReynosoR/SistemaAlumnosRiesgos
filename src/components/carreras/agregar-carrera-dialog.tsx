@@ -124,7 +124,7 @@ export default function AgregarCarreraDialog({
         </Button>
       </DialogTrigger>
 
-      <DialogContent className="sm:max-w-[640px]">
+      <DialogContent className="sm:max-w-[640px] text-text">
         <form onSubmit={handleSubmit}>
           <DialogHeader>
             <DialogTitle>Agregar carrera</DialogTitle>

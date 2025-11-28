@@ -221,9 +221,9 @@ function Dispersion() {
 
   return (
     <MainLayout text="Diagrama de Dispersión">
-      <div className="p-6 text-primary">
+      <div className="p-6 ">
         <h2 className="text-2xl font-semibold mb-4">Diagrama de Dispersión</h2>
-        <p className="mb-4 text-neutral">
+        <p className="mb-4 ">
           Relación entre la asistencia y la calificación de los estudiantes.
         </p>
 
@@ -231,32 +231,32 @@ function Dispersion() {
         <div 
           ref={chartRef} 
           className="w-full h-[400px] p-4 rounded-2xl shadow-md"
-          style={{ backgroundColor: "#ffffff", color: "#333333" }}
+          style={{ backgroundColor: "var(--background)", color: "var(--text)" }}
         >
           <ResponsiveContainer width="100%" height="100%">
             <ScatterChart margin={{ top: 20, right: 20, bottom: 30, left: 30 }}>
               <CartesianGrid strokeDasharray="3 3" />
               {/* ✅ Ejes con colores HEX fijos */}
               <XAxis 
-                stroke="#666666" 
-                tick={{ fill: "#666666" }} 
+                stroke="var(--text)" 
+                tick={{ fill: "var(--text)" }} 
                 type="number" 
                 dataKey="asistencia" 
                 name="Asistencia" 
                 unit="%"
               >
-                <Label fill="#666666" value="Asistencia (%)" offset={-20} position="insideBottom" />
+                <Label fill="var(--text)" value="Asistencia (%)" offset={-20} position="insideBottom" />
               </XAxis>
               <YAxis 
-                stroke="#666666" 
-                tick={{ fill: "#666666" }} 
+                stroke="var(--text)" 
+                tick={{ fill: "var(--text)" }} 
                 type="number" 
                 dataKey="calificacion" 
                 name="Calificación" 
                 domain={[0, 100]}
               >
                 <Label
-                  fill="#666666"
+                  fill="var(--text)"
                   value="Calificación (0-100)"
                   angle={-90}
                   position="insideLeft"
@@ -267,7 +267,7 @@ function Dispersion() {
               <Scatter
                 name="Relación Calificación/Asistencia"
                 data={data}
-                fill="#3b82f6" // ✅ Color HEX fijo para los puntos
+                fill="var(--text)" // ✅ Color HEX fijo para los puntos
               />
             </ScatterChart>
           </ResponsiveContainer>
@@ -280,9 +280,7 @@ function Dispersion() {
               key={fmt}
               onClick={() => handleExportar(fmt)}
               title={`Exportar como ${fmt.toUpperCase()} (Atajo: Alt + ${fmt === "todos" ? "T" : fmt.charAt(0).toUpperCase()})`}
-              className="cursor-pointer hover:border-2 hover:border-primary hover:bg-secondary hover:text-primary 
-                         bg-primary text-neutral rounded-2xl w-50 h-10 m-5 px-6 font-medium transition-all
-                         focus:outline-none focus:ring-4 focus:ring-blue-500 focus:border-transparent"
+              className="cursor-pointer hover:border-2 hover:border-primary hover:bg-neutral hover:text-primary bg-primary text-neutral rounded-2xl w-50 h-10 m-5 focus:outline-none focus:ring-4 focus:ring-blue-500 focus:border-transparent"
             >
               Exportar {fmt.toUpperCase()}
             </button>

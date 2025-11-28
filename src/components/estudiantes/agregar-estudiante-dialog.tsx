@@ -213,18 +213,19 @@ export function AgregarEstudianteDialog({ onSuccess }: Props) {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
+        
         {/* --- AQUÍ ESTÁ EL BOTÓN QUE QUERÍAS MODIFICAR --- */}
         <Button 
           variant="default" 
           onClick={() => setOpen(true)}
           title="Agregar Estudiante (Atajo: Alt + E)"
-          className="focus:outline-none focus:ring-4 focus:ring-blue-500 focus:border-transparent"
+          className="focus:outline-none focus:ring-4  focus:border-transparent"
         >
           Agregar Estudiante
         </Button>
       </DialogTrigger>
 
-      <DialogContent className="sm:max-w-[425px]">
+      <DialogContent className="sm:max-w-[425px] text-text">
         <DialogHeader>
           <DialogTitle>Agregar estudiante</DialogTitle>
           <DialogDescription>
@@ -335,6 +336,7 @@ export function AgregarEstudianteDialog({ onSuccess }: Props) {
           <DialogFooter className="mt-2">
             <DialogClose asChild>
               <Button
+                className="cursor-pointer text-text bg-neutral hover:bg-neutral/90"
                 type="button"
                 variant="outline"
                 onClick={() => setOpen(false)}

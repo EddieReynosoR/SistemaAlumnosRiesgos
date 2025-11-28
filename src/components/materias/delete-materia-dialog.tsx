@@ -66,7 +66,7 @@ export function DeleteMateriaDialog({
 
   return (
     <Dialog open={open} onOpenChange={(o) => !o && onClose()}>
-      <DialogContent>
+      <DialogContent className="text-text">
         <DialogHeader>
           <DialogTitle>Eliminar materia</DialogTitle>
           <DialogDescription>
@@ -86,7 +86,7 @@ export function DeleteMateriaDialog({
           <Button variant="outline" onClick={onClose} disabled={loading}>
             Cancelar
           </Button>
-          <Button variant="destructive" onClick={confirmDelete} disabled={loading}>
+          <Button className="cursor-pointer text-text bg-neutral hover:bg-neutral/90" variant="destructive" onClick={confirmDelete} disabled={loading}>
             {loading ? "Eliminando…" : "Eliminar"}
           </Button>
         </DialogFooter>

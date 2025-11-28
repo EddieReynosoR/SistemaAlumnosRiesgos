@@ -19,7 +19,8 @@ import ExcelJS from "exceljs";
 import html2canvas from "html2canvas";
 
 // ✅ Colores HEX seguros
-const COLORS = ["#000B58", "#003161", "#006A67", "#FDEB9E", "#3b82f6", "#e03b3b"];
+// const COLORS = ["#000B58", "#003161", "#006A67", "#FDEB9E", "#3b82f6", "#e03b3b"];
+const COLORS = ["var(", "#003161", "#006A67", "#FDEB9E", "#3b82f6", "#e03b3b"];
 
 type Formato = "excel" | "csv" | "pdf" | "todos";
 
@@ -240,29 +241,29 @@ function Histograma() {
 
   return (
     <MainLayout text="Histograma">
-      <div className="p-6 text-primary">
+      <div className="p-6 ">
         <h2 className="text-2xl font-semibold mb-4">
           Histograma de Riesgos por Materia
         </h2>
-        <p className="mb-4 text-neutral">
+        <p className="mb-4 ">
           Frecuencia de factores de riesgo agrupados por cada materia.
         </p>
 
         <div
           ref={chartRef}
           className="w-full h-[400px] p-4 rounded-2xl shadow-md"
-          style={{ backgroundColor: "#ffffff", color: "#333333" }}
+          style={{ backgroundColor: "var(--background)", color: "var(--text)" }}
         >
           <ResponsiveContainer width="100%" height="100%">
             <BarChart data={data}>
               <CartesianGrid strokeDasharray="3 3" />
-              <XAxis stroke="#666666" tick={{ fill: "#666666" }} dataKey="materia" />
-              <YAxis stroke="#666666" tick={{ fill: "#666666" }} allowDecimals={false} />
+              <XAxis stroke="var(--text)" tick={{ fill: "var(--text)" }} dataKey="materia" />
+              <YAxis stroke="var(--text)" tick={{ fill: "var(--text)" }} allowDecimals={false} />
               <Tooltip 
-                contentStyle={{ backgroundColor: "#fff", borderColor: "#ccc", color: "#000" }}
-                itemStyle={{ color: "#000" }}
+                contentStyle={{ backgroundColor: "var(--background)", borderColor: "var(--text)", color: "var(--text)" }}
+                itemStyle={{ color: "var(--text)" }}
               />
-              <Legend wrapperStyle={{ color: "#000000" }} />
+              <Legend wrapperStyle={{ color: "var(--text)" }} />
               {factores.map((factor, index) => (
                 <Bar
                   key={factor}
@@ -281,9 +282,7 @@ function Histograma() {
               key={fmt}
               onClick={() => handleExportar(fmt)}
               title={`Exportar como ${fmt.toUpperCase()} (Atajo: Alt + ${fmt.charAt(0).toUpperCase()})`}
-              className="cursor-pointer hover:border-2 hover:border-primary hover:bg-secondary hover:text-primary 
-                         bg-primary text-neutral rounded-2xl w-50 h-10 m-5 px-6 font-medium transition-all
-                         focus:outline-none focus:ring-4 focus:ring-blue-500 focus:border-transparent"
+              className="cursor-pointer hover:border-2 hover:border-primary hover:bg-neutral hover:text-primary bg-primary text-neutral rounded-2xl w-50 h-10 m-5 focus:outline-none focus:ring-4 focus:ring-blue-500 focus:border-transparent"
             >
               Exportar {fmt.toUpperCase()}
             </button>

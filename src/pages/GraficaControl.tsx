@@ -300,16 +300,16 @@ function GraficaControl() {
 
   return (
     <MainLayout text="Gráfica de Control">
-      <div className="p-6 text-primary">
+      <div className="p-6 ">
         <h2 className="text-2xl font-semibold mb-4">Gráfica de Control</h2>
-        <p className="mb-4 text-neutral">
+        <p className="mb-4">
           Esta gráfica muestra la variación de las calificaciones por unidad.
         </p>
 
         <div
           ref={chartRef}
           className="w-full h-[400px] p-4 rounded-2xl shadow-md"
-          style={{ backgroundColor: "#ffffff", color: "#333333" }}
+          style={{ backgroundColor: "var(--background)", color: "var(--text)" }}
         >
           <ResponsiveContainer width="100%" height="100%">
             <LineChart
@@ -318,23 +318,23 @@ function GraficaControl() {
             >
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis
-                stroke="#666666"
-                tick={{ fill: "#666666" }}
+                stroke="var(--text)"
+                tick={{ fill: "var(--text)" }}
                 dataKey="unidad"
-                label={{ value: "Unidad", position: "insideBottom", offset: -5, fill: "#666666" }}
+                label={{ value: "Unidad", position: "insideBottom", offset: -5, fill: "var(--text)" }}
               />
               <YAxis
-                stroke="#666666"
-                tick={{ fill: "#666666" }}
-                label={{ value: "Calificación", angle: -90, position: "insideLeft", fill: "#666666" }}
+                stroke="var(--text)"
+                tick={{ fill: "var(--text)" }}
+                label={{ value: "Calificación", angle: -90, position: "insideLeft", fill: "var(--text)" }}
               />
               <Tooltip 
                 contentStyle={{ backgroundColor: "#fff", borderColor: "#ccc", color: "#000" }}
               />
-              <Legend wrapperStyle={{ color: "#000000" }} />
+              <Legend wrapperStyle={{ color: "var(--text)" }} />
 
-              <Line type="monotone" dataKey="calificacion" stroke="#3b82f6" strokeWidth={2} dot={{ r: 5 }} name="Calificación" />
-              <ReferenceLine y={mean} label="Media" stroke="green" strokeDasharray="5 5" />
+              <Line type="monotone" dataKey="calificacion" stroke="var(--primary)" strokeWidth={2} dot={{ r: 5 }} name="Calificación" />
+              <ReferenceLine y={mean} label="Media" stroke="#1581BF" strokeDasharray="5 5" />
               <ReferenceLine y={ucl} label="UCL (+3σ)" stroke="red" strokeDasharray="5 5" />
               <ReferenceLine y={lcl} label="LCL (-3σ)" stroke="red" strokeDasharray="5 5" />
             </LineChart>
@@ -347,9 +347,7 @@ function GraficaControl() {
               key={fmt}
               onClick={() => handleExportar(fmt)}
               title={`Exportar como ${fmt.toUpperCase()} (Atajo: Alt + ${fmt === "todos" ? "T" : fmt.charAt(0).toUpperCase()})`}
-              className="cursor-pointer hover:border-2 hover:border-primary hover:bg-secondary hover:text-primary 
-                         bg-primary text-neutral rounded-2xl w-50 h-10 m-5 px-6 font-medium transition-all
-                         focus:outline-none focus:ring-4 focus:ring-blue-500 focus:border-transparent"
+              className="cursor-pointer hover:border-2 hover:border-primary hover:bg-neutral hover:text-primary bg-primary text-neutral rounded-2xl w-50 h-10 m-5 focus:outline-none focus:ring-4 focus:ring-blue-500 focus:border-transparent"
             >
               Exportar {fmt.toUpperCase()}
             </button>

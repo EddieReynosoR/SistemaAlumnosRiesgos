@@ -105,7 +105,7 @@ export function EditCarreraDialog({ editing, setEditing, setData }: EditCarreraD
         }
       }}
     >
-      <DialogContent>
+      <DialogContent className="text-text">
         <form onSubmit={handleSaveEdit}>
           <DialogHeader>
             <DialogTitle>Editar carrera</DialogTitle>

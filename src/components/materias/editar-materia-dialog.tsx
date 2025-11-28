@@ -155,7 +155,7 @@ export function EditMateriaDialog({ editing, setEditing, setData }: EditMateriaD
 
   return (
     <Dialog open={!!editing} onOpenChange={(open) => !open && setEditing(null)}>
-      <DialogContent>
+      <DialogContent className="text-text">
         <form onSubmit={handleSaveEdit}>
           <DialogHeader>
             <DialogTitle>Editar materia</DialogTitle>

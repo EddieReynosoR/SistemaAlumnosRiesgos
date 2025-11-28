@@ -5,6 +5,11 @@ import * as XLSX from "xlsx";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import supabase from "../utils/supabaseClient";
+import { 
+  FaFileUpload, 
+  FaFileExcel, 
+  FaTimesCircle 
+} from "react-icons/fa";
 
 type Formato = "excel" | "csv" | "pdf" | "todos" | "";
 
@@ -232,31 +237,90 @@ const exportarExcel = async (datos: any[]) => {
     await guardarArchivo(blob, generarNombreArchivo("reporte_estudiantes", "csv"));
   };
 
-  const exportarPDF = async (datos: any[]) => {
-    if (!datos || datos.length === 0) {
-      alert("⚠️ No hay datos para exportar en PDF.");
-      return;
-    }
+ const exportarPDF = async (datos: any[]) => {
+  if (!datos || datos.length === 0) {
+    alert("⚠️ No hay datos para exportar en PDF.");
+    return;
+  }
 
-    const doc = new jsPDF("l", "pt", "a4");
-    doc.setFontSize(14);
-    doc.text("Reporte General de Estudiantes", 40, 40);
+  const doc = new jsPDF("l", "pt", "a4");
 
-    const columnas = Object.keys(datos[0]);
-    const filas = datos.map((fila) => columnas.map((key) => fila[key] ?? ""));
+  // ---------- ENCABEZADO ----------
+  doc.setFontSize(20);
+  doc.setTextColor(40, 40, 40);
+  doc.text("Reporte General de Estudiantes", doc.internal.pageSize.getWidth() / 2, 40, { align: "center" });
 
-    autoTable(doc, {
-      head: [columnas],
-      body: filas,
-      startY: 60,
-      theme: "striped",
-      headStyles: { fillColor: [41, 128, 185], textColor: 255 },
-      styles: { fontSize: 8, cellPadding: 2, overflow: "linebreak" },
-    });
+  // Subtítulo
+  doc.setFontSize(10);
+  doc.setTextColor(100, 100, 100);
+  doc.text("Generado automáticamente por el sistema académico", doc.internal.pageSize.getWidth() / 2, 60, { align: "center" });
 
-    const blob = doc.output("blob");
-    await guardarArchivo(blob, generarNombreArchivo("reporte_estudiantes", "pdf"));
-  };
+  // ---------- TABLA ----------
+  const columnas = Object.keys(datos[0]);
+  const filas = datos.map((fila) => columnas.map((key) => fila[key] ?? ""));
+
+  autoTable(doc, {
+  head: [columnas],
+  body: filas,
+  startY: 80,
+  theme: "grid",
+
+  styles: {
+    fontSize: 9,
+    cellPadding: 4,
+    overflow: "linebreak",
+    halign: "center", // alineación por defecto
+  },
+
+  headStyles: {
+    fillColor: [33, 150, 243],
+    textColor: 255,
+    fontSize: 10,
+    fontStyle: "bold",
+  },
+
+  bodyStyles: {
+    textColor: [50, 50, 50],
+  },
+
+  alternateRowStyles: {
+    fillColor: [245, 245, 245],
+  },
+
+  // 🔥 SOLO esta columna NO estará centrada
+  columnStyles: {
+    [columnas.indexOf("factores_riesgo")]: { halign: "left" }
+    },
+
+    // ---------- PIE DE PÁGINA ----------
+    didDrawPage: (data) => {
+      const pageWidth = doc.internal.pageSize.getWidth();
+      const pageHeight = doc.internal.pageSize.getHeight();
+
+      doc.setFontSize(9);
+      doc.setTextColor(130, 130, 130);
+
+      // Número de página
+      doc.text(
+        `Página ${doc.getNumberOfPages()}`,
+        pageWidth - 60,
+        pageHeight - 20
+      );
+
+      // Leyenda inferior izquierda
+      doc.text(
+        "Sistema Académico • © 2025",
+        20,
+        pageHeight - 20
+      );
+    },
+  });
+
+  // ---------- EXPORTAR ----------
+  const blob = doc.output("blob");
+  await guardarArchivo(blob, generarNombreArchivo("reporte_estudiantes", "pdf"));
+};
+
 
   // 🧠 Envío del formulario
   const handleSubmit = async (e: React.FormEvent) => {
@@ -342,7 +406,7 @@ const exportarExcel = async (datos: any[]) => {
                 onClick={elegirCarpeta}
                 className="cursor-pointer hover:border-2 hover:border-primary hover:bg-neutral hover:text-primary  bg-primary text-neutral  rounded-2xl w-50 h-10 m-5"
               >
-                Elegir carpeta
+                Elegir carpeta <FaFileUpload/>
               </button>
               {ruta && <p className="text-sm text-primary mt-1">Carpeta seleccionada ✔️</p>}
             </div>
@@ -352,14 +416,14 @@ const exportarExcel = async (datos: any[]) => {
                 type="submit"
                 className="cursor-pointer hover:border-2 hover:border-primary hover:bg-neutral hover:text-primary  bg-secondary text-neutral  rounded-2xl w-50 h-10 m-5"
               >
-                Exportar
+                Exportar <FaFileExcel />
               </button>
               <button
                 type="button"
                 onClick={handleCancelar}
                 className="cursor-pointer hover:border-2 hover:border-primary hover:bg-neutral hover:text-primary  bg-primary text-neutral  rounded-2xl w-50 h-10 m-5"
               >
-                Cancelar
+                Cancelar <FaTimesCircle />
               </button>
             </div>
           </form>

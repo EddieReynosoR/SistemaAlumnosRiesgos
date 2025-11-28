@@ -20,6 +20,7 @@ const Navigation: React.FC = () => {
         <ButtonLink to="/Histograma" text="Histograma" />
         <ButtonLink to="/Dispersion" text="Dispersion" />
         <ButtonLink to="/Exportar" text="Exportar Datos" />
+        <ButtonLink to="/Importar" text="Importar Datos" />
       </ul>
     </nav>
   );

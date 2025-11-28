@@ -25,6 +25,7 @@ import { useSession } from "@/context/SessionContext";
 import { type Carrera } from "@/utils/types";
 
 import { toast } from "sonner";
+// Asegúrate de que la ruta sea correcta
 import ErrorMessage from "../ErrorMessage";
 
 type Props = {
@@ -56,6 +57,23 @@ export default function AgregarMateriaDialog({
   const [error, setError] = useState<string | null>(null);
 
   const { docente } = useSession();
+
+  // --- NUEVO: ACCESIBILIDAD (ATAJO ALT + M) ---
+  useEffect(() => {
+    const manejarAtajo = (e: KeyboardEvent) => {
+      // Ignorar si el usuario escribe en un input
+      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return;
+
+      // Atajo Alt + M
+      if (e.altKey && e.key.toLowerCase() === 'm') {
+        e.preventDefault();
+        setOpen(true); // Abrir el modal
+      }
+    };
+
+    window.addEventListener('keydown', manejarAtajo);
+    return () => window.removeEventListener('keydown', manejarAtajo);
+  }, []);
 
   const selectedCarrera = useMemo(
     () => carreras.find((c) => c.idcarrera === carreraId) ?? null,
@@ -158,7 +176,14 @@ export default function AgregarMateriaDialog({
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogTrigger asChild>
-        <Button variant="default">{triggerLabel}</Button>
+        {/* --- BOTÓN MODIFICADO --- */}
+        <Button 
+          variant="default"
+          title={`${triggerLabel} (Atajo: Alt + M)`}
+          className="focus:outline-none focus:ring-4 focus:ring-blue-500 focus:border-transparent"
+        >
+          {triggerLabel}
+        </Button>
       </DialogTrigger>
 
       <DialogContent className="sm:max-w-[640px]">

@@ -1,4 +1,4 @@
-import { useCallback, useState } from "react";
+import { useCallback, useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -24,7 +24,9 @@ import { toast } from "sonner";
 
 import { FactorTipo } from "@/utils/types";
 import { useSession } from "@/context/SessionContext";
-import ErrorMessage from "../ErrorMessage";
+// Asegúrate de que esta ruta sea correcta según tu proyecto, 
+// si 'ErrorMessage' está en otra carpeta, ajusta el import.
+import ErrorMessage from "../ErrorMessage"; 
 
 type Props = {
   onSuccess?: () => void;
@@ -47,6 +49,23 @@ export default function AgregarFactorDialog({
   const [error, setError] = useState<string | null>(null);
 
   const { docente } = useSession();
+
+  // --- NUEVO: ACCESIBILIDAD (ATAJO ALT + F) ---
+  useEffect(() => {
+    const manejarAtajo = (e: KeyboardEvent) => {
+      // Ignorar si el usuario escribe en un input o textarea
+      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return;
+
+      // Atajo Alt + F
+      if (e.altKey && e.key.toLowerCase() === 'f') {
+        e.preventDefault();
+        setOpen(true); // Abrir el modal
+      }
+    };
+
+    window.addEventListener('keydown', manejarAtajo);
+    return () => window.removeEventListener('keydown', manejarAtajo);
+  }, []);
 
   const resetForm = useCallback(() => {
     setTipo(defaultTipo ?? "");
@@ -107,7 +126,14 @@ export default function AgregarFactorDialog({
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogTrigger asChild>
-        <Button variant="default">{triggerLabel}</Button>
+        {/* --- BOTÓN MODIFICADO PARA ACCESIBILIDAD --- */}
+        <Button 
+          variant="default"
+          title={`${triggerLabel} (Atajo: Alt + F)`}
+          className="focus:outline-none focus:ring-4 focus:ring-blue-500 focus:border-transparent"
+        >
+          {triggerLabel}
+        </Button>
       </DialogTrigger>
 
       <DialogContent className="sm:max-w-[560px]">
@@ -150,7 +176,13 @@ export default function AgregarFactorDialog({
               />
             </div>
 
-            <ErrorMessage message={error} />
+            {/* Asegúrate de tener importado el componente ErrorMessage correctamente */}
+            {error && (
+                <div className="text-sm text-red-600 font-medium p-2 bg-red-50 rounded">
+                    {error}
+                </div>
+            )}
+            {/* <ErrorMessage message={error} /> Si usas el componente importado */}
           </div>
 
           <DialogFooter className="mt-2 flex gap-2">

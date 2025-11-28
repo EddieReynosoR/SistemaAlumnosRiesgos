@@ -46,10 +46,141 @@ function applyDyslexiaStyles() {
   html.style.setProperty("--dys-lineh", `${lineH}`);
 }
 
+// ======================================================
+// 🔴 FUNCIÓN PARA APLICAR MODO PARKINSON (CURSOR + IMÁN PRECISO)
+// ======================================================
+let parkinsonCursorListener: ((e: MouseEvent) => void) | null = null;
+let parkinsonClickListener: ((e: MouseEvent) => void) | null = null;
+let cursorElement: HTMLDivElement | null = null;
+
+function applyParkinsonStyles() {
+  const enabled = localStorage.getItem("parkinsonEnabled") === "true";
+  const size = Number(localStorage.getItem("cursorSize")) || 30;
+
+  // 1. LIMPIEZA DE LISTENERS
+  if (parkinsonCursorListener) {
+    window.removeEventListener('mousemove', parkinsonCursorListener);
+    parkinsonCursorListener = null;
+  }
+  if (parkinsonClickListener) {
+    window.removeEventListener('click', parkinsonClickListener, true);
+    parkinsonClickListener = null;
+  }
+
+  // 2. APAGADO
+  if (!enabled) {
+    const domElement = document.getElementById('parkinson-cursor');
+    if (domElement) domElement.remove();
+    if (cursorElement) cursorElement.remove();
+    cursorElement = null;
+    return;
+  }
+
+  // 3. ENCENDIDO: Crear elemento visual
+  if (!cursorElement) {
+    const existing = document.getElementById('parkinson-cursor');
+    if (existing) {
+      cursorElement = existing as HTMLDivElement;
+    } else {
+      cursorElement = document.createElement('div');
+      cursorElement.id = 'parkinson-cursor';
+      cursorElement.style.position = 'fixed';
+      cursorElement.style.pointerEvents = 'none'; // Vital para no bloquear el mouse
+      cursorElement.style.zIndex = '9999';
+      cursorElement.style.borderRadius = '50%';
+      cursorElement.style.border = '2px solid red';
+      cursorElement.style.backgroundColor = 'rgba(255, 0, 0, 0.15)';
+      cursorElement.style.transform = 'translate(-50%, -50%)';
+      cursorElement.style.transition = 'width 0.1s, height 0.1s, left 0.02s, top 0.02s';
+      document.body.appendChild(cursorElement);
+    }
+  }
+
+  cursorElement.style.width = `${size}px`;
+  cursorElement.style.height = `${size}px`;
+
+  // 4. LISTENER DE MOVIMIENTO (Visual)
+  parkinsonCursorListener = (e: MouseEvent) => {
+    if (cursorElement) {
+      cursorElement.style.left = `${e.clientX}px`;
+      cursorElement.style.top = `${e.clientY}px`;
+    }
+  };
+  window.addEventListener('mousemove', parkinsonCursorListener);
+
+  // 5. LÓGICA DE "IMÁN" MATEMÁTICO (Para evitar rebotes y mejorar precisión)
+  parkinsonClickListener = (e: MouseEvent) => {
+    const target = e.target as HTMLElement;
+    
+    // Si ya le diste a algo interactivo directamente, no intervenir
+    const isInteractive = target.closest('button, a, input, select, textarea, [role="button"]');
+    if (isInteractive) return;
+
+    // Datos del click y radio
+    const clickX = e.clientX;
+    const clickY = e.clientY;
+    const radio = size / 2;
+
+    // Buscar TODOS los elementos interactivos en la página
+    const candidates = Array.from(document.querySelectorAll('button, a, input, select, textarea, [role="button"]'));
+    
+    let closestElement: HTMLElement | null = null;
+    let minDistance = Infinity;
+
+    candidates.forEach((el) => {
+        const element = el as HTMLElement;
+        const rect = element.getBoundingClientRect();
+
+        // Ignorar elementos invisibles
+        if (rect.width === 0 && rect.height === 0) return;
+
+        // Calcular el punto más cercano del botón al click
+        const closestX = Math.max(rect.left, Math.min(clickX, rect.right));
+        const closestY = Math.max(rect.top, Math.min(clickY, rect.bottom));
+
+        // Distancia euclidiana real entre el click y ese punto
+        const distance = Math.sqrt(Math.pow(clickX - closestX, 2) + Math.pow(clickY - closestY, 2));
+
+        // Guardamos el más cercano
+        if (distance < minDistance) {
+            minDistance = distance;
+            closestElement = element;
+        }
+    });
+
+    // Si el elemento más cercano está DENTRO del radio del círculo rojo
+    if (closestElement && minDistance <= radio) {
+         // ¡Captura exitosa! Detenemos el evento original para evitar doble click/cierre
+         e.stopPropagation(); 
+         e.stopImmediatePropagation();
+         e.preventDefault();
+         
+         // Ejecutar el click en el elemento encontrado
+         (closestElement as HTMLElement).click();
+         (closestElement as HTMLElement).focus();
+
+         // Feedback visual de éxito (parpadeo verde)
+         if (cursorElement) {
+             cursorElement.style.backgroundColor = 'rgba(0, 255, 0, 0.4)';
+             cursorElement.style.borderColor = '#00ff00';
+             setTimeout(() => { 
+                 if(cursorElement) {
+                     cursorElement.style.backgroundColor = 'rgba(255, 0, 0, 0.15)'; 
+                     cursorElement.style.borderColor = 'red';
+                 }
+             }, 300);
+         }
+    }
+  };
+  
+  // Usamos 'true' para interceptar el evento en la fase de captura antes que nadie
+  window.addEventListener('click', parkinsonClickListener, true);
+}
+
 export default function Settings() {
 
   const [section, setSection] = useState("accesibilidad");
-  const [subSection, setSubSection] = useState<"pantalla" | "sonido" | "dislexia">("pantalla");
+  const [subSection, setSubSection] = useState<"pantalla" | "sonido" | "dislexia" | "parkinson">("pantalla");
 
   const [AccActive, setAccActive] = useState(true);
   const [PerfilActive, setPerfilActive] = useState(false);
@@ -68,6 +199,10 @@ export default function Settings() {
   const [dyslexiaFont, setDyslexiaFont] = useState("lexend");
   const [dyslexiaSpacing, setDyslexiaSpacing] = useState(1);
   const [dyslexiaLineHeight, setDyslexiaLineHeight] = useState(1.2);
+
+  // 🤲 PARKINSON
+  const [parkinsonEnabled, setParkinsonEnabled] = useState(false);
+  const [cursorSize, setCursorSize] = useState(50);
 
   let navigate = useNavigate();
 
@@ -110,6 +245,15 @@ export default function Settings() {
     if (savedLine) setDyslexiaLineHeight(Number(savedLine));
 
     applyDyslexiaStyles();
+
+    // PARKINSON
+    const savedParkinson = localStorage.getItem("parkinsonEnabled") === "true";
+    setParkinsonEnabled(savedParkinson);
+
+    const savedCursorSize = localStorage.getItem("cursorSize");
+    if (savedCursorSize) setCursorSize(Number(savedCursorSize));
+
+    applyParkinsonStyles();
 
   }, []);
 
@@ -177,6 +321,19 @@ export default function Settings() {
     setDyslexiaLineHeight(value);
     localStorage.setItem("dyslexiaLineHeight", String(value));
     applyDyslexiaStyles();
+  };
+
+  // ---------- PARKINSON ----------
+  const handleParkinsonToggle = (value: boolean) => {
+    setParkinsonEnabled(value);
+    localStorage.setItem("parkinsonEnabled", String(value));
+    setTimeout(applyParkinsonStyles, 0);
+  };
+
+  const handleCursorSizeChange = (value: number) => {
+    setCursorSize(value);
+    localStorage.setItem("cursorSize", String(value));
+    setTimeout(applyParkinsonStyles, 0);
   };
 
   // ======================================================
@@ -355,6 +512,47 @@ export default function Settings() {
 
           </div>
         );
+
+      // 🤲 PARKINSON (AJUSTADO)
+      case "parkinson":
+        return (
+          <div className="flex flex-col space-y-6 mt-4">
+            <div className="flex items-center space-x-2">
+              <Switch
+                checked={parkinsonEnabled}
+                id="parkinsonToggle"
+                onCheckedChange={handleParkinsonToggle}
+              />
+              <Label htmlFor="parkinsonToggle">Modo Asistido (Cursor Grande)</Label>
+            </div>
+
+            {parkinsonEnabled && (
+              <>
+                <div>
+                  <Label className="font-semibold">Tamaño del indicador</Label>
+                  <div className="flex items-center gap-4 mt-2">
+                    <span className="text-xs">Pequeño</span>
+                    <input
+                        type="range"
+                        min="20"
+                        max="100"
+                        step="5"
+                        value={cursorSize}
+                        onChange={(e) => handleCursorSizeChange(Number(e.target.value))}
+                        className="flex-1 cursor-pointer"
+                    />
+                    <span className="text-xs">Grande</span>
+                  </div>
+                  <p className="text-sm text-gray-500 mt-1">Actual: {cursorSize}px</p>
+                </div>
+                <div className="bg-blue-50 p-3 rounded text-sm text-blue-800 border border-blue-200">
+                  <p className="font-semibold">🟢 Click Asistido Activo</p>
+                  <p>El cursor rojo funciona como un imán. Si haces click cerca de un botón (dentro del círculo rojo), el sistema lo presionará por ti automáticamente.</p>
+                </div>
+              </>
+            )}
+          </div>
+        );
     }
   };
 
@@ -375,12 +573,12 @@ export default function Settings() {
               </DialogDescription>
             </DialogHeader>
 
-            {/* SUBMENÚ */}
-            <div className="flex gap-4 border-b pb-2 mt-4">
+            {/* SUBMENÚ AJUSTADO PARA NO CORTARSE */}
+            <div className="flex gap-2 border-b pb-2 mt-4 flex-wrap">
 
               <button
                 onClick={() => setSubSection("pantalla")}
-                className={`px-4 py-2 rounded ${
+                className={`px-4 py-2 rounded whitespace-nowrap flex-shrink-0 ${
                   subSection === "pantalla"
                     ? "bg-neutral text-primary font-semibold shadow"
                     : "hover:bg-neutral hover:text-primary"
@@ -391,7 +589,7 @@ export default function Settings() {
 
               <button
                 onClick={() => setSubSection("sonido")}
-                className={`px-4 py-2 rounded ${
+                className={`px-4 py-2 rounded whitespace-nowrap flex-shrink-0 ${
                   subSection === "sonido"
                     ? "bg-neutral text-primary font-semibold shadow"
                     : "hover:bg-neutral hover:text-primary"
@@ -402,13 +600,24 @@ export default function Settings() {
 
               <button
                 onClick={() => setSubSection("dislexia")}
-                className={`px-4 py-2 rounded ${
+                className={`px-4 py-2 rounded whitespace-nowrap flex-shrink-0 ${
                   subSection === "dislexia"
                     ? "bg-neutral text-primary font-semibold shadow"
                     : "hover:bg-neutral hover:text-primary"
                 }`}
               >
                 Dislexia
+              </button>
+
+              <button
+                onClick={() => setSubSection("parkinson")}
+                className={`px-4 py-2 rounded whitespace-nowrap flex-shrink-0 ${
+                  subSection === "parkinson"
+                    ? "bg-neutral text-primary font-semibold shadow"
+                    : "hover:bg-neutral hover:text-primary"
+                }`}
+              >
+                Parkinson
               </button>
 
             </div>
@@ -461,7 +670,7 @@ export default function Settings() {
         </svg>
       </DialogTrigger>
 
-      <DialogContent className="max-w-xl p-0 overflow-hidden">
+      <DialogContent className="max-w-2xl p-0 overflow-hidden">
         <div className="flex h-full">
 
           {/* SIDEBAR */}
@@ -487,7 +696,7 @@ export default function Settings() {
 
           </aside>
 
-          <main className="flex-1 p-6">
+          <main className="flex-1 p-6 overflow-y-auto max-h-[80vh]">
             {renderContent()}
           </main>
 

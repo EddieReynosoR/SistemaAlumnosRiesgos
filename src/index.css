@@ -141,6 +141,23 @@
   --sidebar-border: oklch(1 0 0 / 10%);
   --sidebar-ring: oklch(0.556 0 0);
 }
+/* ==========================================
+   ACCESIBILIDAD GLOBAL - INDICADOR DE FOCO
+   ========================================== */
+
+/* Aplica un anillo de enfoque visible a todos los elementos interactivos
+   cuando se navega con el teclado (Tab) */
+:focus-visible {
+  outline: 2px solid var(--primary) !important; /* Usa tu color primario */
+  outline-offset: 2px !important;
+  border-radius: 4px !important;
+  box-shadow: 0 0 0 4px rgba(0, 11, 88, 0.3); /* Sombra suave azulada */
+}
+
+/* Asegura que el contorno por defecto del navegador se oculte si usamos el nuestro */
+:focus:not(:focus-visible) {
+  outline: none !important;
+}
 /* 
 @layer base {
   * {

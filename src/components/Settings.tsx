@@ -1,5 +1,3 @@
-"use client";
-
 import { useEffect, useState } from "react";
 import {
   Dialog,
@@ -14,9 +12,10 @@ import { Label } from "@/components/ui/label";
 import supabase from "../utils/supabaseClient";
 import { useNavigate } from "react-router";
 import { enableAutomaticTTS, disableAutomaticTTS } from "../utils/ttsAuto";
+import { useSession } from "../context/SessionContext";
 
 export default function Settings() {
-
+  const { session } = useSession();
   const [section, setSection] = useState("accesibilidad");
   const [subSection, setSubSection] = useState<"pantalla" | "sonido">("pantalla");
 
@@ -300,15 +299,17 @@ export default function Settings() {
             >
               Accesibilidad
             </button>
+            {session?(
 
-            <button
+              <button
               onClick={() => handleSection("perfil")}
               className={`block px-4 py-2 rounded transition-colors duration-200 ${
                 PerfilActive ? "bg-neutral text-primary font-semibold shadow-md" : "hover:bg-neutral hover:text-primary"
-              }`}
-            >
+                }`}
+                >
               Perfil
             </button>
+            ):null}
 
           </aside>
 

@@ -252,28 +252,28 @@ function Pareto() {
           <button
             onClick={exportAll}
             title="Exportar Todo (Atajo: Alt + T)"
-            className="cursor-pointer hover:border-2 hover:border-Primary hover:bg-Neutral hover:text-Primary bg-Primary text-Neutral rounded-2xl w-50 h-10 m-5 focus:outline-none focus:ring-4 focus:ring-blue-500 focus:border-transparent"
+            className="cursor-pointer hover:border-2 hover:border-primary hover:bg-neutral hover:text-primary bg-primary text-neutral rounded-2xl w-50 h-10 m-5 focus:outline-none focus:ring-4 focus:ring-blue-500 focus:border-transparent"
           >
             Exportar Todo
           </button>
           <button
             onClick={exportToExcelWithChart}
             title="Exportar Excel (Atajo: Alt + E)"
-            className="cursor-pointer hover:border-2 hover:border-Primary hover:bg-Neutral hover:text-Primary bg-Primary text-Neutral rounded-2xl w-50 h-10 m-5 focus:outline-none focus:ring-4 focus:ring-blue-500 focus:border-transparent"
+            className="cursor-pointer hover:border-2 hover:border-primary hover:bg-neutral hover:text-primary bg-primary text-neutral rounded-2xl w-50 h-10 m-5 focus:outline-none focus:ring-4 focus:ring-blue-500 focus:border-transparent"
           >
             Exportar Excel
           </button>
           <button
             onClick={exportToCSV}
             title="Exportar CSV (Atajo: Alt + C)"
-            className="cursor-pointer hover:border-2 hover:border-Primary hover:bg-Neutral hover:text-Primary bg-Primary text-Neutral rounded-2xl w-50 h-10 m-5 focus:outline-none focus:ring-4 focus:ring-blue-500 focus:border-transparent"
+            className="cursor-pointer hover:border-2 hover:border-primary hover:bg-neutral hover:text-primary bg-primary text-neutral rounded-2xl w-50 h-10 m-5 focus:outline-none focus:ring-4 focus:ring-blue-500 focus:border-transparent"
           >
             Exportar CSV
           </button>
           <button
             onClick={exportToPDF}
             title="Exportar PDF (Atajo: Alt + P)"
-            className="cursor-pointer hover:border-2 hover:border-Primary hover:bg-Neutral hover:text-Primary bg-Primary text-Neutral rounded-2xl w-50 h-10 m-5 focus:outline-none focus:ring-4 focus:ring-blue-500 focus:border-transparent"
+            className="cursor-pointer hover:border-2 hover:border-primary hover:bg-neutral hover:text-primary bg-primary text-neutral rounded-2xl w-50 h-10 m-5 focus:outline-none focus:ring-4 focus:ring-blue-500 focus:border-transparent"
           >
             Exportar PDF
           </button>

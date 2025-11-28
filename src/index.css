@@ -1,6 +1,17 @@
+@import url("https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;600&display=swap");
+
+@font-face {
+  font-family: 'OpenDyslexic';
+  src: url('/fonts/OpenDyslexic-Regular.otf');
+}
+.dyslexia-mode * {
+  font-family: var(--dys-font) !important;
+  letter-spacing: var(--dys-spacing) !important;
+  line-height: var(--dys-lineh) !important;
+}
+
 @import "tailwindcss";
 @import "tw-animate-css";
-
 
 
 @custom-variant dark (&:is(.dark *));

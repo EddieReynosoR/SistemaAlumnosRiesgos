@@ -137,11 +137,9 @@ function applyParkinsonStyles() {
     });
 
     if (closestElement && minDistance <= radio) {
-        
           e.stopPropagation(); 
           e.stopImmediatePropagation();
           e.preventDefault();
-          
           (closestElement as HTMLElement).click();
           (closestElement as HTMLElement).focus();
 
@@ -161,10 +159,14 @@ function applyParkinsonStyles() {
   window.addEventListener('click', parkinsonClickListener, true);
 }
 
+// ======================================================
+// ⌨️ DATOS DE ATAJOS DE TECLADO
+// ======================================================
 const shortcutsData = [
   {
     category: "General",
     items: [
+      { action: "Menú Accesibilidad", keys: ["Alt", "A"] },
       { action: "Refrescar", keys: ["Alt", "R"] },
     ]
   },
@@ -221,44 +223,47 @@ const shortcutsData = [
 export default function Settings() {
 
   const [section, setSection] = useState("accesibilidad");
-
+  // ✅ RESTAURADO: Se añade "atajos" al tipo de estado
   const [subSection, setSubSection] = useState<"pantalla" | "sonido" | "dislexia" | "parkinson" | "atajos">("pantalla");
 
   const [AccActive, setAccActive] = useState(true);
   const [PerfilActive, setPerfilActive] = useState(false);
+  const [isOpen, setIsOpen] = useState(false);
 
-  // 🖥️ PANTALLA
   const [darkMode, setDarkMode] = useState(false);
 
-  // 🔊 SONIDO
   const [ttsEnabled, setTtsEnabled] = useState(false);
   const [voiceType, setVoiceType] = useState<"female" | "male">("female");
   const [ttsRate, setTtsRate] = useState(1);
   const [ttsVolume, setTtsVolume] = useState(1);
 
-  // 🧠 DISLEXIA
   const [dyslexiaEnabled, setDyslexiaEnabled] = useState(false);
   const [dyslexiaFont, setDyslexiaFont] = useState("lexend");
   const [dyslexiaSpacing, setDyslexiaSpacing] = useState(1);
   const [dyslexiaLineHeight, setDyslexiaLineHeight] = useState(1.2);
 
-  // 🤲 PARKINSON
   const [parkinsonEnabled, setParkinsonEnabled] = useState(false);
   const [cursorSize, setCursorSize] = useState(50);
 
   let navigate = useNavigate();
 
-  // ======================================================
-  // CARGAR AJUSTES GUARDADOS
-  // ======================================================
   useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.altKey && (e.key === 'a' || e.key === 'A')) {
+        e.preventDefault();
+        setIsOpen((prev) => !prev);
+      }
+    };
 
-    // PANTALLA
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, []);
+
+  useEffect(() => {
     const savedDark = localStorage.getItem("darkMode") === "true";
     setDarkMode(savedDark);
     document.documentElement.classList.toggle("dark", savedDark);
 
-    // SONIDO
     const savedTTS = localStorage.getItem("ttsHover") === "true";
     setTtsEnabled(savedTTS);
 
@@ -273,7 +278,6 @@ export default function Settings() {
 
     if (savedTTS) enableAutomaticTTS();
 
-    // DISLEXIA
     const savedDyslexia = localStorage.getItem("dyslexiaEnabled") === "true";
     setDyslexiaEnabled(savedDyslexia);
 
@@ -288,7 +292,6 @@ export default function Settings() {
 
     applyDyslexiaStyles();
 
-    // PARKINSON
     const savedParkinson = localStorage.getItem("parkinsonEnabled") === "true";
     setParkinsonEnabled(savedParkinson);
 
@@ -296,13 +299,7 @@ export default function Settings() {
     if (savedCursorSize) setCursorSize(Number(savedCursorSize));
 
     applyParkinsonStyles();
-
   }, []);
-
-
-  // ======================================================
-  // HANDLERS
-  // ======================================================
 
   const handleSection = (Select: string) => {
     setSection(Select);
@@ -319,7 +316,6 @@ export default function Settings() {
   const handleTextToSpeech = (checked: boolean) => {
     setTtsEnabled(checked);
     localStorage.setItem("ttsHover", String(checked));
-
     if (checked) enableAutomaticTTS();
     else disableAutomaticTTS();
   };
@@ -340,7 +336,6 @@ export default function Settings() {
     localStorage.setItem("ttsVolume", String(value));
   };
 
-  // ---------- DISLEXIA ----------
   const handleDyslexiaToggle = (value: boolean) => {
     setDyslexiaEnabled(value);
     localStorage.setItem("dyslexiaEnabled", String(value));
@@ -365,7 +360,6 @@ export default function Settings() {
     applyDyslexiaStyles();
   };
 
-  // ---------- PARKINSON ----------
   const handleParkinsonToggle = (value: boolean) => {
     setParkinsonEnabled(value);
     localStorage.setItem("parkinsonEnabled", String(value));
@@ -378,224 +372,116 @@ export default function Settings() {
     setTimeout(applyParkinsonStyles, 0);
   };
 
-  // ======================================================
-  // SUBCONTENIDO DE ACCESIBILIDAD
-  // ======================================================
   const renderAccesibilidadSubcontent = () => {
     switch (subSection) {
-
-      // 🖥️ PANTALLA
       case "pantalla":
         return (
           <div className="flex flex-col space-y-6 mt-4">
             <div className="flex items-center space-x-2">
-              <Switch
-                checked={darkMode}
-                onCheckedChange={handleDarkModeChange}
-                id="darkmode"
-              />
+              <Switch checked={darkMode} onCheckedChange={handleDarkModeChange} id="darkmode" />
               <Label htmlFor="darkmode">Modo oscuro</Label>
             </div>
           </div>
         );
-
-      // 🔊 SONIDO
       case "sonido":
         return (
           <div className="flex flex-col space-y-6 mt-4">
-
             <div className="flex items-center space-x-2">
-              <Switch
-                checked={ttsEnabled}
-                id="ttsHover"
-                onCheckedChange={handleTextToSpeech}
-              />
+              <Switch checked={ttsEnabled} id="ttsHover" onCheckedChange={handleTextToSpeech} />
               <Label htmlFor="ttsHover">Lectura por voz</Label>
             </div>
-
             {ttsEnabled && (
               <>
                 <div>
                   <Label className="font-semibold">Tipo de voz</Label>
                   <div className="mt-2 flex gap-4">
-
                     <label className="flex items-center gap-2 cursor-pointer">
-                      <input
-                        type="radio"
-                        name="voiceType"
-                        value="female"
-                        checked={voiceType === "female"}
-                        onChange={() => handleVoiceSelection("female")}
-                      />
+                      <input type="radio" name="voiceType" value="female" checked={voiceType === "female"} onChange={() => handleVoiceSelection("female")} />
                       Femenina
                     </label>
-
                     <label className="flex items-center gap-2 cursor-pointer">
-                      <input
-                        type="radio"
-                        name="voiceType"
-                        value="male"
-                        checked={voiceType === "male"}
-                        onChange={() => handleVoiceSelection("male")}
-                      />
+                      <input type="radio" name="voiceType" value="male" checked={voiceType === "male"} onChange={() => handleVoiceSelection("male")} />
                       Masculina
                     </label>
-
                   </div>
                 </div>
-
                 <div>
                   <Label className="font-semibold">Velocidad</Label>
-                  <input
-                    type="range"
-                    min="0.5"
-                    max="2"
-                    step="0.1"
-                    value={ttsRate}
-                    onChange={(e) => handleRateChange(Number(e.target.value))}
-                    className="w-full cursor-pointer"
-                  />
+                  <input type="range" min="0.5" max="2" step="0.1" value={ttsRate} onChange={(e) => handleRateChange(Number(e.target.value))} className="w-full cursor-pointer" />
                   <p className="text-sm text-gray-500">Actual: {ttsRate.toFixed(1)}</p>
                 </div>
-
                 <div>
                   <Label className="font-semibold">Volumen</Label>
-                  <input
-                    type="range"
-                    min="0"
-                    max="1"
-                    step="0.1"
-                    value={ttsVolume}
-                    onChange={(e) => handleVolumeChange(Number(e.target.value))}
-                    className="w-full cursor-pointer"
-                  />
+                  <input type="range" min="0" max="1" step="0.1" value={ttsVolume} onChange={(e) => handleVolumeChange(Number(e.target.value))} className="w-full cursor-pointer" />
                   <p className="text-sm text-gray-500">Actual: {ttsVolume.toFixed(1)}</p>
                 </div>
-
               </>
             )}
-
           </div>
         );
-
       case "dislexia":
         return (
           <div className="flex flex-col space-y-6 mt-4">
-
             <div className="flex items-center space-x-2">
-              <Switch
-                checked={dyslexiaEnabled}
-                id="dyslexiaToggle"
-                onCheckedChange={handleDyslexiaToggle}
-              />
+              <Switch checked={dyslexiaEnabled} id="dyslexiaToggle" onCheckedChange={handleDyslexiaToggle} />
               <Label htmlFor="dyslexiaToggle">Modo Dislexia</Label>
             </div>
-
             {dyslexiaEnabled && (
               <>
                 <div>
                   <Label className="font-semibold">Tipo de fuente</Label>
                   <div className="mt-2 flex gap-4">
-
                     <label className="flex items-center gap-2 cursor-pointer">
-                      <input
-                        type="radio"
-                        name="dysFont"
-                        value="lexend"
-                        checked={dyslexiaFont === "lexend"}
-                        onChange={() => handleDyslexiaFontChange("lexend")}
-                      />
+                      <input type="radio" name="dysFont" value="lexend" checked={dyslexiaFont === "lexend"} onChange={() => handleDyslexiaFontChange("lexend")} />
                       Lexend
                     </label>
-
                     <label className="flex items-center gap-2 cursor-pointer">
-                      <input
-                        type="radio"
-                        name="dysFont"
-                        value="open"
-                        checked={dyslexiaFont === "open"}
-                        onChange={() => handleDyslexiaFontChange("open")}
-                      />
+                      <input type="radio" name="dysFont" value="open" checked={dyslexiaFont === "open"} onChange={() => handleDyslexiaFontChange("open")} />
                       OpenDyslexic
                     </label>
-
                   </div>
                 </div>
-
                 <div>
                   <Label className="font-semibold">Espaciado entre letras</Label>
-                  <input
-                    type="range"
-                    min="0"
-                    max="5"
-                    value={dyslexiaSpacing}
-                    onChange={(e) => handleSpacingChange(Number(e.target.value))}
-                    className="w-full cursor-pointer"
-                  />
+                  <input type="range" min="0" max="5" value={dyslexiaSpacing} onChange={(e) => handleSpacingChange(Number(e.target.value))} className="w-full cursor-pointer" />
                   <p className="text-sm text-gray-500">Actual: {dyslexiaSpacing}px</p>
                 </div>
-
                 <div>
                   <Label className="font-semibold">Interlineado</Label>
-                  <input
-                    type="range"
-                    min="1"
-                    max="2"
-                    step="0.1"
-                    value={dyslexiaLineHeight}
-                    onChange={(e) => handleLineHeightChange(Number(e.target.value))}
-                    className="w-full cursor-pointer"
-                  />
+                  <input type="range" min="1" max="2" step="0.1" value={dyslexiaLineHeight} onChange={(e) => handleLineHeightChange(Number(e.target.value))} className="w-full cursor-pointer" />
                   <p className="text-sm text-gray-500">Actual: {dyslexiaLineHeight}</p>
                 </div>
-
               </>
             )}
-
           </div>
         );
-
-      // 🤲 PARKINSON
       case "parkinson":
         return (
           <div className="flex flex-col space-y-6 mt-4">
             <div className="flex items-center space-x-2">
-              <Switch
-                checked={parkinsonEnabled}
-                id="parkinsonToggle"
-                onCheckedChange={handleParkinsonToggle}
-              />
+              <Switch checked={parkinsonEnabled} id="parkinsonToggle" onCheckedChange={handleParkinsonToggle} />
               <Label htmlFor="parkinsonToggle">Modo Parkinson</Label>
             </div>
-
             {parkinsonEnabled && (
               <>
                 <div>
                   <Label className="font-semibold">Tamaño del indicador</Label>
                   <div className="flex items-center gap-4 mt-2">
                     <span className="text-xs">Pequeño</span>
-                    <input
-                        type="range"
-                        min="20"
-                        max="100"
-                        step="5"
-                        value={cursorSize}
-                        onChange={(e) => handleCursorSizeChange(Number(e.target.value))}
-                        className="flex-1 cursor-pointer"
-                    />
+                    <input type="range" min="20" max="100" step="5" value={cursorSize} onChange={(e) => handleCursorSizeChange(Number(e.target.value))} className="flex-1 cursor-pointer" />
                     <span className="text-xs">Grande</span>
                   </div>
                   <p className="text-sm text-gray-500 mt-1">Actual: {cursorSize}px</p>
                 </div>
                 <div className="bg-blue-50 p-3 rounded text-sm text-blue-800 border border-blue-200">
-                  <p>Si haces click cerca de un botón dentro del círculo rojo, el sistema lo presionará por ti automáticamente.</p>
+                  <p>Todo lo que este dentro del área del círculo rojo será clickeado.</p>
                 </div>
               </>
             )}
           </div>
         );
-
-      // ⌨️ ATAJOS (NUEVA SECCIÓN)
+      
+      // ✅ RESTAURADO: Sección de Atajos
       case "atajos":
         return (
             <div className="space-y-6 mt-4 pr-2">
@@ -625,89 +511,26 @@ export default function Settings() {
     }
   };
 
-
-  // ======================================================
-  // CONTENIDO PRINCIPAL
-  // ======================================================
   const renderContent = () => {
     switch (section) {
-
       case "accesibilidad":
         return (
           <>
             <DialogHeader>
               <DialogTitle>Accesibilidad</DialogTitle>
-              <DialogDescription>
-                Ajustes visuales, auditivos, lectura y atajos.
-              </DialogDescription>
+              <DialogDescription>Ajustes visuales, auditivos, lectura y atajos.</DialogDescription>
             </DialogHeader>
-
-            {/* SUBMENÚ AJUSTADO */}
             <div className="flex gap-2 border-b pb-2 mt-4 flex-wrap">
-
-              <button
-                onClick={() => setSubSection("pantalla")}
-                className={`px-4 py-2 rounded whitespace-nowrap flex-shrink-0 ${
-                  subSection === "pantalla"
-                    ? "bg-neutral text-primary font-semibold shadow"
-                    : "hover:bg-neutral hover:text-primary"
-                }`}
-              >
-                Pantalla
-              </button>
-
-              <button
-                onClick={() => setSubSection("sonido")}
-                className={`px-4 py-2 rounded whitespace-nowrap flex-shrink-0 ${
-                  subSection === "sonido"
-                    ? "bg-neutral text-primary font-semibold shadow"
-                    : "hover:bg-neutral hover:text-primary"
-                }`}
-              >
-                Sonido
-              </button>
-
-              <button
-                onClick={() => setSubSection("dislexia")}
-                className={`px-4 py-2 rounded whitespace-nowrap flex-shrink-0 ${
-                  subSection === "dislexia"
-                    ? "bg-neutral text-primary font-semibold shadow"
-                    : "hover:bg-neutral hover:text-primary"
-                }`}
-              >
-                Dislexia
-              </button>
-
-              <button
-                onClick={() => setSubSection("parkinson")}
-                className={`px-4 py-2 rounded whitespace-nowrap flex-shrink-0 ${
-                  subSection === "parkinson"
-                    ? "bg-neutral text-primary font-semibold shadow"
-                    : "hover:bg-neutral hover:text-primary"
-                }`}
-              >
-                Parkinson
-              </button>
-              
-              {/* ✅ NUEVO BOTÓN ATAJOS */}
-              <button
-                onClick={() => setSubSection("atajos")}
-                className={`px-4 py-2 rounded whitespace-nowrap flex-shrink-0 ${
-                  subSection === "atajos"
-                    ? "bg-neutral text-primary font-semibold shadow"
-                    : "hover:bg-neutral hover:text-primary"
-                }`}
-              >
-                Atajos
-              </button>
-
+              <button onClick={() => setSubSection("pantalla")} className={`px-4 py-2 rounded whitespace-nowrap flex-shrink-0 ${subSection === "pantalla" ? "bg-neutral text-primary font-semibold shadow" : "hover:bg-neutral hover:text-primary"}`}>Pantalla</button>
+              <button onClick={() => setSubSection("sonido")} className={`px-4 py-2 rounded whitespace-nowrap flex-shrink-0 ${subSection === "sonido" ? "bg-neutral text-primary font-semibold shadow" : "hover:bg-neutral hover:text-primary"}`}>Sonido</button>
+              <button onClick={() => setSubSection("dislexia")} className={`px-4 py-2 rounded whitespace-nowrap flex-shrink-0 ${subSection === "dislexia" ? "bg-neutral text-primary font-semibold shadow" : "hover:bg-neutral hover:text-primary"}`}>Dislexia</button>
+              <button onClick={() => setSubSection("parkinson")} className={`px-4 py-2 rounded whitespace-nowrap flex-shrink-0 ${subSection === "parkinson" ? "bg-neutral text-primary font-semibold shadow" : "hover:bg-neutral hover:text-primary"}`}>Parkinson</button>
+              {/* ✅ RESTAURADO: Botón Atajos */}
+              <button onClick={() => setSubSection("atajos")} className={`px-4 py-2 rounded whitespace-nowrap flex-shrink-0 ${subSection === "atajos" ? "bg-neutral text-primary font-semibold shadow" : "hover:bg-neutral hover:text-primary"}`}>Atajos</button>
             </div>
-
             <div className="pb-10">{renderAccesibilidadSubcontent()}</div>
           </>
         );
-
-
       case "perfil":
         return (
           <>
@@ -715,24 +538,17 @@ export default function Settings() {
               <DialogTitle>Perfil</DialogTitle>
               <DialogDescription>Opciones de cuenta.</DialogDescription>
             </DialogHeader>
-
             <div className="mt-4">
-              <button
-                className="cursor-pointer hover:border-2 hover:border-primary hover:bg-neutral hover:text-primary bg-primary text-neutral rounded-2xl w-50 h-10 m-5"
-                onClick={() => (navigate("/"), supabase.auth.signOut())}
-              >
-                Cerrar sesión
-              </button>
+              <button className="cursor-pointer hover:border-2 hover:border-primary hover:bg-neutral hover:text-primary bg-primary text-neutral rounded-2xl w-50 h-10 m-5" onClick={() => (navigate("/"), supabase.auth.signOut())}>Cerrar sesión</button>
             </div>
           </>
         );
     }
   };
 
-
   return (
-    <Dialog>
-      <DialogTrigger>
+    <Dialog open={isOpen} onOpenChange={setIsOpen}>
+      <DialogTrigger asChild>
         <svg
           xmlns="http://www.w3.org/2000/svg"
           width="40"
@@ -743,6 +559,7 @@ export default function Settings() {
           strokeWidth="2"
           strokeLinecap="round"
           strokeLinejoin="round"
+          title="Accesibilidad (Alt + A)"
           className="mr-6 cursor-pointer hover:text-primary hover:bg-neutral rounded-4xl transition-colors duration-200"
         >
           <path d="M18 20a6 6 0 0 0-12 0" />
@@ -753,34 +570,13 @@ export default function Settings() {
 
       <DialogContent className="max-w-2xl p-0 overflow-hidden">
         <div className="flex h-full">
-
-          {/* SIDEBAR */}
           <aside className="w-40 bg-muted/50 border-r p-4 flex flex-col space-y-3">
-
-            <button
-              onClick={() => handleSection("accesibilidad")}
-              className={`block px-4 py-2 rounded transition-colors duration-200 ${
-                AccActive ? "bg-neutral text-primary font-semibold shadow-md" : "hover:bg-neutral hover:text-primary"
-              }`}
-            >
-              Accesibilidad
-            </button>
-
-            <button
-              onClick={() => handleSection("perfil")}
-              className={`block px-4 py-2 rounded transition-colors duration-200 ${
-                PerfilActive ? "bg-neutral text-primary font-semibold shadow-md" : "hover:bg-neutral hover:text-primary"
-              }`}
-            >
-              Perfil
-            </button>
-
+            <button onClick={() => handleSection("accesibilidad")} className={`block px-4 py-2 rounded transition-colors duration-200 ${AccActive ? "bg-neutral text-primary font-semibold shadow-md" : "hover:bg-neutral hover:text-primary"}`}>Accesibilidad</button>
+            <button onClick={() => handleSection("perfil")} className={`block px-4 py-2 rounded transition-colors duration-200 ${PerfilActive ? "bg-neutral text-primary font-semibold shadow-md" : "hover:bg-neutral hover:text-primary"}`}>Perfil</button>
           </aside>
-
           <main className="flex-1 p-6 overflow-y-auto max-h-[80vh]">
             {renderContent()}
           </main>
-
         </div>
       </DialogContent>
     </Dialog>

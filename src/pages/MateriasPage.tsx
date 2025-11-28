@@ -30,16 +30,16 @@ export default function MateriasPage() {
       .from("materia")
       .select(
         `idmateria,
-                nombre,
-                iddocente,
-                idcarrera,
-                semestre,
-                cantidadunidades,
-                carrera (
-                    idcarrera,
-                    nombre,
-                    cantidadsemestres
-                )`
+          nombre,
+          iddocente,
+          idcarrera,
+          semestre,
+          cantidadunidades,
+          carrera (
+              idcarrera,
+              nombre,
+              cantidadsemestres
+          )`
       )
       .eq("iddocente", docente.iddocente)
       .order("nombre", { ascending: true });
@@ -53,9 +53,27 @@ export default function MateriasPage() {
     setLoading(false);
   }, [docente]);
 
+  // Carga inicial
   useEffect(() => {
     fetchMaterias();
   }, [fetchMaterias]);
+
+  // 1. NUEVO: Atajo de teclado (Alt + R) ⌨️
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      // Detectar Alt + r (o R)
+      if (event.altKey && (event.key === 'r' || event.key === 'R')) {
+        event.preventDefault(); // Prevenir comportamiento por defecto
+        if (!loading) { // Solo si no está cargando actualmente
+          fetchMaterias(); // Ejecutar la función de refrescar
+        }
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    // Limpieza
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [fetchMaterias, loading]); // Dependencias: fetchMaterias y loading
 
   const handleDelete = useCallback((est: MateriaConCarrera) => {
     setDeleting(est);
@@ -71,19 +89,19 @@ export default function MateriasPage() {
     [handleEdit, handleDelete]
   );
 
-  // if (loading) return <main className="p-6">Cargando…</main>;
-  // if (error) return <main className="p-6 text-red-600">Error: {error}</main>;
-
   return (
     <MainLayout text="Materias">
       <main className="p-6 space-y-4">
         <div className="flex items-center justify-between">
           <h1 className="text-xl font-semibold">Materias</h1>
           <div className="flex gap-2">
+            {/* 2. MODIFICADO: Añadido Tooltip y ARIA para accesibilidad */}
             <Button
               variant="outline"
               onClick={fetchMaterias}
               disabled={loading}
+              title="Refrescar lista (Alt + R)" // Tooltip visual
+              aria-keyshortcuts="Alt+r"         // Lector de pantalla
             >
               {loading ? "Cargando..." : "Refrescar"}
             </Button>

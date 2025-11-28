@@ -1,4 +1,4 @@
-import { useState } from "react"; 
+import { useState, useEffect, useRef } from "react"; // Se añadieron useEffect y useRef
 import MainLayout from "../layouts/MainLayout";
 import * as XLSX from "xlsx";
 import supabase from "../utils/supabaseClient";
@@ -42,6 +42,33 @@ export default function ImportarEstudiantesForm() {
   const [errores, setErrores] = useState<string[]>([]);
   const [mensaje, setMensaje] = useState("");
   const [loading, setLoading] = useState(false);
+
+  // Referencias para los botones
+  const btnGuardarRef = useRef<HTMLButtonElement>(null);
+  const btnCancelarRef = useRef<HTMLButtonElement>(null);
+
+  // Configuración de atajos de teclado
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.altKey) {
+        switch (e.key.toLowerCase()) {
+          case 'g': // Alt + g -> Guardar
+            e.preventDefault();
+            btnGuardarRef.current?.click();
+            break;
+          case 'x': // Alt + x -> Cancelar
+            e.preventDefault();
+            btnCancelarRef.current?.click();
+            break;
+          default:
+            break;
+        }
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
 
   const esUUID = (v: string) =>
     /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(v);
@@ -283,20 +310,24 @@ export default function ImportarEstudiantesForm() {
             {/* BOTONES */}
             <div className="mt-8 flex justify-center gap-5">
               <button
+                ref={btnGuardarRef} // Referencia añadida
                 onClick={guardarEnSupabase}
                 disabled={loading}
+                title="Atajo: Alt + g"
                 className="px-8 py-2 rounded-lg font-semibold text-white flex items-center gap-2 bg-[hsl(219,57%,51%)] hover:bg-[hsl(219,61%,65%)] transition shadow"
               >
                 Guardar {loading ? "..." : <FaFileExcel />}
               </button>
 
               <button
+                ref={btnCancelarRef} // Referencia añadida
                 onClick={() => {
                   setArchivo(null);
                   setPreview([]);
                   setErrores([]);
                   setMensaje("");
                 }}
+                title="Atajo: Alt + x"
                 className="px-8 py-2 rounded-lg font-semibold text-white bg-[#e74c3c] hover:bg-red-600 transition flex items-center gap-2"
               >
                 Cancelar <FaTimesCircle />

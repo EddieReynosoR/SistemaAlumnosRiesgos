@@ -47,7 +47,7 @@ function applyDyslexiaStyles() {
 }
 
 // ======================================================
-// 🔴 FUNCIÓN PARA APLICAR MODO PARKINSON (CURSOR + IMÁN PRECISO)
+// 🔴 FUNCIÓN PARA APLICAR MODO PARKINSON 
 // ======================================================
 let parkinsonCursorListener: ((e: MouseEvent) => void) | null = null;
 let parkinsonClickListener: ((e: MouseEvent) => void) | null = null;
@@ -57,7 +57,6 @@ function applyParkinsonStyles() {
   const enabled = localStorage.getItem("parkinsonEnabled") === "true";
   const size = Number(localStorage.getItem("cursorSize")) || 30;
 
-  // 1. LIMPIEZA DE LISTENERS
   if (parkinsonCursorListener) {
     window.removeEventListener('mousemove', parkinsonCursorListener);
     parkinsonCursorListener = null;
@@ -67,7 +66,6 @@ function applyParkinsonStyles() {
     parkinsonClickListener = null;
   }
 
-  // 2. APAGADO
   if (!enabled) {
     const domElement = document.getElementById('parkinson-cursor');
     if (domElement) domElement.remove();
@@ -76,7 +74,6 @@ function applyParkinsonStyles() {
     return;
   }
 
-  // 3. ENCENDIDO: Crear elemento visual
   if (!cursorElement) {
     const existing = document.getElementById('parkinson-cursor');
     if (existing) {
@@ -85,7 +82,7 @@ function applyParkinsonStyles() {
       cursorElement = document.createElement('div');
       cursorElement.id = 'parkinson-cursor';
       cursorElement.style.position = 'fixed';
-      cursorElement.style.pointerEvents = 'none'; // Vital para no bloquear el mouse
+      cursorElement.style.pointerEvents = 'none'; 
       cursorElement.style.zIndex = '9999';
       cursorElement.style.borderRadius = '50%';
       cursorElement.style.border = '2px solid red';
@@ -99,7 +96,6 @@ function applyParkinsonStyles() {
   cursorElement.style.width = `${size}px`;
   cursorElement.style.height = `${size}px`;
 
-  // 4. LISTENER DE MOVIMIENTO (Visual)
   parkinsonCursorListener = (e: MouseEvent) => {
     if (cursorElement) {
       cursorElement.style.left = `${e.clientX}px`;
@@ -108,20 +104,16 @@ function applyParkinsonStyles() {
   };
   window.addEventListener('mousemove', parkinsonCursorListener);
 
-  // 5. LÓGICA DE "IMÁN" MATEMÁTICO (Para evitar rebotes y mejorar precisión)
   parkinsonClickListener = (e: MouseEvent) => {
     const target = e.target as HTMLElement;
     
-    // Si ya le diste a algo interactivo directamente, no intervenir
     const isInteractive = target.closest('button, a, input, select, textarea, [role="button"]');
     if (isInteractive) return;
 
-    // Datos del click y radio
     const clickX = e.clientX;
     const clickY = e.clientY;
     const radio = size / 2;
 
-    // Buscar TODOS los elementos interactivos en la página
     const candidates = Array.from(document.querySelectorAll('button, a, input, select, textarea, [role="button"]'));
     
     let closestElement: HTMLElement | null = null;
@@ -131,56 +123,106 @@ function applyParkinsonStyles() {
         const element = el as HTMLElement;
         const rect = element.getBoundingClientRect();
 
-        // Ignorar elementos invisibles
         if (rect.width === 0 && rect.height === 0) return;
 
-        // Calcular el punto más cercano del botón al click
         const closestX = Math.max(rect.left, Math.min(clickX, rect.right));
         const closestY = Math.max(rect.top, Math.min(clickY, rect.bottom));
 
-        // Distancia euclidiana real entre el click y ese punto
         const distance = Math.sqrt(Math.pow(clickX - closestX, 2) + Math.pow(clickY - closestY, 2));
 
-        // Guardamos el más cercano
         if (distance < minDistance) {
             minDistance = distance;
             closestElement = element;
         }
     });
 
-    // Si el elemento más cercano está DENTRO del radio del círculo rojo
     if (closestElement && minDistance <= radio) {
-         // ¡Captura exitosa! Detenemos el evento original para evitar doble click/cierre
-         e.stopPropagation(); 
-         e.stopImmediatePropagation();
-         e.preventDefault();
-         
-         // Ejecutar el click en el elemento encontrado
-         (closestElement as HTMLElement).click();
-         (closestElement as HTMLElement).focus();
+        
+          e.stopPropagation(); 
+          e.stopImmediatePropagation();
+          e.preventDefault();
+          
+          (closestElement as HTMLElement).click();
+          (closestElement as HTMLElement).focus();
 
-         // Feedback visual de éxito (parpadeo verde)
-         if (cursorElement) {
-             cursorElement.style.backgroundColor = 'rgba(0, 255, 0, 0.4)';
-             cursorElement.style.borderColor = '#00ff00';
-             setTimeout(() => { 
-                 if(cursorElement) {
-                     cursorElement.style.backgroundColor = 'rgba(255, 0, 0, 0.15)'; 
-                     cursorElement.style.borderColor = 'red';
-                 }
-             }, 300);
-         }
+          if (cursorElement) {
+              cursorElement.style.backgroundColor = 'rgba(0, 255, 0, 0.4)';
+              cursorElement.style.borderColor = '#00ff00';
+              setTimeout(() => { 
+                  if(cursorElement) {
+                      cursorElement.style.backgroundColor = 'rgba(255, 0, 0, 0.15)'; 
+                      cursorElement.style.borderColor = 'red';
+                  }
+              }, 300);
+          }
     }
   };
   
-  // Usamos 'true' para interceptar el evento en la fase de captura antes que nadie
   window.addEventListener('click', parkinsonClickListener, true);
 }
+
+const shortcutsData = [
+  {
+    category: "General",
+    items: [
+      { action: "Refrescar", keys: ["Alt", "R"] },
+    ]
+  },
+  {
+    category: "Estudiantes",
+    items: [
+      { action: "Agregar estudiante", keys: ["Alt", "E"] },
+    ]
+  },
+  {
+    category: "Factores de Riesgo",
+    items: [
+      { action: "Agregar factor", keys: ["Alt", "R"] },
+    ]
+  },
+  {
+    category: "Materias",
+    items: [
+      { action: "Agregar materia", keys: ["Alt", "M"] },
+    ]
+  },
+  {
+    category: "Carreras",
+    items: [
+      { action: "Agregar carrera", keys: ["Alt", "C"] },
+    ]
+  },
+  {
+    category: "Gráficas",
+    items: [
+      { action: "Exportar Excel", keys: ["Alt", "E"] },
+      { action: "Exportar CSV", keys: ["Alt", "C"] },
+      { action: "Exportar PDF", keys: ["Alt", "P"] },
+      { action: "Exportar Todos", keys: ["Alt", "T"] },
+    ]
+  },
+  {
+    category: "Exportar Datos",
+    items: [
+      { action: "Elegir carpeta", keys: ["Alt", "C"] },
+      { action: "Exportar", keys: ["Alt", "E"] },
+      { action: "Cancelar", keys: ["Alt", "X"] },
+    ]
+  },
+  {
+    category: "Importar Datos",
+    items: [
+      { action: "Guardar", keys: ["Alt", "G"] },
+      { action: "Cancelar", keys: ["Alt", "X"] },
+    ]
+  }
+];
 
 export default function Settings() {
 
   const [section, setSection] = useState("accesibilidad");
-  const [subSection, setSubSection] = useState<"pantalla" | "sonido" | "dislexia" | "parkinson">("pantalla");
+
+  const [subSection, setSubSection] = useState<"pantalla" | "sonido" | "dislexia" | "parkinson" | "atajos">("pantalla");
 
   const [AccActive, setAccActive] = useState(true);
   const [PerfilActive, setPerfilActive] = useState(false);
@@ -513,7 +555,7 @@ export default function Settings() {
           </div>
         );
 
-      // 🤲 PARKINSON (AJUSTADO)
+      // 🤲 PARKINSON
       case "parkinson":
         return (
           <div className="flex flex-col space-y-6 mt-4">
@@ -523,7 +565,7 @@ export default function Settings() {
                 id="parkinsonToggle"
                 onCheckedChange={handleParkinsonToggle}
               />
-              <Label htmlFor="parkinsonToggle">Modo Asistido (Cursor Grande)</Label>
+              <Label htmlFor="parkinsonToggle">Modo Parkinson</Label>
             </div>
 
             {parkinsonEnabled && (
@@ -546,12 +588,39 @@ export default function Settings() {
                   <p className="text-sm text-gray-500 mt-1">Actual: {cursorSize}px</p>
                 </div>
                 <div className="bg-blue-50 p-3 rounded text-sm text-blue-800 border border-blue-200">
-                  <p className="font-semibold">🟢 Click Asistido Activo</p>
-                  <p>El cursor rojo funciona como un imán. Si haces click cerca de un botón (dentro del círculo rojo), el sistema lo presionará por ti automáticamente.</p>
+                  <p>Si haces click cerca de un botón dentro del círculo rojo, el sistema lo presionará por ti automáticamente.</p>
                 </div>
               </>
             )}
           </div>
+        );
+
+      // ⌨️ ATAJOS (NUEVA SECCIÓN)
+      case "atajos":
+        return (
+            <div className="space-y-6 mt-4 pr-2">
+                <div className="grid gap-6">
+                    {shortcutsData.map((section, idx) => (
+                        <div key={idx} className="bg-secondary/20 p-4 rounded-lg border border-secondary/50">
+                            <h3 className="font-semibold text-primary mb-3 text-lg border-b border-secondary/50 pb-1">{section.category}</h3>
+                            <div className="space-y-3">
+                                {section.items.map((item, i) => (
+                                    <div key={i} className="flex justify-between items-center text-sm">
+                                        <span className="text-foreground">{item.action}</span>
+                                        <div className="flex gap-1">
+                                            {item.keys.map((k, kIdx) => (
+                                                <span key={kIdx} className="px-2 py-1 bg-muted border rounded font-mono text-xs font-bold shadow-sm">
+                                                    {k}
+                                                </span>
+                                            ))}
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            </div>
         );
     }
   };
@@ -569,11 +638,11 @@ export default function Settings() {
             <DialogHeader>
               <DialogTitle>Accesibilidad</DialogTitle>
               <DialogDescription>
-                Ajustes visuales, auditivos y de lectura.
+                Ajustes visuales, auditivos, lectura y atajos.
               </DialogDescription>
             </DialogHeader>
 
-            {/* SUBMENÚ AJUSTADO PARA NO CORTARSE */}
+            {/* SUBMENÚ AJUSTADO */}
             <div className="flex gap-2 border-b pb-2 mt-4 flex-wrap">
 
               <button
@@ -619,10 +688,22 @@ export default function Settings() {
               >
                 Parkinson
               </button>
+              
+              {/* ✅ NUEVO BOTÓN ATAJOS */}
+              <button
+                onClick={() => setSubSection("atajos")}
+                className={`px-4 py-2 rounded whitespace-nowrap flex-shrink-0 ${
+                  subSection === "atajos"
+                    ? "bg-neutral text-primary font-semibold shadow"
+                    : "hover:bg-neutral hover:text-primary"
+                }`}
+              >
+                Atajos
+              </button>
 
             </div>
 
-            <div>{renderAccesibilidadSubcontent()}</div>
+            <div className="pb-10">{renderAccesibilidadSubcontent()}</div>
           </>
         );
 

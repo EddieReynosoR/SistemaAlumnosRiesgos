@@ -96,7 +96,8 @@ function Histograma() {
     return { columnas, filasNormalizadas };
   };
 
-  const exportarExcel = async () => {
+  // ✅ MODIFICADO: Agregado parámetro 'mostrarAlerta' (por defecto true)
+  const exportarExcel = async (mostrarAlerta = true) => {
     try {
       if (!data || data.length === 0) {
         alert("⚠️ No hay datos para exportar.");
@@ -140,25 +141,33 @@ function Histograma() {
       const buffer = await workbook.xlsx.writeBuffer();
       saveAs(new Blob([buffer], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" }), generarNombreArchivo("histograma", "xlsx"));
 
+      // ✅ Alerta de éxito
+      if (mostrarAlerta) alert("¡Archivo Excel exportado con éxito!");
+
     } catch (err: any) {
       console.error("Error Excel:", err);
       alert(`Error al exportar Excel: ${err.message}`);
     }
   };
 
-  const exportarCSV = async () => {
+  // ✅ MODIFICADO: Agregado parámetro 'mostrarAlerta'
+  const exportarCSV = async (mostrarAlerta = true) => {
     try {
       if (!data.length) return alert("⚠️ No hay datos para exportar.");
       const { filasNormalizadas } = getDatosTabulares();
       const ws = XLSX.utils.json_to_sheet(filasNormalizadas);
       const csv = XLSX.utils.sheet_to_csv(ws);
       guardarArchivo(new Blob([csv], { type: "text/csv;charset=utf-8" }), generarNombreArchivo("histograma", "csv"));
+      
+      // ✅ Alerta de éxito
+      if (mostrarAlerta) alert("¡Archivo CSV exportado con éxito!");
     } catch (err: any) {
       alert(`Error al exportar CSV: ${err.message}`);
     }
   };
 
-  const exportarPDF = async () => {
+  // ✅ MODIFICADO: Agregado parámetro 'mostrarAlerta'
+  const exportarPDF = async (mostrarAlerta = true) => {
     try {
       if (!chartRef.current) throw new Error("Gráfico no encontrado.");
       
@@ -202,6 +211,9 @@ function Histograma() {
       const blob = doc.output("blob");
       guardarArchivo(blob, generarNombreArchivo("histograma", "pdf"));
       
+      // ✅ Alerta de éxito
+      if (mostrarAlerta) alert("¡Archivo PDF exportado con éxito!");
+      
     } catch (err: any) {
       console.error("Error PDF:", err);
       if (err.message && err.message.includes("oklch")) {
@@ -212,15 +224,28 @@ function Histograma() {
     }
   };
 
+  // ✅ MODIFICADO: Lógica para manejar las alertas (individual o grupal)
   const handleExportar = async (fmt: Formato) => {
     if (!data.length) return alert("No hay datos disponibles para exportar.");
     setTimeout(async () => {
       switch (fmt) {
-        case "excel": await exportarExcel(); break;
-        case "csv": await exportarCSV(); break;
-        case "pdf": await exportarPDF(); break;
+        case "excel": 
+          await exportarExcel(true); 
+          break;
+        case "csv": 
+          await exportarCSV(true); 
+          break;
+        case "pdf": 
+          await exportarPDF(true); 
+          break;
         case "todos":
-          await exportarExcel(); await exportarCSV(); await exportarPDF(); break;
+          // Aquí pasamos 'false' para que NO salga alerta en cada uno
+          await exportarExcel(false); 
+          await exportarCSV(false); 
+          await exportarPDF(false);
+          // Y mostramos una sola alerta al final
+          alert("¡Todos los archivos (Excel, CSV, PDF) se han exportado con éxito!");
+          break;
       }
     }, 100);
   };
@@ -244,7 +269,7 @@ function Histograma() {
         <h2 className="text-2xl font-semibold mb-4">
           Histograma de Riesgos por Materia
         </h2>
-        <p className="mb-4 text-neutral">
+        <p className="mb-4">
           Frecuencia de factores de riesgo agrupados por cada materia.
         </p>
 
@@ -275,6 +300,7 @@ function Histograma() {
           </ResponsiveContainer>
         </div>
 
+        {/* ✅ RESTAURADO: Botones usando .map exactamente como en tu código original */}
         <div className="flex flex-wrap gap-3 mt-6">
           {(["excel", "csv", "pdf", "todos"] as Formato[]).map((fmt) => (
             <button

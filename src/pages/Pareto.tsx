@@ -19,9 +19,11 @@ import html2canvas from "html2canvas";
 import { saveAs } from "file-saver";
 import autoTable from "jspdf-autotable";
 
+type Formato = "excel" | "csv" | "pdf" | "todos";
+
 function Pareto() {
-  const [data, setData] = useState([]);
-  const chartRef = useRef(null);
+  const [data, setData] = useState<any[]>([]);
+  const chartRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     async function obtenerDatos() {
@@ -34,7 +36,7 @@ function Pareto() {
         return;
       }
 
-      const conteo = data.reduce((acc, item) => {
+      const conteo = data.reduce((acc: any, item: any) => {
         const cat = item.categoria || "Sin categoria";
         acc[cat] = (acc[cat] || 0) + 1;
         return acc;
@@ -42,7 +44,7 @@ function Pareto() {
 
       const datosArray = Object.entries(conteo).map(([categoria, frecuencia]) => ({
         categoria,
-        frecuencia,
+        frecuencia: Number(frecuencia),
       }));
 
       datosArray.sort((a, b) => b.frecuencia - a.frecuencia);
@@ -63,151 +65,188 @@ function Pareto() {
     obtenerDatos();
   }, []);
 
-  const exportToExcelWithChart = async () => {
+  // ✅ MODIFICADO: Acepta mostrarAlerta
+  const exportToExcelWithChart = async (mostrarAlerta = true) => {
     if (!chartRef.current) return;
 
-    const canvas = await html2canvas(chartRef.current, {
+    try {
+        const canvas = await html2canvas(chartRef.current, {
+            scale: 2,
+            useCORS: true,
+            allowTaint: true,
+            backgroundColor: "#ffffff",
+        });
+        const imgData = canvas.toDataURL("image/png");
+
+        const workbook = new ExcelJS.Workbook();
+        const worksheet = workbook.addWorksheet("Pareto");
+
+        worksheet.columns = [
+        { header: "Categoría", key: "categoria", width: 30 },
+        { header: "Frecuencia", key: "frecuencia", width: 15 },
+        { header: "Porcentaje", key: "porcentaje", width: 15 },
+        ];
+
+        data.forEach((item) => worksheet.addRow(item));
+
+        const imageId = workbook.addImage({
+        base64: imgData,
+        extension: "png",
+        });
+
+        worksheet.addImage(imageId, {
+        tl: { col: 5, row: 1 },
+        ext: { width: 500, height: 300 },
+        });
+
+        const buffer = await workbook.xlsx.writeBuffer();
+        saveAs(new Blob([buffer]), "pareto_con_grafica.xlsx");
+
+        if (mostrarAlerta) alert("¡Archivo Excel exportado con éxito!");
+
+    } catch (error) {
+        console.error(error);
+        alert("Error al exportar Excel");
+    }
+  };
+
+  // ✅ MODIFICADO: Acepta mostrarAlerta
+  const exportToPDF = async (mostrarAlerta = true) => {
+    if (!chartRef.current) return;
+
+    try {
+        const doc = new jsPDF("p", "pt", "a4");
+
+        doc.setFontSize(20);
+        doc.setTextColor(40, 40, 40);
+        doc.text("Análisis de Pareto", doc.internal.pageSize.getWidth() / 2, 40, {
+        align: "center",
+        });
+
+        doc.setFontSize(11);
+        doc.setTextColor(100, 100, 100);
+        doc.text(
+        "Generado automáticamente por el sistema académico",
+        doc.internal.pageSize.getWidth() / 2,
+        60,
+        { align: "center" }
+        );
+
+        const canvas = await html2canvas(chartRef.current, {
         scale: 2,
         useCORS: true,
         allowTaint: true,
         backgroundColor: "#ffffff",
-    });
-    const imgData = canvas.toDataURL("image/png");
+        });
 
-    const workbook = new ExcelJS.Workbook();
-    const worksheet = workbook.addWorksheet("Pareto");
+        const imgData = canvas.toDataURL("image/png");
+        const imgWidth = 380;
+        const imgHeight = (canvas.height * imgWidth) / canvas.width;
 
-    worksheet.columns = [
-      { header: "Categoría", key: "categoria", width: 30 },
-      { header: "Frecuencia", key: "frecuencia", width: 15 },
-      { header: "Porcentaje", key: "porcentaje", width: 15 },
-    ];
+        const imgX = (doc.internal.pageSize.getWidth() - imgWidth) / 2;
+        const imgY = 90;
 
-    data.forEach((item) => worksheet.addRow(item));
+        doc.setDrawColor(220, 220, 220);
+        doc.setLineWidth(1);
+        doc.rect(imgX - 5, imgY - 5, imgWidth + 10, imgHeight + 10);
 
-    const imageId = workbook.addImage({
-      base64: imgData,
-      extension: "png",
-    });
+        doc.addImage(imgData, "PNG", imgX, imgY, imgWidth, imgHeight);
 
-    worksheet.addImage(imageId, {
-      tl: { col: 5, row: 1 },
-      ext: { width: 500, height: 300 },
-    });
+        const columnas = ["Categoría", "Frecuencia", "Porcentaje (%)"];
+        const filas = data.map((d: any) => [d.categoria, d.frecuencia, d.porcentaje]);
 
-    const buffer = await workbook.xlsx.writeBuffer();
-    saveAs(new Blob([buffer]), "pareto_con_grafica.xlsx");
+        const startY = imgY + imgHeight + 40;
+        const pageHeight = doc.internal.pageSize.getHeight();
+
+        autoTable(doc, {
+        head: [columnas],
+        body: filas,
+        startY: startY > pageHeight - 80 ? 90 : startY,
+        margin: { left: 20, right: 20 },
+        theme: "grid",
+        styles: {
+            fontSize: 10,
+            cellPadding: 4,
+            lineColor: [225, 225, 225],
+            halign: "center",
+        },
+        headStyles: {
+            fillColor: [33, 150, 243],
+            textColor: 255,
+            fontSize: 11,
+            fontStyle: "bold",
+        },
+        alternateRowStyles: {
+            fillColor: [245, 245, 245],
+        },
+        bodyStyles: {
+            textColor: [60, 60, 60],
+        },
+        didDrawPage: () => {
+            const w = doc.internal.pageSize.getWidth();
+            const h = doc.internal.pageSize.getHeight();
+            doc.setFontSize(9);
+            doc.setTextColor(120, 120, 120);
+            doc.text(`Página ${doc.getNumberOfPages()}`, w - 60, h - 20);
+            doc.text("Sistema Académico • © 2025", 20, h - 20);
+        },
+        });
+
+        doc.save("pareto.pdf");
+
+        if (mostrarAlerta) alert("¡Archivo PDF exportado con éxito!");
+    
+    } catch (error) {
+        console.error(error);
+        alert("Error al exportar PDF");
+    }
   };
 
-  const exportToPDF = async () => {
-    if (!chartRef.current) return;
+  // ✅ MODIFICADO: Acepta mostrarAlerta
+  const exportToCSV = (mostrarAlerta = true) => {
+    try {
+        const csvContent = [
+        ["Categoria", "Frecuencia", "Porcentaje"],
+        ...data.map((d: any) => [d.categoria, d.frecuencia, d.porcentaje]),
+        ]
+        .map((e) => e.join(","))
+        .join("\n");
 
-    const doc = new jsPDF("p", "pt", "a4");
+        const blob = new Blob([csvContent], { type: "text/csv" });
+        saveAs(blob, "pareto.csv");
 
-    doc.setFontSize(20);
-    doc.setTextColor(40, 40, 40);
-    doc.text("Análisis de Pareto", doc.internal.pageSize.getWidth() / 2, 40, {
-      align: "center",
-    });
-
-    doc.setFontSize(11);
-    doc.setTextColor(100, 100, 100);
-    doc.text(
-      "Generado automáticamente por el sistema académico",
-      doc.internal.pageSize.getWidth() / 2,
-      60,
-      { align: "center" }
-    );
-
-    const canvas = await html2canvas(chartRef.current, {
-      scale: 2,
-      useCORS: true,
-      allowTaint: true,
-      backgroundColor: "#ffffff",
-    });
-
-    const imgData = canvas.toDataURL("image/png");
-    const imgWidth = 380;
-    const imgHeight = (canvas.height * imgWidth) / canvas.width;
-
-    const imgX = (doc.internal.pageSize.getWidth() - imgWidth) / 2;
-    const imgY = 90;
-
-    doc.setDrawColor(220, 220, 220);
-    doc.setLineWidth(1);
-    doc.rect(imgX - 5, imgY - 5, imgWidth + 10, imgHeight + 10);
-
-    doc.addImage(imgData, "PNG", imgX, imgY, imgWidth, imgHeight);
-
-    const columnas = ["Categoría", "Frecuencia", "Porcentaje (%)"];
-    const filas = data.map((d) => [d.categoria, d.frecuencia, d.porcentaje]);
-
-    const startY = imgY + imgHeight + 40;
-    const pageHeight = doc.internal.pageSize.getHeight();
-
-    autoTable(doc, {
-      head: [columnas],
-      body: filas,
-      startY: startY > pageHeight - 80 ? 90 : startY,
-      margin: { left: 20, right: 20 },
-      theme: "grid",
-      styles: {
-        fontSize: 10,
-        cellPadding: 4,
-        lineColor: [225, 225, 225],
-        halign: "center",
-      },
-      headStyles: {
-        fillColor: [33, 150, 243],
-        textColor: 255,
-        fontSize: 11,
-        fontStyle: "bold",
-      },
-      alternateRowStyles: {
-        fillColor: [245, 245, 245],
-      },
-      bodyStyles: {
-        textColor: [60, 60, 60],
-      },
-      didDrawPage: () => {
-        const w = doc.internal.pageSize.getWidth();
-        const h = doc.internal.pageSize.getHeight();
-        doc.setFontSize(9);
-        doc.setTextColor(120, 120, 120);
-        doc.text(`Página ${doc.getNumberOfPages()}`, w - 60, h - 20);
-        doc.text("Sistema Académico • © 2025", 20, h - 20);
-      },
-    });
-
-    doc.save("pareto.pdf");
+        if (mostrarAlerta) alert("¡Archivo CSV exportado con éxito!");
+    } catch (error) {
+        alert("Error al exportar CSV");
+    }
   };
 
-  const exportToCSV = () => {
-    const csvContent = [
-      ["Categoria", "Frecuencia", "Porcentaje"],
-      ...data.map((d) => [d.categoria, d.frecuencia, d.porcentaje]),
-    ]
-      .map((e) => e.join(","))
-      .join("\n");
-
-    const blob = new Blob([csvContent], { type: "text/csv" });
-    saveAs(blob, "pareto.csv");
-  };
-
-  const exportAll = () => {
-    exportToExcelWithChart();
-    exportToCSV();
-    exportToPDF();
+  // ✅ NUEVO: Controlador centralizado
+  const handleExportar = async (fmt: Formato) => {
+    if (!data.length) return alert("No hay datos disponibles.");
+    setTimeout(async () => {
+        switch (fmt) {
+        case "excel": await exportToExcelWithChart(true); break;
+        case "csv": exportToCSV(true); break;
+        case "pdf": await exportToPDF(true); break;
+        case "todos": 
+          await exportToExcelWithChart(false); 
+          exportToCSV(false); 
+          await exportToPDF(false);
+          alert("¡Todos los archivos (Excel, CSV, PDF) se han exportado con éxito!");
+          break;
+        }
+    }, 100);
   };
 
   // --- ACCESIBILIDAD ---
   useEffect(() => {
     const manejarAtajos = (e: KeyboardEvent) => {
       if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return;
-      if (e.altKey && e.key.toLowerCase() === 'e') { e.preventDefault(); exportToExcelWithChart(); }
-      if (e.altKey && e.key.toLowerCase() === 'c') { e.preventDefault(); exportToCSV(); }
-      if (e.altKey && e.key.toLowerCase() === 'p') { e.preventDefault(); exportToPDF(); }
-      if (e.altKey && e.key.toLowerCase() === 't') { e.preventDefault(); exportAll(); }
+      if (e.altKey && e.key.toLowerCase() === 'e') { e.preventDefault(); handleExportar('excel'); }
+      if (e.altKey && e.key.toLowerCase() === 'c') { e.preventDefault(); handleExportar('csv'); }
+      if (e.altKey && e.key.toLowerCase() === 'p') { e.preventDefault(); handleExportar('pdf'); }
+      if (e.altKey && e.key.toLowerCase() === 't') { e.preventDefault(); handleExportar('todos'); }
     };
     window.addEventListener('keydown', manejarAtajos);
     return () => window.removeEventListener('keydown', manejarAtajos);
@@ -248,35 +287,20 @@ function Pareto() {
           </ResponsiveContainer>
         </div>
 
+        {/* ✅ BOTONES ACTUALIZADOS: Mismo diseño que Histograma/Dispersion */}
         <div className="flex flex-wrap gap-3 mt-6">
-          <button
-            onClick={exportAll}
-            title="Exportar Todo (Atajo: Alt + T)"
-            className="cursor-pointer hover:border-2 hover:border-Primary hover:bg-Neutral hover:text-Primary bg-Primary text-Neutral rounded-2xl w-50 h-10 m-5 focus:outline-none focus:ring-4 focus:ring-blue-500 focus:border-transparent"
-          >
-            Exportar Todo
-          </button>
-          <button
-            onClick={exportToExcelWithChart}
-            title="Exportar Excel (Atajo: Alt + E)"
-            className="cursor-pointer hover:border-2 hover:border-Primary hover:bg-Neutral hover:text-Primary bg-Primary text-Neutral rounded-2xl w-50 h-10 m-5 focus:outline-none focus:ring-4 focus:ring-blue-500 focus:border-transparent"
-          >
-            Exportar Excel
-          </button>
-          <button
-            onClick={exportToCSV}
-            title="Exportar CSV (Atajo: Alt + C)"
-            className="cursor-pointer hover:border-2 hover:border-Primary hover:bg-Neutral hover:text-Primary bg-Primary text-Neutral rounded-2xl w-50 h-10 m-5 focus:outline-none focus:ring-4 focus:ring-blue-500 focus:border-transparent"
-          >
-            Exportar CSV
-          </button>
-          <button
-            onClick={exportToPDF}
-            title="Exportar PDF (Atajo: Alt + P)"
-            className="cursor-pointer hover:border-2 hover:border-Primary hover:bg-Neutral hover:text-Primary bg-Primary text-Neutral rounded-2xl w-50 h-10 m-5 focus:outline-none focus:ring-4 focus:ring-blue-500 focus:border-transparent"
-          >
-            Exportar PDF
-          </button>
+          {(["excel", "csv", "pdf", "todos"] as Formato[]).map((fmt) => (
+            <button
+              key={fmt}
+              onClick={() => handleExportar(fmt)}
+              title={`Exportar como ${fmt.toUpperCase()} (Atajo: Alt + ${fmt === "todos" ? "T" : fmt.charAt(0).toUpperCase()})`}
+              className="cursor-pointer hover:border-2 hover:border-primary hover:bg-secondary hover:text-primary 
+                         bg-primary text-neutral rounded-2xl w-50 h-10 m-5 px-6 font-medium transition-all
+                         focus:outline-none focus:ring-4 focus:ring-blue-500 focus:border-transparent"
+            >
+              Exportar {fmt.toUpperCase()}
+            </button>
+          ))}
         </div>
       </div>
     </MainLayout>

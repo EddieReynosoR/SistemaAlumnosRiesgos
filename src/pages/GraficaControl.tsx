@@ -11,6 +11,7 @@ import {
   Legend,
   ReferenceLine,
   ResponsiveContainer,
+  Label,
 } from "recharts";
 import { saveAs } from "file-saver";
 import * as XLSX from "xlsx";
@@ -123,7 +124,8 @@ function GraficaControl() {
     return { rows, headersBonitos, rowsParaPDF };
   };
 
-  const exportarExcel = async () => {
+  // --- Funciones de Exportación ---
+  const exportarExcel = async (mostrarAlerta = true) => {
     try {
       if (!data || data.length === 0) {
         alert("⚠️ No hay datos para exportar en Excel.");
@@ -196,13 +198,15 @@ function GraficaControl() {
       const buffer = await workbook.xlsx.writeBuffer();
       saveAs(new Blob([buffer], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" }), generarNombreArchivo("grafica_control", "xlsx"));
 
+      if (mostrarAlerta) alert("¡Archivo Excel exportado con éxito!");
+
     } catch (err: any) {
       console.error("Error Excel:", err);
       alert(`Error al exportar Excel: ${err.message}`);
     }
   };
 
-  const exportarCSV = async () => {
+  const exportarCSV = async (mostrarAlerta = true) => {
     if (!data || data.length === 0) {
       alert("⚠️ No hay datos para exportar en CSV.");
       return;
@@ -220,9 +224,11 @@ function GraficaControl() {
     const csv = XLSX.utils.sheet_to_csv(ws);
     const blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
     guardarArchivo(blob, generarNombreArchivo("grafica_control", "csv"));
+
+    if (mostrarAlerta) alert("¡Archivo CSV exportado con éxito!");
   };
 
-  const exportarPDF = async () => {
+  const exportarPDF = async (mostrarAlerta = true) => {
     try {
       if (!chartRef.current) throw new Error("Gráfico no encontrado");
 
@@ -266,6 +272,8 @@ function GraficaControl() {
 
       const blob = doc.output("blob");
       guardarArchivo(blob, generarNombreArchivo("grafica_control", "pdf"));
+
+      if (mostrarAlerta) alert("¡Archivo PDF exportado con éxito!");
     } catch (err: any) {
       console.error("Error PDF:", err);
       alert(`Error al exportar PDF: ${err.message}`);
@@ -274,18 +282,21 @@ function GraficaControl() {
 
   const handleExportar = async (fmt: Formato) => {
     if (!data.length) return alert("No hay datos disponibles.");
-    
     setTimeout(async () => {
         switch (fmt) {
-        case "excel": await exportarExcel(); break;
-        case "csv": await exportarCSV(); break;
-        case "pdf": await exportarPDF(); break;
-        case "todos": await exportarExcel(); await exportarCSV(); await exportarPDF(); break;
+        case "excel": await exportarExcel(true); break;
+        case "csv": await exportarCSV(true); break;
+        case "pdf": await exportarPDF(true); break;
+        case "todos": 
+          await exportarExcel(false); 
+          await exportarCSV(false); 
+          await exportarPDF(false);
+          alert("¡Todos los archivos (Excel, CSV, PDF) se han exportado con éxito!");
+          break;
         }
     }, 100);
   };
 
-  // --- ACCESIBILIDAD (ATAJOS) ---
   useEffect(() => {
     const manejarAtajos = (e: KeyboardEvent) => {
       if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return;
@@ -302,7 +313,7 @@ function GraficaControl() {
     <MainLayout text="Gráfica de Control">
       <div className="p-6 text-primary">
         <h2 className="text-2xl font-semibold mb-4">Gráfica de Control</h2>
-        <p className="mb-4 text-neutral">
+        <p className="mb-4">
           Esta gráfica muestra la variación de las calificaciones por unidad.
         </p>
 
@@ -314,26 +325,42 @@ function GraficaControl() {
           <ResponsiveContainer width="100%" height="100%">
             <LineChart
               data={data}
-              margin={{ top: 20, right: 30, left: 20, bottom: 10 }}
+              // 1. MÁRGENES AMPLIADOS: left: 50 (para Calificación), bottom: 50 (para Unidad y leyenda)
+              margin={{ top: 20, right: 30, left: 50, bottom: 50 }} 
             >
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis
                 stroke="#666666"
                 tick={{ fill: "#666666" }}
                 dataKey="unidad"
-                label={{ value: "Unidad", position: "insideBottom", offset: -5, fill: "#666666" }}
-              />
+              >
+                 {/* 2. 'Unidad' fuera del gráfico (position: "bottom") */}
+                 <Label value="Unidad" offset={0} position="bottom" fill="#666666" />
+              </XAxis>
               <YAxis
                 stroke="#666666"
                 tick={{ fill: "#666666" }}
-                label={{ value: "Calificación", angle: -90, position: "insideLeft", fill: "#666666" }}
-              />
-              <Tooltip 
+              >
+                 {/* 3. 'Calificación' fuera del gráfico (position: "left") */}
+                 <Label value="Calificación" angle={-90} position="left" style={{ textAnchor: 'middle' }} fill="#666666" />
+              </YAxis>
+              <Tooltip
                 contentStyle={{ backgroundColor: "#fff", borderColor: "#ccc", color: "#000" }}
               />
-              <Legend wrapperStyle={{ color: "#000000" }} />
+              
+              <Legend 
+                verticalAlign="bottom" 
+                wrapperStyle={{ paddingTop: "10px" }}
+                payload={[
+                  { value: 'Calificación', type: 'line', id: 'cal', color: '#3b82f6' },
+                  { value: `Media (${mean.toFixed(2)})`, type: 'plainline', id: 'media', color: 'green', payload: { strokeDasharray: '5 5' } },
+                  { value: `UCL (${ucl.toFixed(2)})`, type: 'plainline', id: 'ucl', color: 'red', payload: { strokeDasharray: '5 5' } },
+                  { value: `LCL (${lcl.toFixed(2)})`, type: 'plainline', id: 'lcl', color: 'red', payload: { strokeDasharray: '5 5' } }
+                ]}
+              />
 
               <Line type="monotone" dataKey="calificacion" stroke="#3b82f6" strokeWidth={2} dot={{ r: 5 }} name="Calificación" />
+              
               <ReferenceLine y={mean} label="Media" stroke="green" strokeDasharray="5 5" />
               <ReferenceLine y={ucl} label="UCL (+3σ)" stroke="red" strokeDasharray="5 5" />
               <ReferenceLine y={lcl} label="LCL (-3σ)" stroke="red" strokeDasharray="5 5" />

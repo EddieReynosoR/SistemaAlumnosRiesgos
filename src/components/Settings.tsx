@@ -14,33 +14,208 @@ import { useNavigate } from "react-router";
 import { enableAutomaticTTS, disableAutomaticTTS } from "../utils/ttsAuto";
 import { useSession } from "../context/SessionContext";
 
+// ======================================================
+// 🔵 FUNCIÓN PARA APLICAR MODO DISLEXIA
+// ======================================================
+function applyDyslexiaStyles() {
+  const enabled = localStorage.getItem("dyslexiaEnabled") === "true";
+  const font = localStorage.getItem("dyslexiaFont") || "lexend";
+  const spacing = Number(localStorage.getItem("dyslexiaSpacing")) || 1;
+  const lineH = Number(localStorage.getItem("dyslexiaLineHeight")) || 1.2;
+
+  const html = document.documentElement;
+
+  if (!enabled) {
+    html.classList.remove("dyslexia-mode");
+    html.style.removeProperty("--dys-font");
+    html.style.removeProperty("--dys-spacing");
+    html.style.removeProperty("--dys-lineh");
+    return;
+  }
+
+  html.classList.add("dyslexia-mode");
+
+  if (font === "open") {
+    html.style.setProperty("--dys-font", "'OpenDyslexic'");
+  } else {
+    html.style.setProperty("--dys-font", "'Lexend'");
+  }
+
+  html.style.setProperty("--dys-spacing", `${spacing}px`);
+  html.style.setProperty("--dys-lineh", `${lineH}`);
+}
+
+// ======================================================
+// 🔴 FUNCIÓN PARA APLICAR MODO PARKINSON (CURSOR + IMÁN PRECISO)
+// ======================================================
+let parkinsonCursorListener: ((e: MouseEvent) => void) | null = null;
+let parkinsonClickListener: ((e: MouseEvent) => void) | null = null;
+let cursorElement: HTMLDivElement | null = null;
+
+function applyParkinsonStyles() {
+  const enabled = localStorage.getItem("parkinsonEnabled") === "true";
+  const size = Number(localStorage.getItem("cursorSize")) || 30;
+
+  // 1. LIMPIEZA DE LISTENERS
+  if (parkinsonCursorListener) {
+    window.removeEventListener('mousemove', parkinsonCursorListener);
+    parkinsonCursorListener = null;
+  }
+  if (parkinsonClickListener) {
+    window.removeEventListener('click', parkinsonClickListener, true);
+    parkinsonClickListener = null;
+  }
+
+  // 2. APAGADO
+  if (!enabled) {
+    const domElement = document.getElementById('parkinson-cursor');
+    if (domElement) domElement.remove();
+    if (cursorElement) cursorElement.remove();
+    cursorElement = null;
+    return;
+  }
+
+  // 3. ENCENDIDO: Crear elemento visual
+  if (!cursorElement) {
+    const existing = document.getElementById('parkinson-cursor');
+    if (existing) {
+      cursorElement = existing as HTMLDivElement;
+    } else {
+      cursorElement = document.createElement('div');
+      cursorElement.id = 'parkinson-cursor';
+      cursorElement.style.position = 'fixed';
+      cursorElement.style.pointerEvents = 'none'; // Vital para no bloquear el mouse
+      cursorElement.style.zIndex = '9999';
+      cursorElement.style.borderRadius = '50%';
+      cursorElement.style.border = '2px solid red';
+      cursorElement.style.backgroundColor = 'rgba(255, 0, 0, 0.15)';
+      cursorElement.style.transform = 'translate(-50%, -50%)';
+      cursorElement.style.transition = 'width 0.1s, height 0.1s, left 0.02s, top 0.02s';
+      document.body.appendChild(cursorElement);
+    }
+  }
+
+  cursorElement.style.width = `${size}px`;
+  cursorElement.style.height = `${size}px`;
+
+  // 4. LISTENER DE MOVIMIENTO (Visual)
+  parkinsonCursorListener = (e: MouseEvent) => {
+    if (cursorElement) {
+      cursorElement.style.left = `${e.clientX}px`;
+      cursorElement.style.top = `${e.clientY}px`;
+    }
+  };
+  window.addEventListener('mousemove', parkinsonCursorListener);
+
+  // 5. LÓGICA DE "IMÁN" MATEMÁTICO (Para evitar rebotes y mejorar precisión)
+  parkinsonClickListener = (e: MouseEvent) => {
+    const target = e.target as HTMLElement;
+    
+    // Si ya le diste a algo interactivo directamente, no intervenir
+    const isInteractive = target.closest('button, a, input, select, textarea, [role="button"]');
+    if (isInteractive) return;
+
+    // Datos del click y radio
+    const clickX = e.clientX;
+    const clickY = e.clientY;
+    const radio = size / 2;
+
+    // Buscar TODOS los elementos interactivos en la página
+    const candidates = Array.from(document.querySelectorAll('button, a, input, select, textarea, [role="button"]'));
+    
+    let closestElement: HTMLElement | null = null;
+    let minDistance = Infinity;
+
+    candidates.forEach((el) => {
+        const element = el as HTMLElement;
+        const rect = element.getBoundingClientRect();
+
+        // Ignorar elementos invisibles
+        if (rect.width === 0 && rect.height === 0) return;
+
+        // Calcular el punto más cercano del botón al click
+        const closestX = Math.max(rect.left, Math.min(clickX, rect.right));
+        const closestY = Math.max(rect.top, Math.min(clickY, rect.bottom));
+
+        // Distancia euclidiana real entre el click y ese punto
+        const distance = Math.sqrt(Math.pow(clickX - closestX, 2) + Math.pow(clickY - closestY, 2));
+
+        // Guardamos el más cercano
+        if (distance < minDistance) {
+            minDistance = distance;
+            closestElement = element;
+        }
+    });
+
+    // Si el elemento más cercano está DENTRO del radio del círculo rojo
+    if (closestElement && minDistance <= radio) {
+         // ¡Captura exitosa! Detenemos el evento original para evitar doble click/cierre
+         e.stopPropagation(); 
+         e.stopImmediatePropagation();
+         e.preventDefault();
+         
+         // Ejecutar el click en el elemento encontrado
+         (closestElement as HTMLElement).click();
+         (closestElement as HTMLElement).focus();
+
+         // Feedback visual de éxito (parpadeo verde)
+         if (cursorElement) {
+             cursorElement.style.backgroundColor = 'rgba(0, 255, 0, 0.4)';
+             cursorElement.style.borderColor = '#00ff00';
+             setTimeout(() => { 
+                 if(cursorElement) {
+                     cursorElement.style.backgroundColor = 'rgba(255, 0, 0, 0.15)'; 
+                     cursorElement.style.borderColor = 'red';
+                 }
+             }, 300);
+         }
+    }
+  };
+  
+  // Usamos 'true' para interceptar el evento en la fase de captura antes que nadie
+  window.addEventListener('click', parkinsonClickListener, true);
+}
+
 export default function Settings() {
   const { session } = useSession();
   const [section, setSection] = useState("accesibilidad");
-  const [subSection, setSubSection] = useState<"pantalla" | "sonido">("pantalla");
+  const [subSection, setSubSection] = useState<"pantalla" | "sonido" | "dislexia" | "parkinson">("pantalla");
 
   const [AccActive, setAccActive] = useState(true);
   const [PerfilActive, setPerfilActive] = useState(false);
 
+  // 🖥️ PANTALLA
   const [darkMode, setDarkMode] = useState(false);
 
-  // SONIDO
+  // 🔊 SONIDO
   const [ttsEnabled, setTtsEnabled] = useState(false);
   const [voiceType, setVoiceType] = useState<"female" | "male">("female");
   const [ttsRate, setTtsRate] = useState(1);
   const [ttsVolume, setTtsVolume] = useState(1);
 
+  // 🧠 DISLEXIA
+  const [dyslexiaEnabled, setDyslexiaEnabled] = useState(false);
+  const [dyslexiaFont, setDyslexiaFont] = useState("lexend");
+  const [dyslexiaSpacing, setDyslexiaSpacing] = useState(1);
+  const [dyslexiaLineHeight, setDyslexiaLineHeight] = useState(1.2);
+
+  // 🤲 PARKINSON
+  const [parkinsonEnabled, setParkinsonEnabled] = useState(false);
+  const [cursorSize, setCursorSize] = useState(50);
+
   let navigate = useNavigate();
 
+  // ======================================================
   // CARGAR AJUSTES GUARDADOS
+  // ======================================================
   useEffect(() => {
 
-    // Pantalla
+    // PANTALLA
     const savedDark = localStorage.getItem("darkMode") === "true";
     setDarkMode(savedDark);
     document.documentElement.classList.toggle("dark", savedDark);
 
-    // Sonido
+    // SONIDO
     const savedTTS = localStorage.getItem("ttsHover") === "true";
     setTtsEnabled(savedTTS);
 
@@ -55,13 +230,39 @@ export default function Settings() {
 
     if (savedTTS) enableAutomaticTTS();
 
+    // DISLEXIA
+    const savedDyslexia = localStorage.getItem("dyslexiaEnabled") === "true";
+    setDyslexiaEnabled(savedDyslexia);
+
+    const savedFont = localStorage.getItem("dyslexiaFont");
+    if (savedFont) setDyslexiaFont(savedFont);
+
+    const savedSpacing = localStorage.getItem("dyslexiaSpacing");
+    if (savedSpacing) setDyslexiaSpacing(Number(savedSpacing));
+
+    const savedLine = localStorage.getItem("dyslexiaLineHeight");
+    if (savedLine) setDyslexiaLineHeight(Number(savedLine));
+
+    applyDyslexiaStyles();
+
+    // PARKINSON
+    const savedParkinson = localStorage.getItem("parkinsonEnabled") === "true";
+    setParkinsonEnabled(savedParkinson);
+
+    const savedCursorSize = localStorage.getItem("cursorSize");
+    if (savedCursorSize) setCursorSize(Number(savedCursorSize));
+
+    applyParkinsonStyles();
+
   }, []);
 
+
+  // ======================================================
   // HANDLERS
+  // ======================================================
 
   const handleSection = (Select: string) => {
     setSection(Select);
-
     setAccActive(Select === "accesibilidad");
     setPerfilActive(Select === "perfil");
   };
@@ -96,14 +297,54 @@ export default function Settings() {
     localStorage.setItem("ttsVolume", String(value));
   };
 
-  // SUBSECCIONES DE ACCESIBILIDAD
+  // ---------- DISLEXIA ----------
+  const handleDyslexiaToggle = (value: boolean) => {
+    setDyslexiaEnabled(value);
+    localStorage.setItem("dyslexiaEnabled", String(value));
+    applyDyslexiaStyles();
+  };
+
+  const handleDyslexiaFontChange = (font: string) => {
+    setDyslexiaFont(font);
+    localStorage.setItem("dyslexiaFont", font);
+    applyDyslexiaStyles();
+  };
+
+  const handleSpacingChange = (value: number) => {
+    setDyslexiaSpacing(value);
+    localStorage.setItem("dyslexiaSpacing", String(value));
+    applyDyslexiaStyles();
+  };
+
+  const handleLineHeightChange = (value: number) => {
+    setDyslexiaLineHeight(value);
+    localStorage.setItem("dyslexiaLineHeight", String(value));
+    applyDyslexiaStyles();
+  };
+
+  // ---------- PARKINSON ----------
+  const handleParkinsonToggle = (value: boolean) => {
+    setParkinsonEnabled(value);
+    localStorage.setItem("parkinsonEnabled", String(value));
+    setTimeout(applyParkinsonStyles, 0);
+  };
+
+  const handleCursorSizeChange = (value: number) => {
+    setCursorSize(value);
+    localStorage.setItem("cursorSize", String(value));
+    setTimeout(applyParkinsonStyles, 0);
+  };
+
+  // ======================================================
+  // SUBCONTENIDO DE ACCESIBILIDAD
+  // ======================================================
   const renderAccesibilidadSubcontent = () => {
     switch (subSection) {
 
+      // 🖥️ PANTALLA
       case "pantalla":
         return (
           <div className="flex flex-col space-y-6 mt-4">
-
             <div className="flex items-center space-x-2">
               <Switch
                 checked={darkMode}
@@ -112,15 +353,14 @@ export default function Settings() {
               />
               <Label htmlFor="darkmode">Modo oscuro</Label>
             </div>
-
           </div>
         );
 
+      // 🔊 SONIDO
       case "sonido":
         return (
           <div className="flex flex-col space-y-6 mt-4">
 
-            {/* ACTVAR LECTURA */}
             <div className="flex items-center space-x-2">
               <Switch
                 checked={ttsEnabled}
@@ -132,7 +372,6 @@ export default function Settings() {
 
             {ttsEnabled && (
               <>
-                {/* TIPO DE VOZ */}
                 <div>
                   <Label className="font-semibold">Tipo de voz</Label>
                   <div className="mt-2 flex gap-4">
@@ -145,7 +384,7 @@ export default function Settings() {
                         checked={voiceType === "female"}
                         onChange={() => handleVoiceSelection("female")}
                       />
-                      👩 Femenina
+                      Femenina
                     </label>
 
                     <label className="flex items-center gap-2 cursor-pointer">
@@ -156,13 +395,12 @@ export default function Settings() {
                         checked={voiceType === "male"}
                         onChange={() => handleVoiceSelection("male")}
                       />
-                      👨 Masculina
+                      Masculina
                     </label>
 
                   </div>
                 </div>
 
-                {/* VELOCIDAD */}
                 <div>
                   <Label className="font-semibold">Velocidad</Label>
                   <input
@@ -177,7 +415,6 @@ export default function Settings() {
                   <p className="text-sm text-gray-500">Actual: {ttsRate.toFixed(1)}</p>
                 </div>
 
-                {/* VOLUMEN */}
                 <div>
                   <Label className="font-semibold">Volumen</Label>
                   <input
@@ -197,9 +434,131 @@ export default function Settings() {
 
           </div>
         );
+
+      case "dislexia":
+        return (
+          <div className="flex flex-col space-y-6 mt-4">
+
+            <div className="flex items-center space-x-2">
+              <Switch
+                checked={dyslexiaEnabled}
+                id="dyslexiaToggle"
+                onCheckedChange={handleDyslexiaToggle}
+              />
+              <Label htmlFor="dyslexiaToggle">Modo Dislexia</Label>
+            </div>
+
+            {dyslexiaEnabled && (
+              <>
+                <div>
+                  <Label className="font-semibold">Tipo de fuente</Label>
+                  <div className="mt-2 flex gap-4">
+
+                    <label className="flex items-center gap-2 cursor-pointer">
+                      <input
+                        type="radio"
+                        name="dysFont"
+                        value="lexend"
+                        checked={dyslexiaFont === "lexend"}
+                        onChange={() => handleDyslexiaFontChange("lexend")}
+                      />
+                      Lexend
+                    </label>
+
+                    <label className="flex items-center gap-2 cursor-pointer">
+                      <input
+                        type="radio"
+                        name="dysFont"
+                        value="open"
+                        checked={dyslexiaFont === "open"}
+                        onChange={() => handleDyslexiaFontChange("open")}
+                      />
+                      OpenDyslexic
+                    </label>
+
+                  </div>
+                </div>
+
+                <div>
+                  <Label className="font-semibold">Espaciado entre letras</Label>
+                  <input
+                    type="range"
+                    min="0"
+                    max="5"
+                    value={dyslexiaSpacing}
+                    onChange={(e) => handleSpacingChange(Number(e.target.value))}
+                    className="w-full cursor-pointer"
+                  />
+                  <p className="text-sm text-gray-500">Actual: {dyslexiaSpacing}px</p>
+                </div>
+
+                <div>
+                  <Label className="font-semibold">Interlineado</Label>
+                  <input
+                    type="range"
+                    min="1"
+                    max="2"
+                    step="0.1"
+                    value={dyslexiaLineHeight}
+                    onChange={(e) => handleLineHeightChange(Number(e.target.value))}
+                    className="w-full cursor-pointer"
+                  />
+                  <p className="text-sm text-gray-500">Actual: {dyslexiaLineHeight}</p>
+                </div>
+
+              </>
+            )}
+
+          </div>
+        );
+
+      // 🤲 PARKINSON (AJUSTADO)
+      case "parkinson":
+        return (
+          <div className="flex flex-col space-y-6 mt-4">
+            <div className="flex items-center space-x-2">
+              <Switch
+                checked={parkinsonEnabled}
+                id="parkinsonToggle"
+                onCheckedChange={handleParkinsonToggle}
+              />
+              <Label htmlFor="parkinsonToggle">Modo Asistido (Cursor Grande)</Label>
+            </div>
+
+            {parkinsonEnabled && (
+              <>
+                <div>
+                  <Label className="font-semibold">Tamaño del indicador</Label>
+                  <div className="flex items-center gap-4 mt-2">
+                    <span className="text-xs">Pequeño</span>
+                    <input
+                        type="range"
+                        min="20"
+                        max="100"
+                        step="5"
+                        value={cursorSize}
+                        onChange={(e) => handleCursorSizeChange(Number(e.target.value))}
+                        className="flex-1 cursor-pointer"
+                    />
+                    <span className="text-xs">Grande</span>
+                  </div>
+                  <p className="text-sm text-gray-500 mt-1">Actual: {cursorSize}px</p>
+                </div>
+                <div className="bg-blue-50 p-3 rounded text-sm text-blue-800 border border-blue-200">
+                  <p className="font-semibold">🟢 Click Asistido Activo</p>
+                  <p>El cursor rojo funciona como un imán. Si haces click cerca de un botón (dentro del círculo rojo), el sistema lo presionará por ti automáticamente.</p>
+                </div>
+              </>
+            )}
+          </div>
+        );
     }
   };
 
+
+  // ======================================================
+  // CONTENIDO PRINCIPAL
+  // ======================================================
   const renderContent = () => {
     switch (section) {
 
@@ -208,15 +567,17 @@ export default function Settings() {
           <>
             <DialogHeader>
               <DialogTitle>Accesibilidad</DialogTitle>
-              <DialogDescription>Controla cómo se ve y se escucha la aplicación.</DialogDescription>
+              <DialogDescription>
+                Ajustes visuales, auditivos y de lectura.
+              </DialogDescription>
             </DialogHeader>
 
-            {/* SUBMENÚ DE ACCESIBILIDAD */}
-            <div className="flex gap-4 border-b pb-2 mt-4">
+            {/* SUBMENÚ AJUSTADO PARA NO CORTARSE */}
+            <div className="flex gap-2 border-b pb-2 mt-4 flex-wrap">
 
               <button
                 onClick={() => setSubSection("pantalla")}
-                className={`px-4 py-2 rounded ${
+                className={`px-4 py-2 rounded whitespace-nowrap flex-shrink-0 ${
                   subSection === "pantalla"
                     ? "bg-neutral text-primary font-semibold shadow"
                     : "hover:bg-neutral hover:text-primary"
@@ -227,7 +588,7 @@ export default function Settings() {
 
               <button
                 onClick={() => setSubSection("sonido")}
-                className={`px-4 py-2 rounded ${
+                className={`px-4 py-2 rounded whitespace-nowrap flex-shrink-0 ${
                   subSection === "sonido"
                     ? "bg-neutral text-primary font-semibold shadow"
                     : "hover:bg-neutral hover:text-primary"
@@ -236,24 +597,46 @@ export default function Settings() {
                 Sonido
               </button>
 
+              <button
+                onClick={() => setSubSection("dislexia")}
+                className={`px-4 py-2 rounded whitespace-nowrap flex-shrink-0 ${
+                  subSection === "dislexia"
+                    ? "bg-neutral text-primary font-semibold shadow"
+                    : "hover:bg-neutral hover:text-primary"
+                }`}
+              >
+                Dislexia
+              </button>
+
+              <button
+                onClick={() => setSubSection("parkinson")}
+                className={`px-4 py-2 rounded whitespace-nowrap flex-shrink-0 ${
+                  subSection === "parkinson"
+                    ? "bg-neutral text-primary font-semibold shadow"
+                    : "hover:bg-neutral hover:text-primary"
+                }`}
+              >
+                Parkinson
+              </button>
+
             </div>
 
-            {/* CONTENIDO DE LA SUBSECCIÓN */}
             <div>{renderAccesibilidadSubcontent()}</div>
           </>
         );
+
 
       case "perfil":
         return (
           <>
             <DialogHeader>
               <DialogTitle>Perfil</DialogTitle>
-              <DialogDescription>Configuración de tu cuenta.</DialogDescription>
+              <DialogDescription>Opciones de cuenta.</DialogDescription>
             </DialogHeader>
 
             <div className="mt-4">
               <button
-                className="cursor-pointer hover:border-2 hover:border-primary hover:bg-neutral hover:text-primary  bg-primary text-neutral  rounded-2xl w-50 h-10 m-5"
+                className="cursor-pointer hover:border-2 hover:border-primary hover:bg-neutral hover:text-primary bg-primary text-neutral rounded-2xl w-50 h-10 m-5"
                 onClick={() => (navigate("/"), supabase.auth.signOut())}
               >
                 Cerrar sesión
@@ -263,6 +646,7 @@ export default function Settings() {
         );
     }
   };
+
 
   return (
     <Dialog>
@@ -285,10 +669,10 @@ export default function Settings() {
         </svg>
       </DialogTrigger>
 
-      <DialogContent className="max-w-xl p-0 overflow-hidden">
+      <DialogContent className="max-w-2xl p-0 overflow-hidden">
         <div className="flex h-full">
 
-          {/* SIDEBAR PRINCIPAL */}
+          {/* SIDEBAR */}
           <aside className="w-40 bg-muted/50 border-r p-4 flex flex-col space-y-3">
 
             <button
@@ -313,10 +697,10 @@ export default function Settings() {
 
           </aside>
 
-          {/* CONTENIDO */}
-          <main className="flex-1 p-6">
+          <main className="flex-1 p-6 overflow-y-auto max-h-[80vh]">
             {renderContent()}
           </main>
+
         </div>
       </DialogContent>
     </Dialog>

@@ -46,7 +46,7 @@ function applyDyslexiaStyles() {
 }
 
 // ======================================================
-// 🔴 FUNCIÓN PARA APLICAR MODO PARKINSON (CURSOR + IMÁN PRECISO)
+// 🔴 FUNCIÓN PARA APLICAR MODO PARKINSON 
 // ======================================================
 let parkinsonCursorListener: ((e: MouseEvent) => void) | null = null;
 let parkinsonClickListener: ((e: MouseEvent) => void) | null = null;
@@ -56,7 +56,6 @@ function applyParkinsonStyles() {
   const enabled = localStorage.getItem("parkinsonEnabled") === "true";
   const size = Number(localStorage.getItem("cursorSize")) || 30;
 
-  // 1. LIMPIEZA DE LISTENERS
   if (parkinsonCursorListener) {
     window.removeEventListener('mousemove', parkinsonCursorListener);
     parkinsonCursorListener = null;
@@ -66,7 +65,6 @@ function applyParkinsonStyles() {
     parkinsonClickListener = null;
   }
 
-  // 2. APAGADO
   if (!enabled) {
     const domElement = document.getElementById('parkinson-cursor');
     if (domElement) domElement.remove();
@@ -75,7 +73,6 @@ function applyParkinsonStyles() {
     return;
   }
 
-  // 3. ENCENDIDO: Crear elemento visual
   if (!cursorElement) {
     const existing = document.getElementById('parkinson-cursor');
     if (existing) {
@@ -84,7 +81,7 @@ function applyParkinsonStyles() {
       cursorElement = document.createElement('div');
       cursorElement.id = 'parkinson-cursor';
       cursorElement.style.position = 'fixed';
-      cursorElement.style.pointerEvents = 'none'; // Vital para no bloquear el mouse
+      cursorElement.style.pointerEvents = 'none'; 
       cursorElement.style.zIndex = '9999';
       cursorElement.style.borderRadius = '50%';
       cursorElement.style.border = '2px solid red';
@@ -98,7 +95,6 @@ function applyParkinsonStyles() {
   cursorElement.style.width = `${size}px`;
   cursorElement.style.height = `${size}px`;
 
-  // 4. LISTENER DE MOVIMIENTO (Visual)
   parkinsonCursorListener = (e: MouseEvent) => {
     if (cursorElement) {
       cursorElement.style.left = `${e.clientX}px`;
@@ -107,20 +103,16 @@ function applyParkinsonStyles() {
   };
   window.addEventListener('mousemove', parkinsonCursorListener);
 
-  // 5. LÓGICA DE "IMÁN" MATEMÁTICO (Para evitar rebotes y mejorar precisión)
   parkinsonClickListener = (e: MouseEvent) => {
     const target = e.target as HTMLElement;
     
-    // Si ya le diste a algo interactivo directamente, no intervenir
     const isInteractive = target.closest('button, a, input, select, textarea, [role="button"]');
     if (isInteractive) return;
 
-    // Datos del click y radio
     const clickX = e.clientX;
     const clickY = e.clientY;
     const radio = size / 2;
 
-    // Buscar TODOS los elementos interactivos en la página
     const candidates = Array.from(document.querySelectorAll('button, a, input, select, textarea, [role="button"]'));
     
     let closestElement: HTMLElement | null = null;
@@ -130,92 +122,147 @@ function applyParkinsonStyles() {
         const element = el as HTMLElement;
         const rect = element.getBoundingClientRect();
 
-        // Ignorar elementos invisibles
         if (rect.width === 0 && rect.height === 0) return;
 
-        // Calcular el punto más cercano del botón al click
         const closestX = Math.max(rect.left, Math.min(clickX, rect.right));
         const closestY = Math.max(rect.top, Math.min(clickY, rect.bottom));
 
-        // Distancia euclidiana real entre el click y ese punto
         const distance = Math.sqrt(Math.pow(clickX - closestX, 2) + Math.pow(clickY - closestY, 2));
 
-        // Guardamos el más cercano
         if (distance < minDistance) {
             minDistance = distance;
             closestElement = element;
         }
     });
 
-    // Si el elemento más cercano está DENTRO del radio del círculo rojo
     if (closestElement && minDistance <= radio) {
-         // ¡Captura exitosa! Detenemos el evento original para evitar doble click/cierre
-         e.stopPropagation(); 
-         e.stopImmediatePropagation();
-         e.preventDefault();
-         
-         // Ejecutar el click en el elemento encontrado
-         (closestElement as HTMLElement).click();
-         (closestElement as HTMLElement).focus();
+          e.stopPropagation(); 
+          e.stopImmediatePropagation();
+          e.preventDefault();
+          (closestElement as HTMLElement).click();
+          (closestElement as HTMLElement).focus();
 
-         // Feedback visual de éxito (parpadeo verde)
-         if (cursorElement) {
-             cursorElement.style.backgroundColor = 'rgba(0, 255, 0, 0.4)';
-             cursorElement.style.borderColor = '#00ff00';
-             setTimeout(() => { 
-                 if(cursorElement) {
-                     cursorElement.style.backgroundColor = 'rgba(255, 0, 0, 0.15)'; 
-                     cursorElement.style.borderColor = 'red';
-                 }
-             }, 300);
-         }
+          if (cursorElement) {
+              cursorElement.style.backgroundColor = 'rgba(0, 255, 0, 0.4)';
+              cursorElement.style.borderColor = '#00ff00';
+              setTimeout(() => { 
+                  if(cursorElement) {
+                      cursorElement.style.backgroundColor = 'rgba(255, 0, 0, 0.15)'; 
+                      cursorElement.style.borderColor = 'red';
+                  }
+              }, 300);
+          }
     }
   };
   
-  // Usamos 'true' para interceptar el evento en la fase de captura antes que nadie
   window.addEventListener('click', parkinsonClickListener, true);
 }
+
+// ======================================================
+// ⌨️ DATOS DE ATAJOS DE TECLADO
+// ======================================================
+const shortcutsData = [
+  {
+    category: "General",
+    items: [
+      { action: "Menú Accesibilidad", keys: ["Alt", "A"] },
+      { action: "Refrescar", keys: ["Alt", "R"] },
+    ]
+  },
+  {
+    category: "Estudiantes",
+    items: [
+      { action: "Agregar estudiante", keys: ["Alt", "E"] },
+    ]
+  },
+  {
+    category: "Factores de Riesgo",
+    items: [
+      { action: "Agregar factor", keys: ["Alt", "R"] },
+    ]
+  },
+  {
+    category: "Materias",
+    items: [
+      { action: "Agregar materia", keys: ["Alt", "M"] },
+    ]
+  },
+  {
+    category: "Carreras",
+    items: [
+      { action: "Agregar carrera", keys: ["Alt", "C"] },
+    ]
+  },
+  {
+    category: "Gráficas",
+    items: [
+      { action: "Exportar Excel", keys: ["Alt", "E"] },
+      { action: "Exportar CSV", keys: ["Alt", "C"] },
+      { action: "Exportar PDF", keys: ["Alt", "P"] },
+      { action: "Exportar Todos", keys: ["Alt", "T"] },
+    ]
+  },
+  {
+    category: "Exportar Datos",
+    items: [
+      { action: "Elegir carpeta", keys: ["Alt", "C"] },
+      { action: "Exportar", keys: ["Alt", "E"] },
+      { action: "Cancelar", keys: ["Alt", "X"] },
+    ]
+  },
+  {
+    category: "Importar Datos",
+    items: [
+      { action: "Guardar", keys: ["Alt", "G"] },
+      { action: "Cancelar", keys: ["Alt", "X"] },
+    ]
+  }
+];
 
 export default function Settings() {
   const { session } = useSession();
   const [section, setSection] = useState("accesibilidad");
-  const [subSection, setSubSection] = useState<"pantalla" | "sonido" | "dislexia" | "parkinson">("pantalla");
+  // ✅ RESTAURADO: Se añade "atajos" al tipo de estado
+  const [subSection, setSubSection] = useState<"pantalla" | "sonido" | "dislexia" | "parkinson" | "atajos">("pantalla");
 
   const [AccActive, setAccActive] = useState(true);
   const [PerfilActive, setPerfilActive] = useState(false);
+  const [isOpen, setIsOpen] = useState(false);
 
-  // 🖥️ PANTALLA
   const [darkMode, setDarkMode] = useState(false);
 
-  // 🔊 SONIDO
   const [ttsEnabled, setTtsEnabled] = useState(false);
   const [voiceType, setVoiceType] = useState<"female" | "male">("female");
   const [ttsRate, setTtsRate] = useState(1);
   const [ttsVolume, setTtsVolume] = useState(1);
 
-  // 🧠 DISLEXIA
   const [dyslexiaEnabled, setDyslexiaEnabled] = useState(false);
   const [dyslexiaFont, setDyslexiaFont] = useState("lexend");
   const [dyslexiaSpacing, setDyslexiaSpacing] = useState(1);
   const [dyslexiaLineHeight, setDyslexiaLineHeight] = useState(1.2);
 
-  // 🤲 PARKINSON
   const [parkinsonEnabled, setParkinsonEnabled] = useState(false);
   const [cursorSize, setCursorSize] = useState(50);
 
   let navigate = useNavigate();
 
-  // ======================================================
-  // CARGAR AJUSTES GUARDADOS
-  // ======================================================
   useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.altKey && (e.key === 'a' || e.key === 'A')) {
+        e.preventDefault();
+        setIsOpen((prev) => !prev);
+      }
+    };
 
-    // PANTALLA
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, []);
+
+  useEffect(() => {
     const savedDark = localStorage.getItem("darkMode") === "true";
     setDarkMode(savedDark);
     document.documentElement.classList.toggle("dark", savedDark);
 
-    // SONIDO
     const savedTTS = localStorage.getItem("ttsHover") === "true";
     setTtsEnabled(savedTTS);
 
@@ -230,7 +277,6 @@ export default function Settings() {
 
     if (savedTTS) enableAutomaticTTS();
 
-    // DISLEXIA
     const savedDyslexia = localStorage.getItem("dyslexiaEnabled") === "true";
     setDyslexiaEnabled(savedDyslexia);
 
@@ -245,7 +291,6 @@ export default function Settings() {
 
     applyDyslexiaStyles();
 
-    // PARKINSON
     const savedParkinson = localStorage.getItem("parkinsonEnabled") === "true";
     setParkinsonEnabled(savedParkinson);
 
@@ -253,13 +298,7 @@ export default function Settings() {
     if (savedCursorSize) setCursorSize(Number(savedCursorSize));
 
     applyParkinsonStyles();
-
   }, []);
-
-
-  // ======================================================
-  // HANDLERS
-  // ======================================================
 
   const handleSection = (Select: string) => {
     setSection(Select);
@@ -276,7 +315,6 @@ export default function Settings() {
   const handleTextToSpeech = (checked: boolean) => {
     setTtsEnabled(checked);
     localStorage.setItem("ttsHover", String(checked));
-
     if (checked) enableAutomaticTTS();
     else disableAutomaticTTS();
   };
@@ -297,7 +335,6 @@ export default function Settings() {
     localStorage.setItem("ttsVolume", String(value));
   };
 
-  // ---------- DISLEXIA ----------
   const handleDyslexiaToggle = (value: boolean) => {
     setDyslexiaEnabled(value);
     localStorage.setItem("dyslexiaEnabled", String(value));
@@ -322,7 +359,6 @@ export default function Settings() {
     applyDyslexiaStyles();
   };
 
-  // ---------- PARKINSON ----------
   const handleParkinsonToggle = (value: boolean) => {
     setParkinsonEnabled(value);
     localStorage.setItem("parkinsonEnabled", String(value));
@@ -335,13 +371,8 @@ export default function Settings() {
     setTimeout(applyParkinsonStyles, 0);
   };
 
-  // ======================================================
-  // SUBCONTENIDO DE ACCESIBILIDAD
-  // ======================================================
   const renderAccesibilidadSubcontent = () => {
     switch (subSection) {
-
-      // 🖥️ PANTALLA
       case "pantalla":
         return (
           <div className="flex flex-col space-y-6 mt-4">
@@ -355,12 +386,9 @@ export default function Settings() {
             </div>
           </div>
         );
-
-      // 🔊 SONIDO
       case "sonido":
         return (
           <div className="flex flex-col space-y-6 mt-4">
-
             <div className="flex items-center space-x-2">
               <Switch
                 checked={ttsEnabled}
@@ -369,7 +397,6 @@ export default function Settings() {
               />
               <Label className="text-text"  htmlFor="ttsHover">Lectura por voz</Label>
             </div>
-
             {ttsEnabled && (
               <>
                 <div>
@@ -397,10 +424,8 @@ export default function Settings() {
                       />
                       Masculina
                     </label>
-
                   </div>
                 </div>
-
                 <div>
                   <Label className="font-semibold text-text">Velocidad</Label>
                   <input
@@ -414,7 +439,6 @@ export default function Settings() {
                   />
                   <p className="text-sm text-text">Actual: {ttsRate.toFixed(1)}</p>
                 </div>
-
                 <div>
                   <Label className="font-semibold text-text">Volumen</Label>
                   <input
@@ -428,17 +452,13 @@ export default function Settings() {
                   />
                   <p className="text-sm text-text">Actual: {ttsVolume.toFixed(1)}</p>
                 </div>
-
               </>
             )}
-
           </div>
         );
-
       case "dislexia":
         return (
           <div className="flex flex-col space-y-6 mt-4">
-
             <div className="flex items-center space-x-2">
               <Switch
                 checked={dyslexiaEnabled}
@@ -447,7 +467,6 @@ export default function Settings() {
               />
               <Label className="text-text"  htmlFor="dyslexiaToggle">Modo Dislexia</Label>
             </div>
-
             {dyslexiaEnabled && (
               <>
                 <div>
@@ -475,10 +494,8 @@ export default function Settings() {
                       />
                       OpenDyslexic
                     </label>
-
                   </div>
                 </div>
-
                 <div>
                   <Label className=" text-text font-semibold">Espaciado entre letras</Label>
                   <input
@@ -492,7 +509,6 @@ export default function Settings() {
                   />
                   <p className="text-sm text-text">Actual: {dyslexiaSpacing}px</p>
                 </div>
-
                 <div>
                   <Label className=" text-text font-semibold">Interlineado</Label>
                   <input
@@ -506,14 +522,10 @@ export default function Settings() {
                   />
                   <p className="text-sm text-text">Actual: {dyslexiaLineHeight}</p>
                 </div>
-
               </>
             )}
-
           </div>
         );
-
-      // 🤲 PARKINSON (AJUSTADO)
       case "parkinson":
         return (
           <div className="flex flex-col space-y-6 mt-4">
@@ -525,7 +537,6 @@ export default function Settings() {
               />
               <Label className="text-text"  htmlFor="parkinsonToggle">Modo Asistido (Cursor Grande)</Label>
             </div>
-
             {parkinsonEnabled && (
               <>
                 <div>
@@ -553,27 +564,46 @@ export default function Settings() {
             )}
           </div>
         );
+      
+      // ✅ RESTAURADO: Sección de Atajos
+      case "atajos":
+        return (
+            <div className="space-y-6 mt-4 pr-2">
+                <div className="grid gap-6">
+                    {shortcutsData.map((section, idx) => (
+                        <div key={idx} className="bg-secondary/20 p-4 rounded-lg border border-secondary/50">
+                            <h3 className="font-semibold text-primary mb-3 text-lg border-b border-secondary/50 pb-1">{section.category}</h3>
+                            <div className="space-y-3">
+                                {section.items.map((item, i) => (
+                                    <div key={i} className="flex justify-between items-center text-sm">
+                                        <span className="text-foreground">{item.action}</span>
+                                        <div className="flex gap-1">
+                                            {item.keys.map((k, kIdx) => (
+                                                <span key={kIdx} className="px-2 py-1 bg-muted border rounded font-mono text-xs font-bold shadow-sm">
+                                                    {k}
+                                                </span>
+                                            ))}
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            </div>
+        );
     }
   };
 
-
-  // ======================================================
-  // CONTENIDO PRINCIPAL
-  // ======================================================
   const renderContent = () => {
     switch (section) {
-
       case "accesibilidad":
         return (
           <>
             <DialogHeader className="text-text">
               <DialogTitle>Accesibilidad</DialogTitle>
-              <DialogDescription >
-                Ajustes visuales, auditivos y de lectura.
-              </DialogDescription>
+              <DialogDescription>Ajustes visuales, auditivos, lectura y atajos.</DialogDescription>
             </DialogHeader>
-
-            {/* SUBMENÚ AJUSTADO PARA NO CORTARSE */}
             <div className="flex gap-2 border-b pb-2 mt-4 flex-wrap">
 
               <button
@@ -616,13 +646,16 @@ export default function Settings() {
                 Parkinson
               </button>
 
+              {/* <button onClick={() => setSubSection("pantalla")} className={`px-4 py-2 rounded whitespace-nowrap flex-shrink-0 ${subSection === "pantalla" ? "bg-neutral text-primary font-semibold shadow" : "hover:bg-neutral hover:text-primary"}`}>Pantalla</button>
+              <button onClick={() => setSubSection("sonido")} className={`px-4 py-2 rounded whitespace-nowrap flex-shrink-0 ${subSection === "sonido" ? "bg-neutral text-primary font-semibold shadow" : "hover:bg-neutral hover:text-primary"}`}>Sonido</button>
+              <button onClick={() => setSubSection("dislexia")} className={`px-4 py-2 rounded whitespace-nowrap flex-shrink-0 ${subSection === "dislexia" ? "bg-neutral text-primary font-semibold shadow" : "hover:bg-neutral hover:text-primary"}`}>Dislexia</button>
+              <button onClick={() => setSubSection("parkinson")} className={`px-4 py-2 rounded whitespace-nowrap flex-shrink-0 ${subSection === "parkinson" ? "bg-neutral text-primary font-semibold shadow" : "hover:bg-neutral hover:text-primary"}`}>Parkinson</button>
+              ✅ RESTAURADO: Botón Atajos */}
+              <button onClick={() => setSubSection("atajos")} className={`px-4 py-2 rounded whitespace-nowrap flex-shrink-0 ${subSection === "atajos" ? "bg-primary text-neutral font-semibold shadow-md" : "hover:bg-primary hover:text-neutral text-text"}`}>Atajos</button>
             </div>
-
-            <div>{renderAccesibilidadSubcontent()}</div>
+            <div className="pb-10">{renderAccesibilidadSubcontent()}</div>
           </>
         );
-
-
       case "perfil":
         return (
           <>
@@ -630,24 +663,17 @@ export default function Settings() {
               <DialogTitle className="text-text">Perfil</DialogTitle>
               <DialogDescription>Opciones de cuenta.</DialogDescription>
             </DialogHeader>
-
             <div className="mt-4">
-              <button
-                className="cursor-pointer hover:border-2 hover:border-primary hover:bg-neutral hover:text-primary bg-primary text-neutral rounded-2xl w-50 h-10 m-5"
-                onClick={() => (navigate("/"), supabase.auth.signOut())}
-              >
-                Cerrar sesión
-              </button>
+              <button className="cursor-pointer hover:border-2 hover:border-primary hover:bg-neutral hover:text-primary bg-primary text-neutral rounded-2xl w-50 h-10 m-5" onClick={() => (navigate("/"), supabase.auth.signOut())}>Cerrar sesión</button>
             </div>
           </>
         );
     }
   };
 
-
   return (
-    <Dialog>
-      <DialogTrigger>
+    <Dialog open={isOpen} onOpenChange={setIsOpen}>
+      <DialogTrigger asChild>
         <svg
           xmlns="http://www.w3.org/2000/svg"
           width="40"
@@ -658,6 +684,7 @@ export default function Settings() {
           strokeWidth="2"
           strokeLinecap="round"
           strokeLinejoin="round"
+          title="Accesibilidad (Alt + A)"
           className="mr-6 cursor-pointer hover:text-primary hover:bg-neutral rounded-4xl transition-colors duration-200"
         >
           <path d="M18 20a6 6 0 0 0-12 0" />
@@ -668,8 +695,6 @@ export default function Settings() {
 
       <DialogContent className="max-w-2xl p-0 overflow-hidden">
         <div className="flex h-full">
-
-          {/* SIDEBAR */}
           <aside className="w-40 bg-muted/50 border-r p-4 flex flex-col space-y-3">
 
             <button
@@ -693,11 +718,9 @@ export default function Settings() {
             ):null}
 
           </aside>
-
           <main className="flex-1 p-6 overflow-y-auto max-h-[80vh]">
             {renderContent()}
           </main>
-
         </div>
       </DialogContent>
     </Dialog>

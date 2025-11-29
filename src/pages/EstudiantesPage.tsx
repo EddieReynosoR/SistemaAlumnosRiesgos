@@ -11,6 +11,7 @@ import { SeleccionarFactoresDialog } from "@/components/riesgosestudiantes/agreg
 import EditEstudianteDialog from "@/components/estudiantes/edit-estudiante-dialog";
 import DeleteEstudianteDialog from "@/components/estudiantes/delete-estudiante-dialog";
 import MainLayout from "@/layouts/MainLayout";
+
 export default function EstudiantesPage() {
   const [data, setData] = useState<EstudianteConCarrera[]>([]);
   const [loading, setLoading] = useState(true);
@@ -48,9 +49,26 @@ export default function EstudiantesPage() {
     setLoading(false);
   }, []);
 
+  // Carga inicial
   useEffect(() => {
     fetchEstudiantes();
   }, [fetchEstudiantes]);
+
+  // --- NUEVO: Atajo de teclado (Alt + R) ---
+  useEffect(() => {
+    const handleKeyDown = (event) => {
+      if (event.altKey && (event.key === 'r' || event.key === 'R')) {
+        event.preventDefault();
+        if (!loading) { // Opcional: Evitar refrescar si ya está cargando
+            fetchEstudiantes();
+        }
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [fetchEstudiantes, loading]);
+  // ------------------------------------------
 
   const handleDelete = useCallback((est: EstudianteConCarrera) => {
     setDeleting(est);
@@ -80,64 +98,60 @@ export default function EstudiantesPage() {
     [handleCalificacion, handleEdit, handleDelete]
   );
 
-  // if (loading) return <main className="p-6">Cargando…</main>;
-  // if (error) return <main className="p-6 text-red-600">Error: {error}</main>;
-
   return (
-
     <MainLayout text="Estudiantes">
       <div className="p-6 space-y-4">
-        
-      <div className="flex items-center justify-between">
-        <h1 className="text-xl font-semibold">Estudiantes</h1>
-        <div className="flex gap-2">
-          <Button
-            variant="outline"
-            onClick={fetchEstudiantes}
-            disabled={loading}
-          >
-            {loading ? "Cargando..." : "Refrescar"}
-          </Button>
+        <div className="flex items-center justify-between">
+          <h1 className="text-xl font-semibold">Estudiantes</h1>
+          <div className="flex gap-2">
+            <Button
+              variant="outline"
+              onClick={fetchEstudiantes}
+              disabled={loading}
+              title="Refrescar lista (Alt + R)" // Tooltip nativo
+              aria-keyshortcuts="Alt+r"         // Accesibilidad para screen readers
+            >
+              {loading ? "Cargando..." : "Refrescar"}
+            </Button>
+          </div>
         </div>
+
+        {error ? (
+          <div className="text-sm text-red-600">Error: {error}</div>
+        ) : null}
+        <DataTable
+          columns={columns}
+          data={data}
+          globalFilterColumns={["numerocontrol", "nombre"]}
+          onRefresh={fetchEstudiantes}
+        />
+
+        <EditEstudianteDialog
+          editing={editing}
+          setEditing={setEditing}
+          setData={setData}
+        />
+
+        <DeleteEstudianteDialog
+          open={deleteDialog}
+          setOpen={setDeleteDialog}
+          deleting={deleting}
+          setDeleting={setDeleting}
+          setData={setData}
+        />
+
+        <CalificacionesDialog
+          open={!!calificacion}
+          setOpen={(open) => !open && setCalificacion(null)}
+          estudiante={calificacion}
+        />
+
+        <SeleccionarFactoresDialog
+          open={!!factor}
+          setOpen={(open) => !open && setFactor(null)}
+          estudiante={factor}
+        />
       </div>
-
-      {error ? (
-        <div className="text-sm text-red-600">Error: {error}</div>
-      ) : null}
-      <DataTable
-        columns={columns}
-        data={data}
-        globalFilterColumns={["numerocontrol", "nombre"]}
-        onRefresh={fetchEstudiantes}
-      />
-
-      <EditEstudianteDialog
-        editing={editing}
-        setEditing={setEditing}
-        setData={setData}
-      />
-
-      <DeleteEstudianteDialog
-        open={deleteDialog}
-        setOpen={setDeleteDialog}
-        deleting={deleting}
-        setDeleting={setDeleting}
-        setData={setData}
-        />
-
-      <CalificacionesDialog
-        open={!!calificacion}
-        setOpen={(open) => !open && setCalificacion(null)}
-        estudiante={calificacion}
-        />
-
-      <SeleccionarFactoresDialog
-        open={!!factor}
-        setOpen={(open) => !open && setFactor(null)}
-        estudiante={factor}
-        />
-    </div>
     </MainLayout>
-
   );
 }

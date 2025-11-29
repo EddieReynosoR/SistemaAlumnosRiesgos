@@ -35,9 +35,27 @@ export default function FactoresPage() {
         setLoading(false);
     }, []);
 
+    // 1. Carga inicial (Ya estaba)
     useEffect(() => {
         fetchFactores();
     }, [fetchFactores]);
+
+    // 2. NUEVO: Atajo de teclado (Alt + R) ⌨️
+    useEffect(() => {
+        const handleKeyDown = (event: KeyboardEvent) => {
+            if (event.altKey && (event.key === 'r' || event.key === 'R')) {
+                event.preventDefault();
+                // Opcional: solo refrescar si no está cargando para evitar llamadas duplicadas
+                if (!loading) { 
+                    fetchFactores();
+                }
+            }
+        };
+
+        window.addEventListener("keydown", handleKeyDown);
+        // Limpieza
+        return () => window.removeEventListener("keydown", handleKeyDown);
+    }, [fetchFactores, loading]); // Asegúrate de incluir 'loading' si lo usas en la lógica
 
     const handleEdit = useCallback((registro: Factor) => {
         setEditing(registro);
@@ -60,7 +78,14 @@ export default function FactoresPage() {
       <div className="flex items-center justify-between">
         <h1 className="text-xl font-semibold">Factores de riesgo</h1>
         <div className="flex gap-2">
-          <Button variant="outline" onClick={fetchFactores} disabled={loading}>
+          {/* 3. MODIFICADO: Añadido Tooltip y ARIA para accesibilidad */}
+          <Button 
+            variant="outline" 
+            onClick={fetchFactores} 
+            disabled={loading}
+            title="Refrescar lista (Alt + R)"       // Tooltip visual
+            aria-keyshortcuts="Alt+r"              // Lector de pantalla
+          >
             {loading ? "Cargando…" : "Refrescar"}
           </Button>
         </div>
@@ -79,6 +104,6 @@ export default function FactoresPage() {
           setData={setData}
           />
     </main>
-          </MainLayout>
+    </MainLayout>
   );
 }

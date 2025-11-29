@@ -40,9 +40,27 @@ export default function CarrerasPage() {
     setLoading(false);
   }, [docente]);
 
+  // Carga inicial
   useEffect(() => {
     fetchCarreras();
   }, [fetchCarreras]);
+
+  // 1. NUEVO: Atajo de teclado (Alt + R) ⌨️
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      // Detectar Alt + r (o R)
+      if (event.altKey && (event.key === 'r' || event.key === 'R')) {
+        event.preventDefault(); // Prevenir comportamiento por defecto
+        if (!loading) { // Solo si no está cargando actualmente
+          fetchCarreras(); // Ejecutar la función de refrescar
+        }
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    // Limpieza
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [fetchCarreras, loading]); // Dependencias: fetchCarreras y loading
 
   const handleDelete = useCallback((est: Carrera) => {
     setDeleting(est);
@@ -58,19 +76,19 @@ export default function CarrerasPage() {
     [handleEdit, handleDelete]
   );
 
-//   if (loading) return <main className="p-6">Cargando…</main>;
-//   if (error) return <main className="p-6 text-red-600">Error: {error}</main>;
-
   return (
     <MainLayout text="Carreras">
       <main className="p-6 space-y-4">
         <div className="flex items-center justify-between">
           <h1 className="text-xl font-semibold">Carreras</h1>
           <div className="flex gap-2">
+            {/* 2. MODIFICADO: Añadido Tooltip y ARIA para accesibilidad */}
             <Button
               variant="outline"
               onClick={fetchCarreras}
               disabled={loading}
+              title="Refrescar lista (Alt + R)" // Tooltip visual
+              aria-keyshortcuts="Alt+r"         // Lector de pantalla
             >
               {loading ? "Cargando..." : "Refrescar"}
             </Button>

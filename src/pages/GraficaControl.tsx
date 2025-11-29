@@ -11,6 +11,7 @@ import {
   Legend,
   ReferenceLine,
   ResponsiveContainer,
+  Label,
 } from "recharts";
 import { saveAs } from "file-saver";
 import * as XLSX from "xlsx";
@@ -123,7 +124,8 @@ function GraficaControl() {
     return { rows, headersBonitos, rowsParaPDF };
   };
 
-  const exportarExcel = async () => {
+  // --- Funciones de Exportación ---
+  const exportarExcel = async (mostrarAlerta = true) => {
     try {
       if (!data || data.length === 0) {
         alert("⚠️ No hay datos para exportar en Excel.");
@@ -196,13 +198,15 @@ function GraficaControl() {
       const buffer = await workbook.xlsx.writeBuffer();
       saveAs(new Blob([buffer], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" }), generarNombreArchivo("grafica_control", "xlsx"));
 
+      if (mostrarAlerta) alert("¡Archivo Excel exportado con éxito!");
+
     } catch (err: any) {
       console.error("Error Excel:", err);
       alert(`Error al exportar Excel: ${err.message}`);
     }
   };
 
-  const exportarCSV = async () => {
+  const exportarCSV = async (mostrarAlerta = true) => {
     if (!data || data.length === 0) {
       alert("⚠️ No hay datos para exportar en CSV.");
       return;
@@ -220,9 +224,11 @@ function GraficaControl() {
     const csv = XLSX.utils.sheet_to_csv(ws);
     const blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
     guardarArchivo(blob, generarNombreArchivo("grafica_control", "csv"));
+
+    if (mostrarAlerta) alert("¡Archivo CSV exportado con éxito!");
   };
 
-  const exportarPDF = async () => {
+  const exportarPDF = async (mostrarAlerta = true) => {
     try {
       if (!chartRef.current) throw new Error("Gráfico no encontrado");
 
@@ -266,6 +272,8 @@ function GraficaControl() {
 
       const blob = doc.output("blob");
       guardarArchivo(blob, generarNombreArchivo("grafica_control", "pdf"));
+
+      if (mostrarAlerta) alert("¡Archivo PDF exportado con éxito!");
     } catch (err: any) {
       console.error("Error PDF:", err);
       alert(`Error al exportar PDF: ${err.message}`);
@@ -274,18 +282,21 @@ function GraficaControl() {
 
   const handleExportar = async (fmt: Formato) => {
     if (!data.length) return alert("No hay datos disponibles.");
-    
     setTimeout(async () => {
         switch (fmt) {
-        case "excel": await exportarExcel(); break;
-        case "csv": await exportarCSV(); break;
-        case "pdf": await exportarPDF(); break;
-        case "todos": await exportarExcel(); await exportarCSV(); await exportarPDF(); break;
+        case "excel": await exportarExcel(true); break;
+        case "csv": await exportarCSV(true); break;
+        case "pdf": await exportarPDF(true); break;
+        case "todos": 
+          await exportarExcel(false); 
+          await exportarCSV(false); 
+          await exportarPDF(false);
+          alert("¡Todos los archivos (Excel, CSV, PDF) se han exportado con éxito!");
+          break;
         }
     }, 100);
   };
 
-  // --- ACCESIBILIDAD (ATAJOS) ---
   useEffect(() => {
     const manejarAtajos = (e: KeyboardEvent) => {
       if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return;
@@ -314,7 +325,8 @@ function GraficaControl() {
           <ResponsiveContainer width="100%" height="100%">
             <LineChart
               data={data}
-              margin={{ top: 20, right: 30, left: 20, bottom: 10 }}
+              // 1. MÁRGENES AMPLIADOS: left: 50 (para Calificación), bottom: 50 (para Unidad y leyenda)
+              margin={{ top: 20, right: 30, left: 50, bottom: 50 }} 
             >
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis

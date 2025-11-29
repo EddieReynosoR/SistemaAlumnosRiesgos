@@ -1,5 +1,5 @@
 import MainLayout from "../layouts/MainLayout";
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react"; // Se agregaron useEffect y useRef
 import { saveAs } from "file-saver";
 import * as XLSX from "xlsx";
 import jsPDF from "jspdf";
@@ -26,37 +26,48 @@ declare global {
   }
 }
 
-// interface Estudiante {
-//   idestudiante: number;
-//   numerocontrol: string;
-//   nombre: string;
-//   apellidopaterno?: string;
-//   apellidomaterno?: string;
-//   semestre: number;
-// }
-
-// interface CalificacionAsistencia {
-//   idestudiante: number;
-//   calificacion: number;
-//   asistencia: number;
-// }
-
-// interface FactorRiesgo {
-//   idfactor: number;
-//   categoria: string;
-//   descripcion: string;
-// }
-
-// interface RiesgoEstudiante {
-//   idestudiante: number;
-//   idfactor: number;
-// }
-
 const ExportarDatos: React.FC = () => {
   const [formato, setFormato] = useState<Formato>("");
   const [incluirDatos, setIncluirDatos] = useState<boolean>(false);
   const [ruta, setRuta] = useState<FileSystemDirectoryHandle | null>(null);
   const [usarUbicacionManual, setUsarUbicacionManual] = useState(false);
+
+  // Referencias para los botones
+  const btnCarpetaRef = useRef<HTMLButtonElement>(null);
+  const btnExportarRef = useRef<HTMLButtonElement>(null);
+  const btnCancelarRef = useRef<HTMLButtonElement>(null);
+
+  // Configuración de atajos de teclado
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Verifica si la tecla Alt está presionada
+      if (e.altKey) {
+        switch (e.key.toLowerCase()) {
+          case 'c': // Alt + c -> Elegir Carpeta
+            e.preventDefault();
+            btnCarpetaRef.current?.click();
+            break;
+          case 'e': // Alt + e -> Exportar
+            e.preventDefault();
+            btnExportarRef.current?.click();
+            break;
+          case 'x': // Alt + x -> Cancelar
+            e.preventDefault();
+            btnCancelarRef.current?.click();
+            break;
+          default:
+            break;
+        }
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    
+    // Limpieza del evento al desmontar
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, []);
 
   const generarNombreArchivo = (base: string, extension: string) => {
     const fecha = new Date();
@@ -179,56 +190,56 @@ const ExportarDatos: React.FC = () => {
     saveAs(blob, nombre);
   };
 
-const exportarExcel = async (datos: any[]) => {
-  if (!datos || datos.length === 0) {
-    alert("No hay datos para exportar en Excel.");
-    return;
-  }
-
-  const ws = XLSX.utils.aoa_to_sheet([]);
-
-  XLSX.utils.sheet_add_json(ws, datos, { origin: "A1", skipHeader: false });
-
-  const rango = XLSX.utils.decode_range(ws["!ref"] || "A1");
-  const encabezados = Object.keys(datos[0]);
-
-  encabezados.forEach((_, i) => {
-    const celda = ws[XLSX.utils.encode_cell({ r: 0, c: i })];
-    if (celda) {
-      celda.s = {
-        font: { bold: true, color: { rgb: "FFFFFF" } },
-        fill: { fgColor: { rgb: "4F81BD" } },
-        alignment: { horizontal: "center", vertical: "center" },
-      };
+  const exportarExcel = async (datos: any[]) => {
+    if (!datos || datos.length === 0) {
+      alert("No hay datos para exportar en Excel.");
+      return;
     }
-  });
 
-  const anchoCols = encabezados.map((h) => {
-    const maxLongitud = Math.max(
-      h.length,
-      ...datos.map((r) => String(r[h] || "").length)
-    );
-    return { wch: Math.min(maxLongitud + 2, 40) };
-  });
-  ws["!cols"] = anchoCols;
+    const ws = XLSX.utils.aoa_to_sheet([]);
 
-  ws["!autofilter"] = { ref: XLSX.utils.encode_range(rango) };
+    XLSX.utils.sheet_add_json(ws, datos, { origin: "A1", skipHeader: false });
 
-  const wb = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(wb, ws, "Reporte");
+    const rango = XLSX.utils.decode_range(ws["!ref"] || "A1");
+    const encabezados = Object.keys(datos[0]);
 
-  const buffer = XLSX.write(wb, {
-    bookType: "xlsx",
-    type: "array",
-    cellStyles: true,
-  });
+    encabezados.forEach((_, i) => {
+      const celda = ws[XLSX.utils.encode_cell({ r: 0, c: i })];
+      if (celda) {
+        celda.s = {
+          font: { bold: true, color: { rgb: "FFFFFF" } },
+          fill: { fgColor: { rgb: "4F81BD" } },
+          alignment: { horizontal: "center", vertical: "center" },
+        };
+      }
+    });
 
-  const blob = new Blob([buffer], {
-    type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-  });
+    const anchoCols = encabezados.map((h) => {
+      const maxLongitud = Math.max(
+        h.length,
+        ...datos.map((r) => String(r[h] || "").length)
+      );
+      return { wch: Math.min(maxLongitud + 2, 40) };
+    });
+    ws["!cols"] = anchoCols;
 
-  await guardarArchivo(blob, generarNombreArchivo("reporte_estudiantes", "xlsx"));
-};
+    ws["!autofilter"] = { ref: XLSX.utils.encode_range(rango) };
+
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Reporte");
+
+    const buffer = XLSX.write(wb, {
+      bookType: "xlsx",
+      type: "array",
+      cellStyles: true,
+    });
+
+    const blob = new Blob([buffer], {
+      type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    });
+
+    await guardarArchivo(blob, generarNombreArchivo("reporte_estudiantes", "xlsx"));
+  };
 
   const exportarCSV = async (datos: any[]) => {
     const ws = XLSX.utils.json_to_sheet(datos);
@@ -237,89 +248,89 @@ const exportarExcel = async (datos: any[]) => {
     await guardarArchivo(blob, generarNombreArchivo("reporte_estudiantes", "csv"));
   };
 
- const exportarPDF = async (datos: any[]) => {
-  if (!datos || datos.length === 0) {
-    alert("⚠️ No hay datos para exportar en PDF.");
-    return;
-  }
+  const exportarPDF = async (datos: any[]) => {
+    if (!datos || datos.length === 0) {
+      alert("⚠️ No hay datos para exportar en PDF.");
+      return;
+    }
 
-  const doc = new jsPDF("l", "pt", "a4");
+    const doc = new jsPDF("l", "pt", "a4");
 
-  // ---------- ENCABEZADO ----------
-  doc.setFontSize(20);
-  doc.setTextColor(40, 40, 40);
-  doc.text("Reporte General de Estudiantes", doc.internal.pageSize.getWidth() / 2, 40, { align: "center" });
+    // ---------- ENCABEZADO ----------
+    doc.setFontSize(20);
+    doc.setTextColor(40, 40, 40);
+    doc.text("Reporte General de Estudiantes", doc.internal.pageSize.getWidth() / 2, 40, { align: "center" });
 
-  // Subtítulo
-  doc.setFontSize(10);
-  doc.setTextColor(100, 100, 100);
-  doc.text("Generado automáticamente por el sistema académico", doc.internal.pageSize.getWidth() / 2, 60, { align: "center" });
+    // Subtítulo
+    doc.setFontSize(10);
+    doc.setTextColor(100, 100, 100);
+    doc.text("Generado automáticamente por el sistema académico", doc.internal.pageSize.getWidth() / 2, 60, { align: "center" });
 
-  // ---------- TABLA ----------
-  const columnas = Object.keys(datos[0]);
-  const filas = datos.map((fila) => columnas.map((key) => fila[key] ?? ""));
+    // ---------- TABLA ----------
+    const columnas = Object.keys(datos[0]);
+    const filas = datos.map((fila) => columnas.map((key) => fila[key] ?? ""));
 
-  autoTable(doc, {
-  head: [columnas],
-  body: filas,
-  startY: 80,
-  theme: "grid",
+    autoTable(doc, {
+      head: [columnas],
+      body: filas,
+      startY: 80,
+      theme: "grid",
 
-  styles: {
-    fontSize: 9,
-    cellPadding: 4,
-    overflow: "linebreak",
-    halign: "center", // alineación por defecto
-  },
+      styles: {
+        fontSize: 9,
+        cellPadding: 4,
+        overflow: "linebreak",
+        halign: "center", // alineación por defecto
+      },
 
-  headStyles: {
-    fillColor: [33, 150, 243],
-    textColor: 255,
-    fontSize: 10,
-    fontStyle: "bold",
-  },
+      headStyles: {
+        fillColor: [33, 150, 243],
+        textColor: 255,
+        fontSize: 10,
+        fontStyle: "bold",
+      },
 
-  bodyStyles: {
-    textColor: [50, 50, 50],
-  },
+      bodyStyles: {
+        textColor: [50, 50, 50],
+      },
 
-  alternateRowStyles: {
-    fillColor: [245, 245, 245],
-  },
+      alternateRowStyles: {
+        fillColor: [245, 245, 245],
+      },
 
-  // 🔥 SOLO esta columna NO estará centrada
-  columnStyles: {
-    [columnas.indexOf("factores_riesgo")]: { halign: "left" }
-    },
+      // 🔥 SOLO esta columna NO estará centrada
+      columnStyles: {
+        [columnas.indexOf("factores_riesgo")]: { halign: "left" }
+      },
 
-    // ---------- PIE DE PÁGINA ----------
-    didDrawPage: (data) => {
-      const pageWidth = doc.internal.pageSize.getWidth();
-      const pageHeight = doc.internal.pageSize.getHeight();
+      // ---------- PIE DE PÁGINA ----------
+      didDrawPage: (data) => {
+        const pageWidth = doc.internal.pageSize.getWidth();
+        const pageHeight = doc.internal.pageSize.getHeight();
 
-      doc.setFontSize(9);
-      doc.setTextColor(130, 130, 130);
+        doc.setFontSize(9);
+        doc.setTextColor(130, 130, 130);
 
-      // Número de página
-      doc.text(
-        `Página ${doc.getNumberOfPages()}`,
-        pageWidth - 60,
-        pageHeight - 20
-      );
+        // Número de página
+        doc.text(
+          `Página ${doc.getNumberOfPages()}`,
+          pageWidth - 60,
+          pageHeight - 20
+        );
 
-      // Leyenda inferior izquierda
-      doc.text(
-        "Sistema Académico • © 2025",
-        20,
-        pageHeight - 20
-      );
-    },
-  });
+        // Leyenda inferior izquierda
+        doc.text(
+          "Sistema Académico • © 2025",
+          20,
+          pageHeight - 20
+        );
+      },
+    });
 
-  // ---------- EXPORTAR ----------
-  const blob = doc.output("blob");
-  await guardarArchivo(blob, generarNombreArchivo("reporte_estudiantes", "pdf"));
-};
+    // ---------- EXPORTAR ----------
+    const blob = doc.output("blob");
+    await guardarArchivo(blob, generarNombreArchivo("reporte_estudiantes", "pdf"));
+  };
 
 
   // 🧠 Envío del formulario
@@ -403,11 +414,12 @@ const exportarExcel = async (datos: any[]) => {
               </label>
               <button
                 type="button"
+                ref={btnCarpetaRef} // Referencia añadida
                 onClick={elegirCarpeta}
+                title="Atajo: Alt + c"
                 className="flex items-center gap-2  px-8 py-2 cursor-pointer hover:border-2 hover:border-primary hover:bg-neutral hover:text-primary  bg-primary text-neutral  rounded-2xl "
-                >
-                <FaFileUpload/>
-                Elegir carpeta
+              >
+                Elegir carpeta <FaFileUpload/>
               </button>
               {ruta && <p className="text-sm text-primary mt-1">Carpeta seleccionada ✔️</p>}
             </div>
@@ -415,14 +427,18 @@ const exportarExcel = async (datos: any[]) => {
             <div className="flex justify-end gap-3 pt-5">
               <button
                 type="submit"
-                className=" flex items-center gap-2  px-8 py-2 border-2 cursor-pointer hover:border-2 hover:border-primary hover:bg-neutral hover:text-primary  bg-secondary text-neutral  rounded-2xl"
+                ref={btnExportarRef} // Referencia añadida
+                title="Atajo: Alt + e"
+                className="flex items-center gap-2  px-8 py-2 border-2 cursor-pointer hover:border-2 hover:border-primary hover:bg-neutral hover:text-primary  bg-secondary text-neutral  rounded-2xl"
               >
                 <FaFileExcel />
                 Exportar 
               </button>
               <button
                 type="button"
+                ref={btnCancelarRef} // Referencia añadida
                 onClick={handleCancelar}
+                title="Atajo: Alt + x"
                 className="flex items-center gap-2  px-8 py-2 cursor-pointer hover:border-2 hover:border-primary hover:bg-neutral hover:text-primary  bg-primary text-neutral  rounded-2xl"
               >
                 <FaTimesCircle />

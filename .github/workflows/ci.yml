@@ -1,0 +1,52 @@
+name: CI with SonarQube
+
+on:
+  push:
+    branches: [ main, master ]
+
+jobs:
+  build-test-and-analyze:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run tests with coverage
+        run: npm run test:coverage
+
+      - name: Build project
+        run: npm run build
+
+      # Instalar el scanner de SonarQube (CLI)
+      - name: Download SonarQube Scanner
+        run: |
+          mkdir .sonar
+          curl -sSLo .sonar/sonar-scanner.zip https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-5.0.1.3006-linux.zip
+          unzip .sonar/sonar-scanner.zip -d .sonar
+          mv .sonar/sonar-scanner-5.0.1.3006-linux .sonar/sonar-scanner
+
+      - name: Run SonarQube analysis
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
+        run: |
+          ./.sonar/sonar-scanner/bin/sonar-scanner \
+            -Dsonar.projectKey=mi-react-vite-app \
+            -Dsonar.projectName="Mi React Vite App" \
+            -Dsonar.sources=src \
+            -Dsonar.tests=src \
+            -Dsonar.test.inclusions=src/**/*.test.ts,src/**/*.test.tsx,src/**/*.spec.ts,src/**/*.spec.tsx \
+            -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info \
+            -Dsonar.sourceEncoding=UTF-8

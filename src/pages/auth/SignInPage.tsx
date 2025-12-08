@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Link, Navigate } from "react-router-dom";
 import { useSession } from "../../context/SessionContext";
 import supabase from "../../utils/supabaseClient";
-import Settings from "@/components/Settings";
+import Settings from "../../components/Settings";
 const SignInPage = () => {
   const { session, obtenerPerfilDocente } = useSession();
   if (session) return <Navigate to="/Estudiantes" />;
